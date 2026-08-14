@@ -8,3 +8,10 @@
 - A ficha agora apresenta a seção Aliados no índice lateral e o estado vazio com controle de adição; o orçamento exibe a linha de custo de aliados.
 - A criação de um aliado foi validada no navegador: o painel passou a mostrar 1 aliado, 25 pontos de valor, 5 pontos de custo, PV 10/10 e o orçamento foi recalculado de 59 para 54 pontos disponíveis.
 - O controle de dano do aliado foi acionado e reduziu corretamente seus PV de 10/10 para 9/10.
+- A mini-ficha do aliado foi exibida no navegador com menu interno para Visão geral, Atributos, Características, Perícias, Combate e Inventário; o custo foi recalculado como 3 pontos para 25% de poder e frequência 12 ou menos.
+- A navegação interna foi validada ao alternar de Visão geral para Atributos, exibindo ST, DX, IQ, HT, PV, PF e valores derivados do aliado.
+- A ficha principal foi aberta após a conversão para abas e exibiu somente Visão geral, sem as demais seções longas no fluxo da página.
+- A navegação lateral principal agora mostra a aba Poderes entre Combate e Características, preservando os painéis exclusivos da ficha.
+- A aba Poderes foi validada ao criar um poder ofensivo com custo de 5 pontos e 1 FP; o orçamento disponível foi atualizado de 56 para 51 pontos.
+- O uso do poder reduziu FP de 11/11 para 10/11, e o mesmo poder apareceu automaticamente no painel de Combate como uma ação disponível com NH e custo de FP.
+- O poder foi acionado diretamente no painel de Combate, reduziu FP novamente para 9/11 e registrou tanto o gasto quanto a rolagem 3d6 no Diário de sessão.

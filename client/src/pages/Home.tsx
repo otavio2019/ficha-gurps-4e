@@ -7,6 +7,7 @@ import { startLogin } from "@/const";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { liveSocket } from "@/lib/live";
 import { trpc } from "@/lib/trpc";
+import { allyFrequencyMultipliers, allyPowerCosts, calculateAllyCostByRule } from "@shared/allyRules";
 import {
   Activity,
   ArrowDownRight,
@@ -19,6 +20,7 @@ import {
   Copy,
   Cloud,
   Dices,
+  Eye,
   FileJson,
   FilePlus2,
   HeartPulse,
@@ -52,8 +54,9 @@ type Skill = { id: string; name: string; attribute: string; difficulty: string; 
 type InventoryItem = { id: string; name: string; category: string; quantity: number; weight: number; carried: boolean; equipped: boolean };
 type Attack = { id: string; name: string; level: number; damage: string; reach: string; parry: string };
 type Armor = { id: string; location: string; dr: number; source: string };
+type Power = { id: string; name: string; source: string; type: "Ofensivo" | "Defensivo" | "Utilidade" | "Controle"; level: number; fpCost: number; pointCost: number; range: string; damage: string; effect: string; combatReady: boolean };
 type LogItem = { id: string; time: string; text: string; kind: "roll" | "health" | "note" };
-type Ally = { id: string; name: string; relation: string; description: string; points: number; cost: number; hpCurrent: number; hpMax: number; status: string };
+type Ally = { id: string; name: string; relation: string; description: string; points: number; cost: number; hpCurrent: number; hpMax: number; status: string; type?: string; race?: string; appearance?: string; personality?: string; history?: string; motivation?: string; notes?: string; powerPercent?: 25 | 50 | 75 | 100 | 150; frequency?: 6 | 9 | 12 | 15; isDependent?: boolean; attributes?: { st: number; dx: number; iq: number; ht: number }; fpCurrent?: number; fpMax?: number; advantages?: Trait[]; disadvantages?: Trait[]; skills?: Skill[]; attacks?: Attack[]; inventory?: InventoryItem[]; conditions?: string[] };
 
 type Sheet = {
   identity: { name: string; player: string; campaign: string; world: string; concept: string; race: string; tl: string };
@@ -66,6 +69,7 @@ type Sheet = {
   inventory: InventoryItem[];
   attacks: Attack[];
   armor: Armor[];
+  powers: Power[];
   allies: Ally[];
   conditions: string[];
   log: LogItem[];
@@ -91,6 +95,25 @@ const bodyZones = [
   { location: "Braço direito", code: "BD" }, { location: "Braço esquerdo", code: "BE" }, { location: "Mão direita", code: "MD" }, { location: "Mão esquerda", code: "ME" },
   { location: "Perna direita", code: "PD" }, { location: "Perna esquerda", code: "PE" }, { location: "Pé direito", code: "PTD" }, { location: "Pé esquerdo", code: "PTE" },
 ];
+
+const allyTabs = [
+  { id: "visao", label: "Visão geral", icon: BookOpen }, { id: "atributos", label: "Atributos", icon: Activity }, { id: "caracteristicas", label: "Características", icon: Sparkles },
+  { id: "pericias", label: "Perícias", icon: Target }, { id: "combate", label: "Combate", icon: Swords }, { id: "inventario", label: "Inventário", icon: Backpack },
+] as const;
+type AllyTab = (typeof allyTabs)[number]["id"];
+
+const normalizeAlly = (ally: Ally) => ({
+  ...ally,
+  type: ally.type || "Individual", race: ally.race || "Humano", appearance: ally.appearance || "", personality: ally.personality || "", history: ally.history || "", motivation: ally.motivation || "", notes: ally.notes || "",
+  powerPercent: (ally.powerPercent || 25) as 25 | 50 | 75 | 100 | 150, frequency: (ally.frequency || 12) as 6 | 9 | 12 | 15, isDependent: ally.isDependent || false,
+  attributes: ally.attributes || { st: 10, dx: 10, iq: 10, ht: 10 }, fpCurrent: ally.fpCurrent ?? 10, fpMax: ally.fpMax ?? 10,
+  advantages: ally.advantages || [], disadvantages: ally.disadvantages || [], skills: ally.skills || [], attacks: ally.attacks || [], inventory: ally.inventory || [], conditions: ally.conditions || [],
+});
+
+const calculateAllyCost = (ally: Ally) => {
+  const full = normalizeAlly(ally);
+  return calculateAllyCostByRule(full.powerPercent, full.frequency);
+};
 
 const compressPortrait = (file: File, maxEdge: number, quality: number) => new Promise<string>((resolve, reject) => {
   const reader = new FileReader();
@@ -164,6 +187,7 @@ const initialSheet: Sheet = {
     { id: "armor-2", location: "Braços", dr: 2, source: "Gibão de couro" },
     { id: "armor-3", location: "Pernas", dr: 1, source: "Calças reforçadas" },
   ],
+  powers: [],
   allies: [],
   conditions: [],
   log: [{ id: "log-1", time: "18:40", text: "Ficha iniciada no Códice de Campo.", kind: "note" }],
@@ -172,6 +196,7 @@ const initialSheet: Sheet = {
 const navItems = [
   { id: "visao-geral", label: "Visão geral", icon: BookOpen },
   { id: "combate", label: "Combate", icon: Swords },
+  { id: "poderes", label: "Poderes", icon: WandSparkles },
   { id: "caracteristicas", label: "Características", icon: Sparkles },
   { id: "pericias", label: "Perícias", icon: Target },
   { id: "inventario", label: "Equipamento", icon: Backpack },
@@ -204,6 +229,7 @@ function SectionHeader({ kicker, title, description, icon: Icon, action }: { kic
 }
 
 function CharacterLibrary({ characters, onCreate, onOpen, onDuplicate, onDelete, isAuthenticated, userName, onLogin, onLogout, sharedIds }: { characters: CharacterRecord[]; onCreate: () => void; onOpen: (id: string) => void; onDuplicate: (id: string) => void; onDelete: (id: string) => void; isAuthenticated: boolean; userName?: string | null; onLogin: () => void; onLogout: () => void; sharedIds: string[] }) {
+  const sharedCharacters = characters.filter((character) => sharedIds.includes(character.id));
   return (
     <main className="library-shell">
       <section className="library-hero" style={{ backgroundImage: `linear-gradient(90deg, rgba(15, 31, 46, .98), rgba(15, 31, 46, .81) 56%, rgba(15, 31, 46, .24)), url(${SIDEBAR})` }}>
@@ -216,6 +242,7 @@ function CharacterLibrary({ characters, onCreate, onOpen, onDuplicate, onDelete,
       <section className="library-content">
         <div className="library-heading"><div><span className="eyebrow">ESTANTE DE CAMPO</span><h2>Personagens</h2><p>Selecione uma ficha para continuar a sessão ou comece uma nova página.</p></div><button type="button" className="library-create" onClick={onCreate}><img src={MARK} alt="" /> Nova ficha</button></div>
         <div className="library-ledger"><span><img src={MARK} alt="" /> ARQUIVO 01 · FICHAS</span><span>ESTADO · PRONTO PARA SESSÃO</span><span>SUPORTE · JSON / PDF</span><span>LINKS AO VIVO · {sharedIds.length}</span><span>ACESSO · {characters.length} REGISTRO{characters.length === 1 ? "" : "S"}</span></div>
+        {isAuthenticated && <section className="library-share-board"><div><span className="eyebrow"><Cloud size={13} /> LINKS COMPARTILHADOS</span><h3>{sharedCharacters.length ? `${sharedCharacters.length} ficha${sharedCharacters.length === 1 ? "" : "s"} em sessão ao vivo` : "Nenhum link público ativo"}</h3><p>{sharedCharacters.length ? "Abra uma ficha para copiar, renovar ou acompanhar o link de campanha." : "Abra uma ficha e use Compartilhar ao vivo para convidar jogadores e espectadores."}</p></div>{sharedCharacters.length > 0 && <div className="library-share-board__list">{sharedCharacters.map((character) => <button key={character.id} type="button" onClick={() => onOpen(character.id)}><img src={character.portraitUrl || PORTRAIT} alt="" /><span><b>{character.sheet.identity.name || "Sem nome"}</b><small>{character.sheet.identity.campaign || "Campanha sem título"}</small></span><Eye size={15} /></button>)}</div>}</section>}
         <div className="character-shelf">
           {characters.map((character, index) => {
             const { sheet } = character;
@@ -258,6 +285,8 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState("visao-geral");
   const [lastRoll, setLastRoll] = useState<{ label: string; dice: number[]; total: number; target: number } | null>(null);
   const [selectedArmorLocation, setSelectedArmorLocation] = useState("Tronco");
+  const [selectedAllyId, setSelectedAllyId] = useState<string | null>(null);
+  const [activeAllyTab, setActiveAllyTab] = useState<AllyTab>("visao");
   const [remoteLoaded, setRemoteLoaded] = useState(false);
   const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "error">("idle");
   const [portraitPreview, setPortraitPreview] = useState<string | null>(null);
@@ -271,6 +300,8 @@ export default function Home() {
   const sharesQuery = trpc.shares.list.useQuery(undefined, { enabled: isAuthenticated });
   const activeCharacter = characters.find((character) => character.id === activeCharacterId) || characters[0];
   const sheet = activeCharacter.sheet;
+  const selectedAlly = (sheet.allies || []).find((ally) => ally.id === selectedAllyId) || (sheet.allies || [])[0];
+  const activeAlly = selectedAlly ? normalizeAlly(selectedAlly) : null;
 
   const setSheet = (nextSheet: Sheet | ((current: Sheet) => Sheet)) => {
     setCharacters((current) => current.map((character) => {
@@ -355,10 +386,11 @@ export default function Home() {
     const advantagePoints = sheet.advantages.reduce((sum, trait) => sum + trait.cost, 0);
     const disadvantagePoints = sheet.disadvantages.reduce((sum, trait) => sum + trait.cost, 0);
     const skillPoints = sheet.skills.reduce((sum, skill) => sum + skill.points, 0);
-    const allyCost = (sheet.allies || []).reduce((sum, ally) => sum + ally.cost, 0);
-    const totalSpent = attributePoints + advantagePoints + disadvantagePoints + skillPoints + allyCost;
+    const powerPoints = (sheet.powers || []).reduce((sum, power) => sum + power.pointCost, 0);
+    const allyCost = (sheet.allies || []).reduce((sum, ally) => sum + calculateAllyCost(ally), 0);
+    const totalSpent = attributePoints + advantagePoints + disadvantagePoints + skillPoints + powerPoints + allyCost;
     const available = sheet.points.initial + sheet.points.earned - totalSpent;
-    return { hpMax, fpMax, will, perception, speed, basicLift, carriedWeight, encumbrance, encName: encNames[encumbrance], dodge, move, attributePoints, advantagePoints, disadvantagePoints, skillPoints, allyCost, totalSpent, available };
+    return { hpMax, fpMax, will, perception, speed, basicLift, carriedWeight, encumbrance, encName: encNames[encumbrance], dodge, move, attributePoints, advantagePoints, disadvantagePoints, skillPoints, powerPoints, allyCost, totalSpent, available };
   }, [sheet]);
 
   const addLog = (text: string, kind: LogItem["kind"] = "note") => {
@@ -367,7 +399,7 @@ export default function Home() {
 
   const navigateTo = (id: string) => {
     setActiveSection(id);
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const updateIdentity = (field: keyof Sheet["identity"], value: string) => {
@@ -422,18 +454,68 @@ export default function Home() {
     setSheet((current) => ({ ...current, armor: current.armor.map((armor) => armor.id === id ? { ...armor, [field]: value } : armor) }));
   };
 
-  const updateAlly = (id: string, field: keyof Ally, value: string | number) => {
-    setSheet((current) => ({ ...current, allies: (current.allies || []).map((ally) => ally.id === id ? { ...ally, [field]: value } : ally) }));
+  const updatePower = (id: string, field: keyof Power, value: string | number | boolean) => {
+    setSheet((current) => ({ ...current, powers: (current.powers || []).map((power) => power.id === id ? { ...power, [field]: value } : power) }));
+  };
+
+  const addPower = () => {
+    const power: Power = { id: makeId(), name: "Novo poder", source: "Sobrenatural", type: "Ofensivo", level: sheet.attributes.iq, fpCost: 1, pointCost: 5, range: "10 m", damage: "—", effect: "Descreva o efeito do poder.", combatReady: true };
+    setSheet((current) => ({ ...current, powers: [...(current.powers || []), power] }));
+    addLog("Adicionou um novo poder à ficha.", "note");
+  };
+
+  const usePower = (power: Power) => {
+    if (!power.combatReady) { navigateTo("poderes"); return; }
+    if (sheet.secondary.fpCurrent < power.fpCost) { addLog(`Não há FP suficiente para ativar ${power.name}.`, "note"); return; }
+    setSheet((current) => ({ ...current, secondary: { ...current.secondary, fpCurrent: current.secondary.fpCurrent - power.fpCost } }));
+    addLog(`Ativou ${power.name} e gastou ${power.fpCost} FP.`, "health");
+    roll3d6(`Poder: ${power.name}`, power.level);
+  };
+
+  const updateAlly = (id: string, field: keyof Ally, value: string | number | boolean) => {
+    setSheet((current) => ({ ...current, allies: (current.allies || []).map((ally) => ally.id === id ? { ...normalizeAlly(ally), [field]: value } : ally) }));
+  };
+
+  const updateAllyData = (id: string, update: Partial<Ally>) => {
+    setSheet((current) => ({ ...current, allies: (current.allies || []).map((ally) => ally.id === id ? { ...normalizeAlly(ally), ...update } : ally) }));
+  };
+
+  const updateAllyAttribute = (id: string, field: keyof NonNullable<Ally["attributes"]>, value: number) => {
+    setSheet((current) => ({ ...current, allies: (current.allies || []).map((ally) => {
+      if (ally.id !== id) return ally;
+      const full = normalizeAlly(ally);
+      return { ...full, attributes: { ...full.attributes, [field]: value } };
+    }) }));
+  };
+
+  const updateAllyList = (id: string, list: "advantages" | "disadvantages" | "skills" | "attacks" | "inventory", itemId: string, update: Record<string, string | number | boolean>) => {
+    setSheet((current) => ({ ...current, allies: (current.allies || []).map((ally) => {
+      if (ally.id !== id) return ally;
+      const full = normalizeAlly(ally);
+      return { ...full, [list]: full[list].map((item) => item.id === itemId ? { ...item, ...update } : item) };
+    }) }));
+  };
+
+  const addAllyListItem = (id: string, list: "advantages" | "disadvantages" | "skills" | "attacks" | "inventory") => {
+    const item = list === "advantages" ? { id: makeId(), name: "Nova vantagem", cost: 5, notes: "", source: "" } : list === "disadvantages" ? { id: makeId(), name: "Nova desvantagem", cost: -5, notes: "", source: "" } : list === "skills" ? { id: makeId(), name: "Nova perícia", attribute: "DX", difficulty: "Média", relative: "DX+0", level: 10, points: 1 } : list === "attacks" ? { id: makeId(), name: "Novo ataque", level: 10, damage: "—", reach: "—", parry: "—" } : { id: makeId(), name: "Novo item", category: "Utilidade", quantity: 1, weight: 0, carried: true, equipped: false };
+    setSheet((current) => ({ ...current, allies: (current.allies || []).map((ally) => {
+      if (ally.id !== id) return ally;
+      const full = normalizeAlly(ally);
+      return { ...full, [list]: [...full[list], item] };
+    }) }));
   };
 
   const addAlly = () => {
-    const ally: Ally = { id: makeId(), name: "Novo aliado", relation: "Aliado", description: "Descreva como este aliado ajuda na campanha.", points: 25, cost: 5, hpCurrent: 10, hpMax: 10, status: "Pronto" };
+    const ally: Ally = { id: makeId(), name: "Novo aliado", relation: "Aliado", description: "Descreva como este aliado ajuda na campanha.", points: 25, cost: 1, hpCurrent: 10, hpMax: 10, fpCurrent: 10, fpMax: 10, status: "Pronto", type: "Individual", race: "Humano", powerPercent: 25, frequency: 12, attributes: { st: 10, dx: 10, iq: 10, ht: 10 }, advantages: [], disadvantages: [], skills: [], attacks: [], inventory: [], conditions: [] };
     setSheet((current) => ({ ...current, allies: [...(current.allies || []), ally] }));
+    setSelectedAllyId(ally.id);
+    setActiveAllyTab("visao");
     addLog("Adicionou um novo aliado à ficha.", "note");
   };
 
   const removeAlly = (id: string, name: string) => {
     setSheet((current) => ({ ...current, allies: (current.allies || []).filter((ally) => ally.id !== id) }));
+    if (selectedAllyId === id) setSelectedAllyId(null);
     addLog(`Removeu ${name || "um aliado"} da ficha.`, "note");
   };
 
@@ -513,6 +595,7 @@ export default function Home() {
     blankSheet.inventory = [];
     blankSheet.attacks = [];
     blankSheet.armor = [];
+    blankSheet.powers = [];
     blankSheet.allies = [];
     blankSheet.conditions = [];
     blankSheet.log = [{ id: makeId(), time: now(), text: "Nova ficha criada no Arquivo de Campanha.", kind: "note" }];
@@ -639,7 +722,7 @@ export default function Home() {
         </section>
 
         <div className="codex-content">
-          <section id="visao-geral" className="codex-section">
+          <section id="visao-geral" className={`codex-section ${activeSection === "visao-geral" ? "is-active" : "is-hidden"}`}>
             <SectionHeader kicker="01 · NÚCLEO" title="Visão geral" description="Ajuste a identidade e os valores que sustentam o personagem." icon={UserRound} />
             <div className="overview-grid">
               <div className="paper-card identity-card">
@@ -702,7 +785,7 @@ export default function Home() {
             </div>
           </section>
 
-          <section id="combate" className="codex-section">
+          <section id="combate" className={`codex-section ${activeSection === "combate" ? "is-active" : "is-hidden"}`}>
             <SectionHeader kicker="02 · AÇÃO" title="Combate e proteção" description="Ataques, defesas ativas e a cobertura que acompanha a expedição." icon={Swords} action={<Button type="button" variant="outline" className="add-button" onClick={() => setSheet((current) => ({ ...current, attacks: [...current.attacks, { id: makeId(), name: "Novo ataque", level: sheet.attributes.dx, damage: "—", reach: "—", parry: "—" }] }))}><Plus size={15} /> Ataque</Button>} />
             <div className="combat-overview">
               <div className="combat-defenses">
@@ -723,11 +806,18 @@ export default function Home() {
                 {(() => { const selectedArmor = sheet.armor.find((armor) => armor.location === selectedArmorLocation); return selectedArmor ? <div className="selected-protection"><span><Shield size={14} /> REGIÃO SELECIONADA</span><strong>{selectedArmor.location}</strong><label>DR<input type="number" min="0" value={selectedArmor.dr} onChange={(event) => updateArmor(selectedArmor.id, "dr", number(event.target.value))} /></label><label>Proteção<input value={selectedArmor.source} onChange={(event) => updateArmor(selectedArmor.id, "source", event.target.value)} /></label></div> : null; })()}
               </div>
             </div>
+            <div className="combat-powers"><div><span className="eyebrow">PODERES DE COMBATE</span><h3>Habilidades prontas para a cena</h3><p>Ative um poder para gastar FP, registrar o uso e executar uma rolagem 3d6.</p></div>{(sheet.powers || []).filter((power) => power.combatReady).length ? <div className="combat-powers__list">{(sheet.powers || []).filter((power) => power.combatReady).map((power) => <button type="button" key={power.id} onClick={() => usePower(power)} disabled={sheet.secondary.fpCurrent < power.fpCost}><span><b>{power.name}</b><small>{power.type} · NH {power.level} · {power.fpCost} FP</small></span><i>{power.damage || power.effect || "Ativar"}</i><WandSparkles size={17} /></button>)}</div> : <button type="button" className="combat-powers__empty" onClick={() => navigateTo("poderes")}><WandSparkles size={17} /> Cadastre um poder para usá-lo no combate.</button>}</div>
             <div className="conditions-panel"><div><span className="eyebrow">ESTADO DE CENA</span><p>Os efeitos são visíveis enquanto estiverem ativos.</p></div><div>{["Atordoado", "Ferido", "Derrubado", "Agarrado", "Exausto", "Envenenado"].map((condition) => <button key={condition} type="button" className={sheet.conditions.includes(condition) ? "condition is-on" : "condition"} onClick={() => toggleCondition(condition)}>{sheet.conditions.includes(condition) ? <Shield size={14} /> : <Plus size={14} />}{condition}</button>)}</div></div>
           </section>
 
-          <section id="caracteristicas" className="codex-section">
-            <SectionHeader kicker="03 · CONSTRUÇÃO" title="Características" description="Vantagens, desvantagens e custos mantêm o orçamento da ficha legível." icon={Sparkles} />
+          <section id="poderes" className={`codex-section ${activeSection === "poderes" ? "is-active" : "is-hidden"}`}>
+            <SectionHeader kicker="03 · PODER" title="Poderes" description="Habilidades sobrenaturais, psíquicas ou especiais conectadas aos recursos de combate." icon={WandSparkles} action={<Button type="button" variant="outline" className="add-button" onClick={addPower}><WandSparkles size={15} /> Adicionar poder</Button>} />
+            <div className="powers-summary"><div><span className="eyebrow">FOCO DE PODER</span><strong>{(sheet.powers || []).length}</strong><small>habilidade{(sheet.powers || []).length === 1 ? "" : "s"} registrada{(sheet.powers || []).length === 1 ? "" : "s"}</small></div><div><span>Custo em pontos</span><b>{calculated.powerPoints} pts</b></div><div><span>Poderes de combate</span><b>{(sheet.powers || []).filter((power) => power.combatReady).length}</b></div><div><span>FP disponíveis</span><b>{sheet.secondary.fpCurrent}/{calculated.fpMax}</b></div></div>
+            <div className="powers-list">{(sheet.powers || []).length ? (sheet.powers || []).map((power, index) => <article className="power-card" key={power.id}><div className="power-card__folio"><img src={MARK} alt="" /><span>PODER</span><b>{String(index + 1).padStart(2, "0")}</b></div><div className="power-card__main"><div className="power-card__head"><div><input value={power.name} aria-label="Nome do poder" onChange={(event) => updatePower(power.id, "name", event.target.value)} /><select value={power.type} aria-label="Tipo do poder" onChange={(event) => updatePower(power.id, "type", event.target.value)}><option>Ofensivo</option><option>Defensivo</option><option>Utilidade</option><option>Controle</option></select></div><label className="power-ready"><input type="checkbox" checked={power.combatReady} onChange={(event) => updatePower(power.id, "combatReady", event.target.checked)} /><span>Disponível no combate</span></label></div><div className="power-fields"><label><span>Fonte</span><input value={power.source} onChange={(event) => updatePower(power.id, "source", event.target.value)} /></label><label><span>NH</span><input type="number" value={power.level} onChange={(event) => updatePower(power.id, "level", number(event.target.value))} /></label><label><span>FP</span><input type="number" min="0" value={power.fpCost} onChange={(event) => updatePower(power.id, "fpCost", Math.max(0, number(event.target.value)))} /></label><label><span>Pontos</span><input type="number" min="0" value={power.pointCost} onChange={(event) => updatePower(power.id, "pointCost", Math.max(0, number(event.target.value)))} /></label><label><span>Alcance</span><input value={power.range} onChange={(event) => updatePower(power.id, "range", event.target.value)} /></label><label><span>Dano</span><input value={power.damage} onChange={(event) => updatePower(power.id, "damage", event.target.value)} /></label><label className="wide"><span>Efeito</span><textarea value={power.effect} onChange={(event) => updatePower(power.id, "effect", event.target.value)} /></label></div></div><div className="power-card__use"><span><WandSparkles size={16} /> AÇÃO DE SESSÃO</span><b>{power.fpCost} FP</b><button type="button" onClick={() => usePower(power)} disabled={!power.combatReady || sheet.secondary.fpCurrent < power.fpCost}><Dices size={15} /> Usar poder</button></div></article>) : <button type="button" className="powers-empty" onClick={addPower}><span><WandSparkles size={21} /></span><strong>Nenhum poder cadastrado</strong><small>Crie uma habilidade e deixe-a disponível para usá-la diretamente no combate.</small><b><Plus size={14} /> Adicionar primeiro poder</b></button>}</div>
+          </section>
+
+          <section id="caracteristicas" className={`codex-section ${activeSection === "caracteristicas" ? "is-active" : "is-hidden"}`}>
+            <SectionHeader kicker="04 · CONSTRUÇÃO" title="Características" description="Vantagens, desvantagens e custos mantêm o orçamento da ficha legível." icon={Sparkles} />
             <div className="traits-grid">
               {(["advantages", "disadvantages"] as const).map((kind) => <div className={`trait-card ${kind === "advantages" ? "trait-card--positive" : "trait-card--negative"}`} key={kind}>
                 <div className="trait-card__head"><div><span className="eyebrow">{kind === "advantages" ? "A FAVOR" : "LIMITES"}</span><h3>{kind === "advantages" ? "Vantagens" : "Desvantagens & quirks"}</h3></div><button type="button" onClick={() => addTrait(kind)}><Plus size={16} /></button></div>
@@ -737,29 +827,39 @@ export default function Home() {
             </div>
           </section>
 
-          <section id="pericias" className="codex-section">
-            <SectionHeader kicker="04 · COMPETÊNCIA" title="Perícias" description="Nível efetivo, dificuldade e pontos em uma leitura compacta de mesa." icon={Target} action={<Button type="button" variant="outline" className="add-button" onClick={() => setSheet((current) => ({ ...current, skills: [...current.skills, { id: makeId(), name: "Nova perícia", attribute: "DX", difficulty: "Média", relative: "DX+0", level: sheet.attributes.dx, points: 1 }] }))}><Plus size={15} /> Perícia</Button>} />
+          <section id="pericias" className={`codex-section ${activeSection === "pericias" ? "is-active" : "is-hidden"}`}>
+            <SectionHeader kicker="05 · COMPETÊNCIA" title="Perícias" description="Nível efetivo, dificuldade e pontos em uma leitura compacta de mesa." icon={Target} action={<Button type="button" variant="outline" className="add-button" onClick={() => setSheet((current) => ({ ...current, skills: [...current.skills, { id: makeId(), name: "Nova perícia", attribute: "DX", difficulty: "Média", relative: "DX+0", level: sheet.attributes.dx, points: 1 }] }))}><Plus size={15} /> Perícia</Button>} />
             <div className="paper-card table-card"><div className="skill-table skill-table--head"><span>Perícia</span><span>Atributo</span><span>Dificuldade</span><span>Relativo</span><span>NH</span><span>Pontos</span><span /></div>{sheet.skills.map((skill) => <div className="skill-table" key={skill.id}><input value={skill.name} onChange={(event) => updateSkill(skill.id, "name", event.target.value)} /><input value={skill.attribute} onChange={(event) => updateSkill(skill.id, "attribute", event.target.value)} /><input value={skill.difficulty} onChange={(event) => updateSkill(skill.id, "difficulty", event.target.value)} /><input value={skill.relative} onChange={(event) => updateSkill(skill.id, "relative", event.target.value)} /><input type="number" value={skill.level} onChange={(event) => updateSkill(skill.id, "level", number(event.target.value))} /><input type="number" value={skill.points} onChange={(event) => updateSkill(skill.id, "points", number(event.target.value))} /><button type="button" className="sigil-action" aria-label={`Rolar ${skill.name}`} onClick={() => roll3d6(skill.name, skill.level)}><img src={MARK} alt="" /></button></div>)}<div className="skill-table__footer"><span>Investimento em perícias</span><strong>{calculated.skillPoints} pts</strong><small>Escolha um nível e role 3d6 diretamente da ficha.</small></div></div>
           </section>
 
-          <section id="inventario" className="codex-section">
-            <SectionHeader kicker="05 · CARGA" title="Equipamento" description="Controle o que está carregando e acompanhe o efeito sobre movimento e defesa." icon={Backpack} action={<Button type="button" variant="outline" className="add-button" onClick={() => setSheet((current) => ({ ...current, inventory: [...current.inventory, { id: makeId(), name: "Novo item", category: "Utilidade", quantity: 1, weight: 0, carried: true, equipped: false }] }))}><PackagePlus size={15} /> Item</Button>} />
+          <section id="inventario" className={`codex-section ${activeSection === "inventario" ? "is-active" : "is-hidden"}`}>
+            <SectionHeader kicker="06 · CARGA" title="Equipamento" description="Controle o que está carregando e acompanhe o efeito sobre movimento e defesa." icon={Backpack} action={<Button type="button" variant="outline" className="add-button" onClick={() => setSheet((current) => ({ ...current, inventory: [...current.inventory, { id: makeId(), name: "Novo item", category: "Utilidade", quantity: 1, weight: 0, carried: true, equipped: false }] }))}><PackagePlus size={15} /> Item</Button>} />
             <div className="inventory-layout"><div className="paper-card inventory-table"><div className="item-grid item-grid--head"><span>Item</span><span>Categoria</span><span>Qtd.</span><span>Peso un.</span><span>Carregar</span><span>Equipar</span></div>{sheet.inventory.map((item) => <div className="item-grid" key={item.id}><input value={item.name} onChange={(event) => updateItem(item.id, "name", event.target.value)} /><input value={item.category} onChange={(event) => updateItem(item.id, "category", event.target.value)} /><input type="number" min="0" value={item.quantity} onChange={(event) => updateItem(item.id, "quantity", number(event.target.value))} /><label className="weight-input"><input type="number" min="0" step="0.1" value={item.weight} onChange={(event) => updateItem(item.id, "weight", number(event.target.value))} /><span>lb</span></label><label className="switch-label"><input type="checkbox" checked={item.carried} onChange={(event) => updateItem(item.id, "carried", event.target.checked)} /><i /></label><label className="switch-label"><input type="checkbox" checked={item.equipped} onChange={(event) => updateItem(item.id, "equipped", event.target.checked)} /><i /></label></div>)}</div>
               <div className={`load-card load-card--${calculated.encumbrance >= 3 ? "danger" : calculated.encumbrance >= 1 ? "watch" : "safe"}`}><Weight size={23} /><span className="eyebrow">CARGA ATUAL</span><strong>{format(calculated.carriedWeight, 1)} <small>lb</small></strong><p>Basic Lift: <b>{format(calculated.basicLift, 1)} lb</b></p><div className="load-scale">{[0, 1, 2, 3, 4].map((level) => <i key={level} className={calculated.encumbrance >= level ? "is-filled" : ""} />)}</div><div className="load-card__status"><span>{calculated.encName}</span><b>Move {calculated.move} · Dodge {calculated.dodge}</b></div><small>{calculated.encumbrance >= 5 ? "A carga excede o limite de referência." : "Movimento e Dodge já incluem a carga."}</small></div>
             </div>
           </section>
 
-          <section id="aliados" className="codex-section">
-            <SectionHeader kicker="06 · VÍNCULOS" title="Aliados" description="Acompanhe companheiros, familiares e seguidores que participam da campanha." icon={UsersRound} action={<Button type="button" variant="outline" className="add-button" onClick={addAlly}><UsersRound size={15} /> Adicionar aliado</Button>} />
-            <div className="allies-layout"><aside className="ally-command-card"><span className="eyebrow">REDE DE APOIO</span><strong>{(sheet.allies || []).length}</strong><span className="ally-command-card__label">aliado{(sheet.allies || []).length === 1 ? "" : "s"} em campo</span><p>Aliados têm PV, estado de sessão, valor de personagem e custo próprio na ficha.</p><div><span>Custo de Aliado</span><b>{calculated.allyCost} pts</b></div><div><span>Valor somado</span><b>{(sheet.allies || []).reduce((sum, ally) => sum + ally.points, 0)} pts</b></div></aside><div className="allies-list">{(sheet.allies || []).length ? (sheet.allies || []).map((ally) => <article className="ally-card" key={ally.id}><div className="ally-card__folio"><img src={MARK} alt="" /><span>ALIADO</span></div><div className="ally-card__main"><div className="ally-card__head"><div><input className="ally-name" value={ally.name} aria-label="Nome do aliado" onChange={(event) => updateAlly(ally.id, "name", event.target.value)} /><input className="ally-relation" value={ally.relation} aria-label="Relação com o aliado" onChange={(event) => updateAlly(ally.id, "relation", event.target.value)} /></div><button type="button" aria-label={`Remover ${ally.name}`} onClick={() => removeAlly(ally.id, ally.name)}><Trash2 size={15} /></button></div><textarea value={ally.description} aria-label="Descrição do aliado" onChange={(event) => updateAlly(ally.id, "description", event.target.value)} /><div className="ally-meta"><label><span>Valor</span><input type="number" min="0" value={ally.points} onChange={(event) => updateAlly(ally.id, "points", number(event.target.value))} /><small>pts</small></label><label><span>Custo</span><input type="number" value={ally.cost} onChange={(event) => updateAlly(ally.id, "cost", number(event.target.value))} /><small>pts</small></label><label><span>Estado</span><select value={ally.status} onChange={(event) => updateAlly(ally.id, "status", event.target.value)}><option>Pronto</option><option>Ferido</option><option>Incapacitado</option><option>Ausente</option></select></label></div></div><div className="ally-vitals"><span>PV</span><b>{ally.hpCurrent}/{ally.hpMax}</b><div className="ally-health-bar"><i style={{ width: `${ally.hpMax > 0 ? Math.min(100, (ally.hpCurrent / ally.hpMax) * 100) : 0}%` }} /></div><div className="ally-vitals__actions"><button type="button" onClick={() => changeAllyHp(ally.id, -1)} aria-label={`Aplicar dano em ${ally.name}`}><Minus size={14} /></button><input type="number" min="0" value={ally.hpCurrent} aria-label={`PV atual de ${ally.name}`} onChange={(event) => updateAlly(ally.id, "hpCurrent", Math.max(0, Math.min(ally.hpMax, number(event.target.value))))} /><span>/</span><input type="number" min="1" value={ally.hpMax} aria-label={`PV máximo de ${ally.name}`} onChange={(event) => updateAlly(ally.id, "hpMax", Math.max(1, number(event.target.value)))} /><button type="button" onClick={() => changeAllyHp(ally.id, 1)} aria-label={`Curar ${ally.name}`}><Plus size={14} /></button></div></div></article>) : <button type="button" className="allies-empty" onClick={addAlly}><span><UsersRound size={20} /></span><strong>Nenhum aliado cadastrado</strong><small>Adicione um companheiro, familiar ou seguidor para acompanhá-lo durante a sessão.</small><b><Plus size={14} /> Adicionar primeiro aliado</b></button>}</div></div>
+          <section id="aliados" className={`codex-section ${activeSection === "aliados" ? "is-active" : "is-hidden"}`}>
+            <SectionHeader kicker="07 · VÍNCULOS" title="Aliados" description="Acompanhe companheiros, familiares e seguidores que participam da campanha." icon={UsersRound} action={<Button type="button" variant="outline" className="add-button" onClick={addAlly}><UsersRound size={15} /> Adicionar aliado</Button>} />
+            <div className="ally-studio">
+              <aside className="ally-studio__roster"><div className="ally-roster__head"><span className="eyebrow">REDE DE APOIO</span><strong>{(sheet.allies || []).length}</strong><small>aliado{(sheet.allies || []).length === 1 ? "" : "s"} em campo</small></div><div className="ally-roster__list">{(sheet.allies || []).map((ally) => { const full = normalizeAlly(ally); return <button key={ally.id} type="button" className={activeAlly?.id === ally.id ? "is-active" : ""} onClick={() => { setSelectedAllyId(ally.id); setActiveAllyTab("visao"); }}><img src={MARK} alt="" /><span><b>{full.name}</b><small>{full.relation} · {full.status}</small></span><i>PV {full.hpCurrent}/{full.hpMax}</i></button>; })}</div><div className="ally-roster__summary"><span>Custo calculado</span><b>{calculated.allyCost} pts</b><small>Valor total: {(sheet.allies || []).reduce((sum, ally) => sum + ally.points, 0)} pts</small></div></aside>
+              {activeAlly ? <div className="ally-studio__detail"><header className="ally-sheet__header"><div><span className="eyebrow">MINI-FICHA DE ALIADO</span><h3>{activeAlly.name}</h3><p>{activeAlly.relation} · {activeAlly.type} · {activeAlly.race}</p></div><div className="ally-sheet__status"><span>Estado</span><select value={activeAlly.status} onChange={(event) => updateAlly(activeAlly.id, "status", event.target.value)}><option>Pronto</option><option>Ferido</option><option>Incapacitado</option><option>Ausente</option><option>Morto</option><option>Desaparecido</option><option>Ex-aliado</option></select><button type="button" aria-label={`Remover ${activeAlly.name}`} onClick={() => removeAlly(activeAlly.id, activeAlly.name)}><Trash2 size={15} /></button></div></header><div className="ally-sheet__body"><nav className="ally-tabs" aria-label="Abas da ficha do aliado">{allyTabs.map(({ id, label, icon: Icon }, index) => <button key={id} type="button" className={activeAllyTab === id ? "is-active" : ""} onClick={() => setActiveAllyTab(id)}><span>0{index + 1}</span><Icon size={15} />{label}</button>)}</nav><div className="ally-tab-panel">
+                {activeAllyTab === "visao" && <div className="ally-tab-grid ally-tab-grid--overview"><section className="ally-panel"><span className="eyebrow">IDENTIFICAÇÃO</span><div className="ally-field-grid"><label className="wide"><span>Nome</span><input value={activeAlly.name} onChange={(event) => updateAlly(activeAlly.id, "name", event.target.value)} /></label><label><span>Relação</span><input value={activeAlly.relation} onChange={(event) => updateAlly(activeAlly.id, "relation", event.target.value)} /></label><label><span>Tipo</span><input value={activeAlly.type} onChange={(event) => updateAlly(activeAlly.id, "type", event.target.value)} /></label><label><span>Raça / espécie</span><input value={activeAlly.race} onChange={(event) => updateAlly(activeAlly.id, "race", event.target.value)} /></label><label><span>Aparência</span><input value={activeAlly.appearance} onChange={(event) => updateAlly(activeAlly.id, "appearance", event.target.value)} /></label><label className="wide"><span>Descrição</span><textarea value={activeAlly.description} onChange={(event) => updateAlly(activeAlly.id, "description", event.target.value)} /></label><label><span>Personalidade</span><textarea value={activeAlly.personality} onChange={(event) => updateAlly(activeAlly.id, "personality", event.target.value)} /></label><label><span>Motivação</span><textarea value={activeAlly.motivation} onChange={(event) => updateAlly(activeAlly.id, "motivation", event.target.value)} /></label><label className="wide"><span>Histórico</span><textarea value={activeAlly.history} onChange={(event) => updateAlly(activeAlly.id, "history", event.target.value)} /></label></div></section><section className="ally-panel ally-rules"><span className="eyebrow">VANTAGEM ALLY</span><div className="ally-rules__cost"><span>Custo atual</span><strong>{calculateAllyCost(activeAlly)} <small>pts</small></strong><small>{activeAlly.powerPercent}% do personagem · aparece em {activeAlly.frequency} ou menos</small></div><label><span>Poder do Ally</span><select value={activeAlly.powerPercent} onChange={(event) => updateAllyData(activeAlly.id, { powerPercent: number(event.target.value) as 25 | 50 | 75 | 100 | 150 })}>{[25, 50, 75, 100, 150].map((power) => <option key={power} value={power}>{power}% · {allyPowerCosts[power as 25 | 50 | 75 | 100 | 150]} pts-base</option>)}</select></label><label><span>Frequência de aparecimento</span><select value={activeAlly.frequency} onChange={(event) => updateAllyData(activeAlly.id, { frequency: number(event.target.value) as 6 | 9 | 12 | 15 })}>{[6, 9, 12, 15].map((frequency) => <option key={frequency} value={frequency}>{frequency} ou menos · ×{allyFrequencyMultipliers[frequency as 6 | 9 | 12 | 15]}</option>)}</select></label><label className="ally-checkbox"><input type="checkbox" checked={activeAlly.isDependent} onChange={(event) => updateAlly(activeAlly.id, "isDependent", event.target.checked)} /><span>Também é um Dependent</span></label><label><span>Pontos atuais</span><input type="number" min="0" value={activeAlly.points} onChange={(event) => updateAlly(activeAlly.id, "points", number(event.target.value))} /></label><label><span>Observações</span><textarea value={activeAlly.notes} onChange={(event) => updateAlly(activeAlly.id, "notes", event.target.value)} /></label></section></div>}
+                {activeAllyTab === "atributos" && <div className="ally-tab-grid ally-tab-grid--attributes"><section className="ally-panel"><span className="eyebrow">ATRIBUTOS PRIMÁRIOS</span><div className="ally-attribute-grid">{(["st", "dx", "iq", "ht"] as const).map((attribute) => <label key={attribute}><span>{attribute.toUpperCase()}</span><input type="number" min="1" value={activeAlly.attributes[attribute]} onChange={(event) => updateAllyAttribute(activeAlly.id, attribute, number(event.target.value))} /></label>)}</div></section><section className="ally-panel"><span className="eyebrow">RECURSOS E DERIVADOS</span><div className="ally-field-grid"><label><span>PV atual</span><input type="number" min="0" value={activeAlly.hpCurrent} onChange={(event) => updateAlly(activeAlly.id, "hpCurrent", Math.max(0, Math.min(activeAlly.hpMax, number(event.target.value))))} /></label><label><span>PV máximo</span><input type="number" min="1" value={activeAlly.hpMax} onChange={(event) => updateAlly(activeAlly.id, "hpMax", Math.max(1, number(event.target.value)))} /></label><label><span>PF atual</span><input type="number" min="0" value={activeAlly.fpCurrent} onChange={(event) => updateAlly(activeAlly.id, "fpCurrent", Math.max(0, Math.min(activeAlly.fpMax, number(event.target.value))))} /></label><label><span>PF máximo</span><input type="number" min="1" value={activeAlly.fpMax} onChange={(event) => updateAlly(activeAlly.id, "fpMax", Math.max(1, number(event.target.value)))} /></label></div><div className="ally-derived"><span>Will <b>{activeAlly.attributes.iq}</b></span><span>Per <b>{activeAlly.attributes.iq}</b></span><span>Vel. <b>{((activeAlly.attributes.dx + activeAlly.attributes.ht) / 4).toFixed(2)}</b></span><span>Move <b>{Math.floor((activeAlly.attributes.dx + activeAlly.attributes.ht) / 4)}</b></span><span>Dodge <b>{Math.floor((activeAlly.attributes.dx + activeAlly.attributes.ht) / 4) + 3}</b></span></div></section></div>}
+                {activeAllyTab === "caracteristicas" && <div className="ally-tab-grid"><section className="ally-panel"><div className="ally-panel__head"><span className="eyebrow">VANTAGENS</span><button type="button" onClick={() => addAllyListItem(activeAlly.id, "advantages")}><Plus size={14} /> Adicionar</button></div><div className="ally-mini-list">{activeAlly.advantages.map((trait) => <div key={trait.id}><input value={trait.name} onChange={(event) => updateAllyList(activeAlly.id, "advantages", trait.id, { name: event.target.value })} /><input type="number" value={trait.cost} onChange={(event) => updateAllyList(activeAlly.id, "advantages", trait.id, { cost: number(event.target.value) })} /><textarea value={trait.notes} onChange={(event) => updateAllyList(activeAlly.id, "advantages", trait.id, { notes: event.target.value })} /></div>)}</div></section><section className="ally-panel"><div className="ally-panel__head"><span className="eyebrow">DESVANTAGENS</span><button type="button" onClick={() => addAllyListItem(activeAlly.id, "disadvantages")}><Plus size={14} /> Adicionar</button></div><div className="ally-mini-list">{activeAlly.disadvantages.map((trait) => <div key={trait.id}><input value={trait.name} onChange={(event) => updateAllyList(activeAlly.id, "disadvantages", trait.id, { name: event.target.value })} /><input type="number" value={trait.cost} onChange={(event) => updateAllyList(activeAlly.id, "disadvantages", trait.id, { cost: number(event.target.value) })} /><textarea value={trait.notes} onChange={(event) => updateAllyList(activeAlly.id, "disadvantages", trait.id, { notes: event.target.value })} /></div>)}</div></section></div>}
+                {activeAllyTab === "pericias" && <section className="ally-panel"><div className="ally-panel__head"><span className="eyebrow">PERÍCIAS</span><button type="button" onClick={() => addAllyListItem(activeAlly.id, "skills")}><Plus size={14} /> Perícia</button></div><div className="ally-skill-table"><div><span>Perícia</span><span>Atrib.</span><span>Dif.</span><span>NH</span><span>Pts</span></div>{activeAlly.skills.map((skill) => <div key={skill.id}><input value={skill.name} onChange={(event) => updateAllyList(activeAlly.id, "skills", skill.id, { name: event.target.value })} /><input value={skill.attribute} onChange={(event) => updateAllyList(activeAlly.id, "skills", skill.id, { attribute: event.target.value })} /><input value={skill.difficulty} onChange={(event) => updateAllyList(activeAlly.id, "skills", skill.id, { difficulty: event.target.value })} /><input type="number" value={skill.level} onChange={(event) => updateAllyList(activeAlly.id, "skills", skill.id, { level: number(event.target.value) })} /><input type="number" value={skill.points} onChange={(event) => updateAllyList(activeAlly.id, "skills", skill.id, { points: number(event.target.value) })} /></div>)}</div></section>}
+                {activeAllyTab === "combate" && <div className="ally-tab-grid"><section className="ally-panel"><div className="ally-panel__head"><span className="eyebrow">ATAQUES</span><button type="button" onClick={() => addAllyListItem(activeAlly.id, "attacks")}><Plus size={14} /> Ataque</button></div><div className="ally-attack-list">{activeAlly.attacks.map((attack) => <div key={attack.id}><input value={attack.name} onChange={(event) => updateAllyList(activeAlly.id, "attacks", attack.id, { name: event.target.value })} /><input type="number" value={attack.level} onChange={(event) => updateAllyList(activeAlly.id, "attacks", attack.id, { level: number(event.target.value) })} /><input value={attack.damage} onChange={(event) => updateAllyList(activeAlly.id, "attacks", attack.id, { damage: event.target.value })} /><input value={attack.reach} onChange={(event) => updateAllyList(activeAlly.id, "attacks", attack.id, { reach: event.target.value })} /></div>)}</div></section><section className="ally-panel"><span className="eyebrow">CONDIÇÕES DE CENA</span><div className="ally-condition-grid">{["Atordoado", "Ferido", "Derrubado", "Agarrado", "Exausto", "Envenenado"].map((condition) => <button key={condition} type="button" className={activeAlly.conditions.includes(condition) ? "is-on" : ""} onClick={() => updateAllyData(activeAlly.id, { conditions: activeAlly.conditions.includes(condition) ? activeAlly.conditions.filter((item) => item !== condition) : [...activeAlly.conditions, condition] })}>{condition}</button>)}</div><div className="ally-session-vitals"><span>PV <b>{activeAlly.hpCurrent}/{activeAlly.hpMax}</b></span><button type="button" onClick={() => changeAllyHp(activeAlly.id, -1)}><Minus size={14} /> Dano</button><button type="button" onClick={() => changeAllyHp(activeAlly.id, 1)}><Plus size={14} /> Curar</button></div></section></div>}
+                {activeAllyTab === "inventario" && <section className="ally-panel"><div className="ally-panel__head"><span className="eyebrow">INVENTÁRIO</span><button type="button" onClick={() => addAllyListItem(activeAlly.id, "inventory")}><Plus size={14} /> Item</button></div><div className="ally-inventory-table"><div><span>Item</span><span>Categoria</span><span>Qtd.</span><span>Peso</span><span>Uso</span></div>{activeAlly.inventory.map((item) => <div key={item.id}><input value={item.name} onChange={(event) => updateAllyList(activeAlly.id, "inventory", item.id, { name: event.target.value })} /><input value={item.category} onChange={(event) => updateAllyList(activeAlly.id, "inventory", item.id, { category: event.target.value })} /><input type="number" value={item.quantity} onChange={(event) => updateAllyList(activeAlly.id, "inventory", item.id, { quantity: number(event.target.value) })} /><input type="number" value={item.weight} onChange={(event) => updateAllyList(activeAlly.id, "inventory", item.id, { weight: number(event.target.value) })} /><label><input type="checkbox" checked={item.equipped} onChange={(event) => updateAllyList(activeAlly.id, "inventory", item.id, { equipped: event.target.checked })} /> Equipado</label></div>)}</div></section>}
+              </div></div></div> : <button type="button" className="allies-empty" onClick={addAlly}><span><UsersRound size={20} /></span><strong>Nenhum aliado cadastrado</strong><small>Adicione um companheiro, familiar ou seguidor para abrir sua mini-ficha por abas.</small><b><Plus size={14} /> Adicionar primeiro aliado</b></button>}
+            </div>
           </section>
 
-          <section id="diario" className="codex-section codex-section--last">
-            <SectionHeader kicker="07 · SESSÃO" title="Diário e dados" description="Todo evento que muda a cena pode ficar registrado aqui." icon={History} />
+          <section id="diario" className={`codex-section codex-section--last ${activeSection === "diario" ? "is-active" : "is-hidden"}`}>
+            <SectionHeader kicker="08 · SESSÃO" title="Diário e dados" description="Todo evento que muda a cena pode ficar registrado aqui." icon={History} />
             <div className="diary-grid"><div className="roll-station"><div className="roll-station__top"><img className="roll-station__sigil" src={MARK} alt="" /><div><span className="eyebrow eyebrow--light">ROLAGEM PADRÃO</span><h3>3d6 de mesa</h3></div></div><p>Selecione qualquer ataque ou perícia e use o selo de dados. Para um teste livre, role o atributo desejado.</p><div className="quick-rolls"><button type="button" onClick={() => roll3d6("Teste de ST", sheet.attributes.st)}>ST {sheet.attributes.st}</button><button type="button" onClick={() => roll3d6("Teste de DX", sheet.attributes.dx)}>DX {sheet.attributes.dx}</button><button type="button" onClick={() => roll3d6("Teste de IQ", sheet.attributes.iq)}>IQ {sheet.attributes.iq}</button><button type="button" onClick={() => roll3d6("Teste de HT", sheet.attributes.ht)}>HT {sheet.attributes.ht}</button></div>{lastRoll ? <div className="roll-result"><div className="dice-set">{lastRoll.dice.map((die, index) => <span key={`${die}-${index}`} data-value={die}>{die}</span>)}</div><div><span>{lastRoll.label}</span><strong>{lastRoll.total}</strong><small>{lastRoll.total <= lastRoll.target ? `Sucesso por ${lastRoll.target - lastRoll.total}` : `Falha por ${lastRoll.total - lastRoll.target}`}</small></div></div> : <div className="roll-result roll-result--idle"><Dices size={21} /><span>A próxima rolagem aparecerá aqui.</span></div>}</div>
               <div className="paper-card log-card"><div className="log-card__head"><div><span className="eyebrow">HISTÓRICO</span><h3>Registro da sessão</h3></div><button type="button" onClick={() => addLog("Nota manual adicionada à sessão.", "note")}><Plus size={15} /> Nota</button></div><div className="log-list">{sheet.log.map((entry) => <div className={`log-entry log-entry--${entry.kind}`} key={entry.id}><time>{entry.time}</time><i>{entry.kind === "roll" ? <Dices size={15} /> : entry.kind === "health" ? <HeartPulse size={15} /> : <ScrollText size={15} />}</i><p>{entry.text}</p></div>)}</div></div>
             </div>
-            <div className="points-ledger"><div><span className="eyebrow">ORÇAMENTO</span><h3>Pontos de personagem</h3><p>A conta abaixo muda ao editar atributos, traços, perícias e aliados.</p></div><div className="ledger-values"><label><span>Iniciais</span><input type="number" value={sheet.points.initial} onChange={(event) => setSheet((current) => ({ ...current, points: { ...current.points, initial: number(event.target.value) } }))} /></label><label><span>Ganhos</span><input type="number" value={sheet.points.earned} onChange={(event) => setSheet((current) => ({ ...current, points: { ...current.points, earned: number(event.target.value) } }))} /></label><div><span>Gastos</span><strong>{calculated.totalSpent}</strong></div><div className={calculated.available < 0 ? "ledger-total is-negative" : "ledger-total"}><span>Disponíveis</span><strong>{calculated.available}</strong></div></div><div className="ledger-breakdown"><span>Atributos <b>{calculated.attributePoints}</b></span><span>Vantagens <b>{calculated.advantagePoints}</b></span><span>Desvantagens <b>{calculated.disadvantagePoints}</b></span><span>Perícias <b>{calculated.skillPoints}</b></span><span>Aliados <b>{calculated.allyCost}</b></span></div></div>
+            <div className="points-ledger"><div><span className="eyebrow">ORÇAMENTO</span><h3>Pontos de personagem</h3><p>A conta abaixo muda ao editar atributos, traços, perícias, poderes e aliados.</p></div><div className="ledger-values"><label><span>Iniciais</span><input type="number" value={sheet.points.initial} onChange={(event) => setSheet((current) => ({ ...current, points: { ...current.points, initial: number(event.target.value) } }))} /></label><label><span>Ganhos</span><input type="number" value={sheet.points.earned} onChange={(event) => setSheet((current) => ({ ...current, points: { ...current.points, earned: number(event.target.value) } }))} /></label><div><span>Gastos</span><strong>{calculated.totalSpent}</strong></div><div className={calculated.available < 0 ? "ledger-total is-negative" : "ledger-total"}><span>Disponíveis</span><strong>{calculated.available}</strong></div></div><div className="ledger-breakdown"><span>Atributos <b>{calculated.attributePoints}</b></span><span>Vantagens <b>{calculated.advantagePoints}</b></span><span>Desvantagens <b>{calculated.disadvantagePoints}</b></span><span>Perícias <b>{calculated.skillPoints}</b></span><span>Poderes <b>{calculated.powerPoints}</b></span><span>Aliados <b>{calculated.allyCost}</b></span></div></div>
             {calculated.available < 0 && <div className="validation-warning"><CircleAlert size={18} /><span>Você ultrapassou o orçamento por {Math.abs(calculated.available)} pontos. Revise atributos, traços ou a recompensa da campanha.</span></div>}
             <div className="bottom-actions"><span><ArrowDownRight size={16} /> {isAuthenticated ? "Alterações salvas e atualizadas no link compartilhado." : "Entre para salvar na nuvem e compartilhar em tempo real."}</span><div className="export-actions"><button type="button" className="share-action" onClick={shareActiveCharacter} disabled={authLoading || createShare.isPending}>{isAuthenticated ? <Share2 size={16} /> : <LogIn size={16} />}{shareStatus === "copied" ? "Link copiado" : shareStatus === "error" ? "Tente novamente" : isAuthenticated ? "Compartilhar ao vivo" : "Entrar e compartilhar"}</button><button type="button" onClick={exportJson}><FileJson size={16} /> Baixar JSON</button><button type="button" className="pdf-action" onClick={exportPdf}><Printer size={16} /> Salvar em PDF</button><button type="button" className="restore-action" onClick={resetSheet}><ArrowUpRight size={16} /> Restaurar exemplo</button></div></div>
           </section>
