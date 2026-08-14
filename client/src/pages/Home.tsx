@@ -3,6 +3,10 @@
  * Este arquivo privilegia densidade legível, estados sempre visíveis e ações rápidas de sessão.
  */
 import { Button } from "@/components/ui/button";
+import { startLogin } from "@/const";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { liveSocket } from "@/lib/live";
+import { trpc } from "@/lib/trpc";
 import {
   Activity,
   ArrowDownRight,
@@ -13,28 +17,35 @@ import {
   CircleAlert,
   Crosshair,
   Copy,
+  Cloud,
   Dices,
   FileJson,
   FilePlus2,
   HeartPulse,
   History,
+  ImageUp,
+  LogIn,
+  LogOut,
   Minus,
   PackagePlus,
   Plus,
   Printer,
   Save,
   ScrollText,
+  Share2,
   Shield,
   Sparkles,
   Swords,
   Target,
   Trash2,
+  UserCheck,
+  UserPlus,
   UserRound,
   UsersRound,
   WandSparkles,
   Weight,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type Trait = { id: string; name: string; cost: number; notes: string; source: string };
 type Skill = { id: string; name: string; attribute: string; difficulty: string; relative: string; level: number; points: number };
@@ -42,6 +53,7 @@ type InventoryItem = { id: string; name: string; category: string; quantity: num
 type Attack = { id: string; name: string; level: number; damage: string; reach: string; parry: string };
 type Armor = { id: string; location: string; dr: number; source: string };
 type LogItem = { id: string; time: string; text: string; kind: "roll" | "health" | "note" };
+type Ally = { id: string; name: string; relation: string; description: string; points: number; cost: number; hpCurrent: number; hpMax: number; status: string };
 
 type Sheet = {
   identity: { name: string; player: string; campaign: string; world: string; concept: string; race: string; tl: string };
@@ -54,11 +66,12 @@ type Sheet = {
   inventory: InventoryItem[];
   attacks: Attack[];
   armor: Armor[];
+  allies: Ally[];
   conditions: string[];
   log: LogItem[];
 };
 
-type CharacterRecord = { id: string; sheet: Sheet; createdAt: number; updatedAt: number };
+type CharacterRecord = { id: string; sheet: Sheet; portraitUrl?: string | null; createdAt: number; updatedAt: number };
 
 const BANNER = "/manus-storage/codice-campo-banner_a9e63bb6.png";
 const SIDEBAR = "/manus-storage/codice-campo-sidebar_18686b0f.png";
@@ -73,6 +86,40 @@ const makeId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 const now = () => new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(new Date());
 const number = (value: string) => (Number.isFinite(Number(value)) ? Number(value) : 0);
 const format = (value: number, digits = 0) => new Intl.NumberFormat("pt-BR", { maximumFractionDigits: digits, minimumFractionDigits: digits }).format(value);
+const bodyZones = [
+  { location: "Cabeça", code: "CAB" }, { location: "Pescoço", code: "PES" }, { location: "Tronco", code: "TRC" },
+  { location: "Braço direito", code: "BD" }, { location: "Braço esquerdo", code: "BE" }, { location: "Mão direita", code: "MD" }, { location: "Mão esquerda", code: "ME" },
+  { location: "Perna direita", code: "PD" }, { location: "Perna esquerda", code: "PE" }, { location: "Pé direito", code: "PTD" }, { location: "Pé esquerdo", code: "PTE" },
+];
+
+const compressPortrait = (file: File, maxEdge: number, quality: number) => new Promise<string>((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onerror = () => reject(new Error("Não foi possível ler a imagem."));
+  reader.onload = () => {
+    const image = new Image();
+    image.onerror = () => reject(new Error("A imagem selecionada é inválida."));
+    image.onload = () => {
+      const scale = Math.min(1, maxEdge / Math.max(image.width, image.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(image.width * scale));
+      canvas.height = Math.max(1, Math.round(image.height * scale));
+      const context = canvas.getContext("2d");
+      if (!context) { reject(new Error("Não foi possível preparar a imagem.")); return; }
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    image.src = String(reader.result);
+  };
+  reader.readAsDataURL(file);
+});
+
+const preparePortraitUpload = async (file: File) => {
+  const firstPass = await compressPortrait(file, 1600, .84);
+  if (firstPass.length <= 6_300_000) return firstPass;
+  const secondPass = await compressPortrait(file, 1120, .72);
+  if (secondPass.length <= 6_300_000) return secondPass;
+  throw new Error("A imagem continua grande demais após a compressão.");
+};
 
 const initialSheet: Sheet = {
   identity: {
@@ -117,6 +164,7 @@ const initialSheet: Sheet = {
     { id: "armor-2", location: "Braços", dr: 2, source: "Gibão de couro" },
     { id: "armor-3", location: "Pernas", dr: 1, source: "Calças reforçadas" },
   ],
+  allies: [],
   conditions: [],
   log: [{ id: "log-1", time: "18:40", text: "Ficha iniciada no Códice de Campo.", kind: "note" }],
 };
@@ -127,6 +175,7 @@ const navItems = [
   { id: "caracteristicas", label: "Características", icon: Sparkles },
   { id: "pericias", label: "Perícias", icon: Target },
   { id: "inventario", label: "Equipamento", icon: Backpack },
+  { id: "aliados", label: "Aliados", icon: UsersRound },
   { id: "diario", label: "Diário", icon: ScrollText },
 ];
 
@@ -154,17 +203,19 @@ function SectionHeader({ kicker, title, description, icon: Icon, action }: { kic
   );
 }
 
-function CharacterLibrary({ characters, onCreate, onOpen, onDuplicate, onDelete }: { characters: CharacterRecord[]; onCreate: () => void; onOpen: (id: string) => void; onDuplicate: (id: string) => void; onDelete: (id: string) => void }) {
+function CharacterLibrary({ characters, onCreate, onOpen, onDuplicate, onDelete, isAuthenticated, userName, onLogin, onLogout, sharedIds }: { characters: CharacterRecord[]; onCreate: () => void; onOpen: (id: string) => void; onDuplicate: (id: string) => void; onDelete: (id: string) => void; isAuthenticated: boolean; userName?: string | null; onLogin: () => void; onLogout: () => void; sharedIds: string[] }) {
   return (
     <main className="library-shell">
       <section className="library-hero" style={{ backgroundImage: `linear-gradient(90deg, rgba(15, 31, 46, .98), rgba(15, 31, 46, .81) 56%, rgba(15, 31, 46, .24)), url(${SIDEBAR})` }}>
         <div className="library-brand"><img src={MARK} alt="Marca do Códice de Campo" /><div><span>ARQUIVO DE CAMPANHA</span><strong>GURPS <em>4e</em></strong></div></div>
+        <div className="library-account">{isAuthenticated ? <><span><UserCheck size={14} /> CONTA CONECTADA</span><strong>{userName || "Aventureiro"}</strong><small>Fichas salvas e compartilháveis.</small><button type="button" onClick={onLogout}><LogOut size={13} /> Sair</button></> : <><span><UserRound size={14} /> ACESSO À CAMPANHA</span><strong>Entre para compartilhar</strong><small>Salve as fichas na nuvem e acompanhe a mesa ao vivo.</small><div><button type="button" onClick={onLogin}><LogIn size={13} /> Entrar</button><button type="button" className="account-create" onClick={onLogin}><UserPlus size={13} /> Criar conta</button></div></>}</div>
         <div className="library-hero__spine"><img src={MARK} alt="" /><span>ARQUIVO</span><b>04</b></div>
-        <div className="library-hero__content"><span className="eyebrow eyebrow--light"><UsersRound size={13} /> PERSONAGENS LOCAIS</span><h1>Seu grupo,<br />em um só códice.</h1><p>Crie fichas separadas, retome a edição de qualquer aventureiro e mantenha cada campanha organizada neste navegador.</p><div className="library-hero__register"><span><img src={MARK} alt="" /> Registro local</span><span>Fichas {String(characters.length).padStart(2, "0")}</span><span>JSON pronto</span></div><button type="button" className="library-create library-create--hero" onClick={onCreate}><img src={MARK} alt="" /> Criar personagem</button></div>
-        <div className="library-hero__count"><img src={MARK} alt="" /><span>Fichas ativas</span><strong>{characters.length}</strong><small>salvas neste dispositivo</small></div>
+        <div className="library-hero__content"><span className="eyebrow eyebrow--light"><UsersRound size={13} /> {isAuthenticated ? "FICHAS SINCRONIZADAS" : "PERSONAGENS LOCAIS"}</span><h1>Seu grupo,<br />em um só códice.</h1><p>Crie fichas separadas, retome a edição de qualquer aventureiro e mantenha cada campanha organizada neste navegador.</p><div className="library-hero__register"><span><img src={MARK} alt="" /> {isAuthenticated ? "Nuvem ao vivo" : "Registro local"}</span><span>Fichas {String(characters.length).padStart(2, "0")}</span><span>JSON pronto</span></div><button type="button" className="library-create library-create--hero" onClick={onCreate}><img src={MARK} alt="" /> Criar personagem</button></div>
+        <div className="library-hero__count"><img src={MARK} alt="" /><span>Fichas ativas</span><strong>{characters.length}</strong><small>{isAuthenticated ? "sincronizadas na nuvem" : "salvas neste dispositivo"}</small></div>
       </section>
       <section className="library-content">
         <div className="library-heading"><div><span className="eyebrow">ESTANTE DE CAMPO</span><h2>Personagens</h2><p>Selecione uma ficha para continuar a sessão ou comece uma nova página.</p></div><button type="button" className="library-create" onClick={onCreate}><img src={MARK} alt="" /> Nova ficha</button></div>
+        <div className="library-ledger"><span><img src={MARK} alt="" /> ARQUIVO 01 · FICHAS</span><span>ESTADO · PRONTO PARA SESSÃO</span><span>SUPORTE · JSON / PDF</span><span>LINKS AO VIVO · {sharedIds.length}</span><span>ACESSO · {characters.length} REGISTRO{characters.length === 1 ? "" : "S"}</span></div>
         <div className="character-shelf">
           {characters.map((character, index) => {
             const { sheet } = character;
@@ -173,20 +224,21 @@ function CharacterLibrary({ characters, onCreate, onOpen, onDuplicate, onDelete 
             const totalPoints = (sheet.attributes.st - 10) * 10 + (sheet.attributes.dx - 10) * 20 + (sheet.attributes.iq - 10) * 20 + (sheet.attributes.ht - 10) * 10 + sheet.advantages.reduce((sum, item) => sum + item.cost, 0) + sheet.disadvantages.reduce((sum, item) => sum + item.cost, 0) + sheet.skills.reduce((sum, item) => sum + item.points, 0);
             return <article className="character-card" key={character.id}>
               <div className="character-card__folio"><img src={MARK} alt="" /><span>FICHA</span><b>{String(index + 1).padStart(2, "0")}</b></div>
-              <div className="character-card__portrait"><img src={PORTRAIT} alt="" /></div>
-              <div className="character-card__content"><div className="character-card__meta"><span>{sheet.identity.race || "Sem raça"}</span><i>•</i><span>{sheet.identity.tl || "TL —"}</span></div><h3>{sheet.identity.name || "Sem nome"}</h3><p>{sheet.identity.concept || "Personagem sem conceito definido."}</p><div className="character-card__tags"><span>{sheet.identity.campaign || "Sem campanha"}</span><span>{sheet.skills.length} perícias</span></div><div className="character-card__attributes"><span>ST <b>{sheet.attributes.st}</b></span><span>DX <b>{sheet.attributes.dx}</b></span><span>IQ <b>{sheet.attributes.iq}</b></span><span>HT <b>{sheet.attributes.ht}</b></span></div><div className="character-card__metrics"><div><span>HP</span><b>{sheet.secondary.hpCurrent}/{hpMax}</b></div><div><span>FP</span><b>{sheet.secondary.fpCurrent}/{fpMax}</b></div><div><span>Pontos</span><b>{totalPoints}</b></div></div></div>
+              <div className="character-card__portrait"><img src={character.portraitUrl || PORTRAIT} alt="" /></div>
+              <div className="character-card__content"><div className="character-card__meta"><span>{sheet.identity.race || "Sem raça"}</span><i>•</i><span>{sheet.identity.tl || "TL —"}</span></div><h3>{sheet.identity.name || "Sem nome"}</h3><p>{sheet.identity.concept || "Personagem sem conceito definido."}</p><div className="character-card__tags"><span>{sheet.identity.campaign || "Sem campanha"}</span><span>{sheet.skills.length} perícias</span>{sharedIds.includes(character.id) && <span className="shared-tag"><Cloud size={11} /> Link ao vivo</span>}</div><div className="character-card__attributes"><span>ST <b>{sheet.attributes.st}</b></span><span>DX <b>{sheet.attributes.dx}</b></span><span>IQ <b>{sheet.attributes.iq}</b></span><span>HT <b>{sheet.attributes.ht}</b></span></div><div className="character-card__metrics"><div><span>HP</span><b>{sheet.secondary.hpCurrent}/{hpMax}</b></div><div><span>FP</span><b>{sheet.secondary.fpCurrent}/{fpMax}</b></div><div><span>Pontos</span><b>{totalPoints}</b></div></div></div>
               <div className="character-card__actions"><button type="button" className="character-open" onClick={() => onOpen(character.id)}><img src={MARK} alt="" /> Abrir ficha <ArrowRight size={16} /></button><button type="button" aria-label={`Duplicar ${sheet.identity.name || "personagem"}`} onClick={() => onDuplicate(character.id)}><Copy size={16} /></button><button type="button" className="delete-character" aria-label={`Excluir ${sheet.identity.name || "personagem"}`} onClick={() => onDelete(character.id)} disabled={characters.length === 1}><Trash2 size={16} /></button></div>
             </article>;
           })}
           <button type="button" className="character-card character-card--new" onClick={onCreate}><span className="new-character__seal"><img src={MARK} alt="" /></span><strong>Iniciar outra ficha</strong><small>Uma página limpa para o próximo personagem.</small><span className="new-character__action"><img src={MARK} alt="" /> Criar personagem</span></button>
         </div>
-        <div className="library-note"><BookOpen size={17} /><span><b>Arquivo local.</b> Suas fichas ficam separadas e salvas apenas neste navegador. Use JSON para manter cópias fora deste dispositivo.</span></div>
+        <div className="library-note"><BookOpen size={17} /><span><b>{isAuthenticated ? "Nuvem compartilhada." : "Arquivo local."}</b> {isAuthenticated ? "Use o botão de compartilhamento dentro da ficha para gerar um link público atualizado durante a sessão." : "Suas fichas ficam separadas e salvas apenas neste navegador. Entre para sincronizar e compartilhar em tempo real."}</span></div>
       </section>
     </main>
   );
 }
 
 export default function Home() {
+  const { user, isAuthenticated, loading: authLoading, logout } = useAuth();
   const [characters, setCharacters] = useState<CharacterRecord[]>(() => {
     try {
       const storedLibrary = window.localStorage.getItem(LIBRARY_STORAGE_KEY);
@@ -205,6 +257,18 @@ export default function Home() {
   const [view, setView] = useState<"library" | "sheet">("library");
   const [activeSection, setActiveSection] = useState("visao-geral");
   const [lastRoll, setLastRoll] = useState<{ label: string; dice: number[]; total: number; target: number } | null>(null);
+  const [selectedArmorLocation, setSelectedArmorLocation] = useState("Tronco");
+  const [remoteLoaded, setRemoteLoaded] = useState(false);
+  const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "error">("idle");
+  const [portraitPreview, setPortraitPreview] = useState<string | null>(null);
+  const saveDelay = useRef<number | null>(null);
+  const applyingCloudUpdate = useRef(false);
+  const charactersQuery = trpc.characters.list.useQuery(undefined, { enabled: isAuthenticated });
+  const saveCharacter = trpc.characters.save.useMutation();
+  const removeCharacter = trpc.characters.remove.useMutation();
+  const createShare = trpc.characters.share.useMutation();
+  const uploadPortrait = trpc.characters.uploadPortrait.useMutation();
+  const sharesQuery = trpc.shares.list.useQuery(undefined, { enabled: isAuthenticated });
   const activeCharacter = characters.find((character) => character.id === activeCharacterId) || characters[0];
   const sheet = activeCharacter.sheet;
 
@@ -220,6 +284,60 @@ export default function Home() {
     window.localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(characters));
     window.localStorage.setItem(ACTIVE_CHARACTER_KEY, activeCharacter.id);
   }, [characters, activeCharacter.id]);
+
+  useEffect(() => { setPortraitPreview(null); }, [activeCharacter.id]);
+
+  useEffect(() => {
+    if (!isAuthenticated || remoteLoaded || !charactersQuery.data) return;
+    if (charactersQuery.data.length) {
+      const remoteCharacters = charactersQuery.data.map((character) => ({
+        id: character.id,
+        sheet: character.sheet as unknown as Sheet,
+        portraitUrl: character.portraitUrl,
+        createdAt: character.createdAt.getTime(),
+        updatedAt: character.updatedAt.getTime(),
+      }));
+      setCharacters(remoteCharacters);
+      setActiveCharacterId(remoteCharacters[0].id);
+    }
+    setRemoteLoaded(true);
+  }, [charactersQuery.data, isAuthenticated, remoteLoaded]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !activeCharacter) return;
+    liveSocket.connect();
+    liveSocket.emit("watch-character", activeCharacter.id);
+    const receiveUpdate = async (event: { characterId: string }) => {
+      if (event.characterId !== activeCharacter.id) return;
+      const refreshed = await charactersQuery.refetch();
+      if (!refreshed.data) return;
+      applyingCloudUpdate.current = true;
+      setCharacters(refreshed.data.map((character) => ({
+        id: character.id,
+        sheet: character.sheet as unknown as Sheet,
+        portraitUrl: character.portraitUrl,
+        createdAt: character.createdAt.getTime(),
+        updatedAt: character.updatedAt.getTime(),
+      })));
+    };
+    liveSocket.on("character-updated", receiveUpdate);
+    return () => {
+      liveSocket.off("character-updated", receiveUpdate);
+      liveSocket.disconnect();
+    };
+  }, [activeCharacter.id, charactersQuery.refetch, isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !remoteLoaded) return;
+    if (applyingCloudUpdate.current) { applyingCloudUpdate.current = false; return; }
+    if (saveDelay.current) window.clearTimeout(saveDelay.current);
+    saveDelay.current = window.setTimeout(() => {
+      characters.forEach((character) => {
+        saveCharacter.mutate({ id: character.id, name: character.sheet.identity.name || "Sem nome", portraitUrl: character.portraitUrl ?? null, sheet: character.sheet as unknown as Record<string, unknown> });
+      });
+    }, 700);
+    return () => { if (saveDelay.current) window.clearTimeout(saveDelay.current); };
+  }, [characters, isAuthenticated, remoteLoaded]);
 
   const calculated = useMemo(() => {
     const hpMax = sheet.attributes.st + sheet.secondary.hpBonus;
@@ -237,9 +355,10 @@ export default function Home() {
     const advantagePoints = sheet.advantages.reduce((sum, trait) => sum + trait.cost, 0);
     const disadvantagePoints = sheet.disadvantages.reduce((sum, trait) => sum + trait.cost, 0);
     const skillPoints = sheet.skills.reduce((sum, skill) => sum + skill.points, 0);
-    const totalSpent = attributePoints + advantagePoints + disadvantagePoints + skillPoints;
+    const allyCost = (sheet.allies || []).reduce((sum, ally) => sum + ally.cost, 0);
+    const totalSpent = attributePoints + advantagePoints + disadvantagePoints + skillPoints + allyCost;
     const available = sheet.points.initial + sheet.points.earned - totalSpent;
-    return { hpMax, fpMax, will, perception, speed, basicLift, carriedWeight, encumbrance, encName: encNames[encumbrance], dodge, move, attributePoints, advantagePoints, disadvantagePoints, skillPoints, totalSpent, available };
+    return { hpMax, fpMax, will, perception, speed, basicLift, carriedWeight, encumbrance, encName: encNames[encumbrance], dodge, move, attributePoints, advantagePoints, disadvantagePoints, skillPoints, allyCost, totalSpent, available };
   }, [sheet]);
 
   const addLog = (text: string, kind: LogItem["kind"] = "note") => {
@@ -301,6 +420,31 @@ export default function Home() {
 
   const updateArmor = (id: string, field: keyof Armor, value: string | number) => {
     setSheet((current) => ({ ...current, armor: current.armor.map((armor) => armor.id === id ? { ...armor, [field]: value } : armor) }));
+  };
+
+  const updateAlly = (id: string, field: keyof Ally, value: string | number) => {
+    setSheet((current) => ({ ...current, allies: (current.allies || []).map((ally) => ally.id === id ? { ...ally, [field]: value } : ally) }));
+  };
+
+  const addAlly = () => {
+    const ally: Ally = { id: makeId(), name: "Novo aliado", relation: "Aliado", description: "Descreva como este aliado ajuda na campanha.", points: 25, cost: 5, hpCurrent: 10, hpMax: 10, status: "Pronto" };
+    setSheet((current) => ({ ...current, allies: [...(current.allies || []), ally] }));
+    addLog("Adicionou um novo aliado à ficha.", "note");
+  };
+
+  const removeAlly = (id: string, name: string) => {
+    setSheet((current) => ({ ...current, allies: (current.allies || []).filter((ally) => ally.id !== id) }));
+    addLog(`Removeu ${name || "um aliado"} da ficha.`, "note");
+  };
+
+  const changeAllyHp = (id: string, delta: number) => {
+    setSheet((current) => ({ ...current, allies: (current.allies || []).map((ally) => ally.id === id ? { ...ally, hpCurrent: Math.max(0, Math.min(ally.hpMax, ally.hpCurrent + delta)) } : ally) }));
+  };
+
+  const selectArmorLocation = (location: string) => {
+    setSelectedArmorLocation(location);
+    if (sheet.armor.some((armor) => armor.location === location)) return;
+    setSheet((current) => ({ ...current, armor: [...current.armor, { id: makeId(), location, dr: 0, source: "Sem proteção" }] }));
   };
 
   const toggleCondition = (condition: string) => {
@@ -369,6 +513,7 @@ export default function Home() {
     blankSheet.inventory = [];
     blankSheet.attacks = [];
     blankSheet.armor = [];
+    blankSheet.allies = [];
     blankSheet.conditions = [];
     blankSheet.log = [{ id: makeId(), time: now(), text: "Nova ficha criada no Arquivo de Campanha.", kind: "note" }];
     const character = { id: makeId(), sheet: blankSheet, createdAt: Date.now(), updatedAt: Date.now() };
@@ -405,10 +550,54 @@ export default function Home() {
     if (!window.confirm(`Excluir permanentemente a ficha “${character?.sheet.identity.name || "Sem nome"}”?`)) return;
     const remaining = characters.filter((item) => item.id !== id);
     setCharacters(remaining);
+    if (isAuthenticated) removeCharacter.mutate({ id });
     if (id === activeCharacter.id) setActiveCharacterId(remaining[0].id);
   };
 
-  if (view === "library") return <CharacterLibrary characters={characters} onCreate={createCharacter} onOpen={openCharacter} onDuplicate={duplicateCharacter} onDelete={deleteCharacter} />;
+  const handlePortraitUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !activeCharacter) return;
+    if (!file.type.startsWith("image/")) { window.alert("Escolha um arquivo de imagem."); return; }
+    if (file.size > 12_000_000) { window.alert("Escolha uma imagem de até 12 MB."); return; }
+    const currentId = activeCharacter.id;
+    const currentSheet = activeCharacter.sheet;
+    const previousPortrait = activeCharacter.portraitUrl ?? null;
+    void (async () => {
+      try {
+        const dataUrl = await preparePortraitUpload(file);
+        setPortraitPreview(dataUrl);
+        await saveCharacter.mutateAsync({ id: currentId, name: currentSheet.identity.name || "Sem nome", portraitUrl: previousPortrait, sheet: currentSheet as unknown as Record<string, unknown> });
+        const uploaded = await uploadPortrait.mutateAsync({ characterId: currentId, dataUrl });
+        setCharacters((current) => current.map((character) => character.id === currentId ? { ...character, portraitUrl: uploaded.portraitUrl, updatedAt: Date.now() } : character));
+        setPortraitPreview(null);
+      } catch (error) {
+        setPortraitPreview(null);
+        const message = error instanceof Error ? error.message : "Não foi possível enviar o retrato.";
+        window.alert(`${message} Tente novamente.`);
+      }
+    })();
+    event.target.value = "";
+  };
+
+  const shareActiveCharacter = async () => {
+    if (!isAuthenticated) { startLogin(); return; }
+    try {
+      await saveCharacter.mutateAsync({ id: activeCharacter.id, name: activeCharacter.sheet.identity.name || "Sem nome", portraitUrl: activeCharacter.portraitUrl ?? null, sheet: activeCharacter.sheet as unknown as Record<string, unknown> });
+      const share = await createShare.mutateAsync({ characterId: activeCharacter.id });
+      if (!share.token) throw new Error("Link indisponível");
+      await sharesQuery.refetch();
+      const url = `${window.location.origin}/compartilhar/${share.token}`;
+      if (navigator.clipboard) await navigator.clipboard.writeText(url);
+      else window.prompt("Copie o link da ficha:", url);
+      setShareStatus("copied");
+      window.setTimeout(() => setShareStatus("idle"), 2200);
+    } catch {
+      setShareStatus("error");
+      window.setTimeout(() => setShareStatus("idle"), 2200);
+    }
+  };
+
+  if (view === "library") return <CharacterLibrary characters={characters} onCreate={createCharacter} onOpen={openCharacter} onDuplicate={duplicateCharacter} onDelete={deleteCharacter} isAuthenticated={isAuthenticated} userName={user?.name} onLogin={startLogin} onLogout={logout} sharedIds={sharesQuery.data?.map((share) => share.characterId) || []} />;
 
   return (
     <div className="codex-shell">
@@ -431,7 +620,7 @@ export default function Home() {
             </button>
           ))}
         </nav>
-        <div className="sidebar-footer"><span>Salvamento local</span><div><Save size={15} /> Atualizado agora</div></div>
+        <div className="sidebar-footer"><span>{isAuthenticated ? "Sincronização ao vivo" : "Salvamento local"}</span><div>{isAuthenticated ? <Cloud size={15} /> : <Save size={15} />}{isAuthenticated ? " Nuvem conectada" : " Atualizado agora"}</div></div>
       </aside>
 
       <main className="codex-main">
@@ -454,7 +643,7 @@ export default function Home() {
             <SectionHeader kicker="01 · NÚCLEO" title="Visão geral" description="Ajuste a identidade e os valores que sustentam o personagem." icon={UserRound} />
             <div className="overview-grid">
               <div className="paper-card identity-card">
-                <div className="portrait-frame"><img src={PORTRAIT} alt="Retrato ilustrado de personagem exemplo" /><span>Retrato de referência</span></div>
+                <div className="portrait-frame"><img src={portraitPreview || activeCharacter.portraitUrl || PORTRAIT} alt="Retrato do personagem" />{isAuthenticated ? <label className={`portrait-upload ${uploadPortrait.isPending ? "is-loading" : ""}`}><ImageUp size={14} /> {uploadPortrait.isPending ? "Enviando..." : "Trocar retrato"}<input className="portrait-file-input" type="file" accept="image/png,image/jpeg,image/webp" onChange={handlePortraitUpload} disabled={uploadPortrait.isPending} /></label> : <button type="button" className="portrait-upload" onClick={startLogin}><LogIn size={14} /> Entrar para enviar</button>}</div>
                 <div className="identity-form">
                   <label className="field field--wide"><span>Nome</span><input value={sheet.identity.name} onChange={(event) => updateIdentity("name", event.target.value)} /></label>
                   <label className="field"><span>Jogador</span><input value={sheet.identity.player} onChange={(event) => updateIdentity("player", event.target.value)} /></label>
@@ -529,9 +718,9 @@ export default function Home() {
                 </div>
               </div>
               <div className="protection-map">
-                <div className="protection-map__title"><span className="eyebrow">PROTEÇÃO</span><h3>Resistência por local</h3></div>
-                <img src={BODY_MAP} alt="Mapa corporal técnico com zonas de proteção" />
-                <div className="armor-list">{sheet.armor.map((armor) => <div key={armor.id}><input value={armor.location} onChange={(event) => updateArmor(armor.id, "location", event.target.value)} /><span>DR</span><input type="number" value={armor.dr} onChange={(event) => updateArmor(armor.id, "dr", number(event.target.value))} /><input value={armor.source} aria-label={`Fonte de proteção em ${armor.location}`} onChange={(event) => updateArmor(armor.id, "source", event.target.value)} /></div>)}</div>
+                <div className="protection-map__title"><span className="eyebrow">PROTEÇÃO CORPORAL</span><h3>Resistência por local</h3><p>Selecione uma região do corpo para definir sua DR e a fonte de proteção.</p></div>
+                <div className="body-protection-workbench"><div className="body-figure"><img src={BODY_MAP} alt="Corpo humano com regiões de proteção" /><span>MAPA DE DEFESA</span></div><div className="zone-register"><span className="eyebrow">REGIÕES DO CORPO</span><div className="body-zone-grid">{bodyZones.map((zone) => { const armor = sheet.armor.find((item) => item.location === zone.location); return <button key={zone.location} type="button" className={selectedArmorLocation === zone.location ? "body-zone is-selected" : "body-zone"} onClick={() => selectArmorLocation(zone.location)}><b>{zone.code}</b><span>{zone.location}</span><i>DR {armor?.dr ?? 0}</i></button>; })}</div></div></div>
+                {(() => { const selectedArmor = sheet.armor.find((armor) => armor.location === selectedArmorLocation); return selectedArmor ? <div className="selected-protection"><span><Shield size={14} /> REGIÃO SELECIONADA</span><strong>{selectedArmor.location}</strong><label>DR<input type="number" min="0" value={selectedArmor.dr} onChange={(event) => updateArmor(selectedArmor.id, "dr", number(event.target.value))} /></label><label>Proteção<input value={selectedArmor.source} onChange={(event) => updateArmor(selectedArmor.id, "source", event.target.value)} /></label></div> : null; })()}
               </div>
             </div>
             <div className="conditions-panel"><div><span className="eyebrow">ESTADO DE CENA</span><p>Os efeitos são visíveis enquanto estiverem ativos.</p></div><div>{["Atordoado", "Ferido", "Derrubado", "Agarrado", "Exausto", "Envenenado"].map((condition) => <button key={condition} type="button" className={sheet.conditions.includes(condition) ? "condition is-on" : "condition"} onClick={() => toggleCondition(condition)}>{sheet.conditions.includes(condition) ? <Shield size={14} /> : <Plus size={14} />}{condition}</button>)}</div></div>
@@ -560,14 +749,19 @@ export default function Home() {
             </div>
           </section>
 
+          <section id="aliados" className="codex-section">
+            <SectionHeader kicker="06 · VÍNCULOS" title="Aliados" description="Acompanhe companheiros, familiares e seguidores que participam da campanha." icon={UsersRound} action={<Button type="button" variant="outline" className="add-button" onClick={addAlly}><UsersRound size={15} /> Adicionar aliado</Button>} />
+            <div className="allies-layout"><aside className="ally-command-card"><span className="eyebrow">REDE DE APOIO</span><strong>{(sheet.allies || []).length}</strong><span className="ally-command-card__label">aliado{(sheet.allies || []).length === 1 ? "" : "s"} em campo</span><p>Aliados têm PV, estado de sessão, valor de personagem e custo próprio na ficha.</p><div><span>Custo de Aliado</span><b>{calculated.allyCost} pts</b></div><div><span>Valor somado</span><b>{(sheet.allies || []).reduce((sum, ally) => sum + ally.points, 0)} pts</b></div></aside><div className="allies-list">{(sheet.allies || []).length ? (sheet.allies || []).map((ally) => <article className="ally-card" key={ally.id}><div className="ally-card__folio"><img src={MARK} alt="" /><span>ALIADO</span></div><div className="ally-card__main"><div className="ally-card__head"><div><input className="ally-name" value={ally.name} aria-label="Nome do aliado" onChange={(event) => updateAlly(ally.id, "name", event.target.value)} /><input className="ally-relation" value={ally.relation} aria-label="Relação com o aliado" onChange={(event) => updateAlly(ally.id, "relation", event.target.value)} /></div><button type="button" aria-label={`Remover ${ally.name}`} onClick={() => removeAlly(ally.id, ally.name)}><Trash2 size={15} /></button></div><textarea value={ally.description} aria-label="Descrição do aliado" onChange={(event) => updateAlly(ally.id, "description", event.target.value)} /><div className="ally-meta"><label><span>Valor</span><input type="number" min="0" value={ally.points} onChange={(event) => updateAlly(ally.id, "points", number(event.target.value))} /><small>pts</small></label><label><span>Custo</span><input type="number" value={ally.cost} onChange={(event) => updateAlly(ally.id, "cost", number(event.target.value))} /><small>pts</small></label><label><span>Estado</span><select value={ally.status} onChange={(event) => updateAlly(ally.id, "status", event.target.value)}><option>Pronto</option><option>Ferido</option><option>Incapacitado</option><option>Ausente</option></select></label></div></div><div className="ally-vitals"><span>PV</span><b>{ally.hpCurrent}/{ally.hpMax}</b><div className="ally-health-bar"><i style={{ width: `${ally.hpMax > 0 ? Math.min(100, (ally.hpCurrent / ally.hpMax) * 100) : 0}%` }} /></div><div className="ally-vitals__actions"><button type="button" onClick={() => changeAllyHp(ally.id, -1)} aria-label={`Aplicar dano em ${ally.name}`}><Minus size={14} /></button><input type="number" min="0" value={ally.hpCurrent} aria-label={`PV atual de ${ally.name}`} onChange={(event) => updateAlly(ally.id, "hpCurrent", Math.max(0, Math.min(ally.hpMax, number(event.target.value))))} /><span>/</span><input type="number" min="1" value={ally.hpMax} aria-label={`PV máximo de ${ally.name}`} onChange={(event) => updateAlly(ally.id, "hpMax", Math.max(1, number(event.target.value)))} /><button type="button" onClick={() => changeAllyHp(ally.id, 1)} aria-label={`Curar ${ally.name}`}><Plus size={14} /></button></div></div></article>) : <button type="button" className="allies-empty" onClick={addAlly}><span><UsersRound size={20} /></span><strong>Nenhum aliado cadastrado</strong><small>Adicione um companheiro, familiar ou seguidor para acompanhá-lo durante a sessão.</small><b><Plus size={14} /> Adicionar primeiro aliado</b></button>}</div></div>
+          </section>
+
           <section id="diario" className="codex-section codex-section--last">
-            <SectionHeader kicker="06 · SESSÃO" title="Diário e dados" description="Todo evento que muda a cena pode ficar registrado aqui." icon={History} />
+            <SectionHeader kicker="07 · SESSÃO" title="Diário e dados" description="Todo evento que muda a cena pode ficar registrado aqui." icon={History} />
             <div className="diary-grid"><div className="roll-station"><div className="roll-station__top"><img className="roll-station__sigil" src={MARK} alt="" /><div><span className="eyebrow eyebrow--light">ROLAGEM PADRÃO</span><h3>3d6 de mesa</h3></div></div><p>Selecione qualquer ataque ou perícia e use o selo de dados. Para um teste livre, role o atributo desejado.</p><div className="quick-rolls"><button type="button" onClick={() => roll3d6("Teste de ST", sheet.attributes.st)}>ST {sheet.attributes.st}</button><button type="button" onClick={() => roll3d6("Teste de DX", sheet.attributes.dx)}>DX {sheet.attributes.dx}</button><button type="button" onClick={() => roll3d6("Teste de IQ", sheet.attributes.iq)}>IQ {sheet.attributes.iq}</button><button type="button" onClick={() => roll3d6("Teste de HT", sheet.attributes.ht)}>HT {sheet.attributes.ht}</button></div>{lastRoll ? <div className="roll-result"><div className="dice-set">{lastRoll.dice.map((die, index) => <span key={`${die}-${index}`} data-value={die}>{die}</span>)}</div><div><span>{lastRoll.label}</span><strong>{lastRoll.total}</strong><small>{lastRoll.total <= lastRoll.target ? `Sucesso por ${lastRoll.target - lastRoll.total}` : `Falha por ${lastRoll.total - lastRoll.target}`}</small></div></div> : <div className="roll-result roll-result--idle"><Dices size={21} /><span>A próxima rolagem aparecerá aqui.</span></div>}</div>
               <div className="paper-card log-card"><div className="log-card__head"><div><span className="eyebrow">HISTÓRICO</span><h3>Registro da sessão</h3></div><button type="button" onClick={() => addLog("Nota manual adicionada à sessão.", "note")}><Plus size={15} /> Nota</button></div><div className="log-list">{sheet.log.map((entry) => <div className={`log-entry log-entry--${entry.kind}`} key={entry.id}><time>{entry.time}</time><i>{entry.kind === "roll" ? <Dices size={15} /> : entry.kind === "health" ? <HeartPulse size={15} /> : <ScrollText size={15} />}</i><p>{entry.text}</p></div>)}</div></div>
             </div>
-            <div className="points-ledger"><div><span className="eyebrow">ORÇAMENTO</span><h3>Pontos de personagem</h3><p>A conta abaixo muda ao editar atributos, traços e perícias.</p></div><div className="ledger-values"><label><span>Iniciais</span><input type="number" value={sheet.points.initial} onChange={(event) => setSheet((current) => ({ ...current, points: { ...current.points, initial: number(event.target.value) } }))} /></label><label><span>Ganhos</span><input type="number" value={sheet.points.earned} onChange={(event) => setSheet((current) => ({ ...current, points: { ...current.points, earned: number(event.target.value) } }))} /></label><div><span>Gastos</span><strong>{calculated.totalSpent}</strong></div><div className={calculated.available < 0 ? "ledger-total is-negative" : "ledger-total"}><span>Disponíveis</span><strong>{calculated.available}</strong></div></div><div className="ledger-breakdown"><span>Atributos <b>{calculated.attributePoints}</b></span><span>Vantagens <b>{calculated.advantagePoints}</b></span><span>Desvantagens <b>{calculated.disadvantagePoints}</b></span><span>Perícias <b>{calculated.skillPoints}</b></span></div></div>
+            <div className="points-ledger"><div><span className="eyebrow">ORÇAMENTO</span><h3>Pontos de personagem</h3><p>A conta abaixo muda ao editar atributos, traços, perícias e aliados.</p></div><div className="ledger-values"><label><span>Iniciais</span><input type="number" value={sheet.points.initial} onChange={(event) => setSheet((current) => ({ ...current, points: { ...current.points, initial: number(event.target.value) } }))} /></label><label><span>Ganhos</span><input type="number" value={sheet.points.earned} onChange={(event) => setSheet((current) => ({ ...current, points: { ...current.points, earned: number(event.target.value) } }))} /></label><div><span>Gastos</span><strong>{calculated.totalSpent}</strong></div><div className={calculated.available < 0 ? "ledger-total is-negative" : "ledger-total"}><span>Disponíveis</span><strong>{calculated.available}</strong></div></div><div className="ledger-breakdown"><span>Atributos <b>{calculated.attributePoints}</b></span><span>Vantagens <b>{calculated.advantagePoints}</b></span><span>Desvantagens <b>{calculated.disadvantagePoints}</b></span><span>Perícias <b>{calculated.skillPoints}</b></span><span>Aliados <b>{calculated.allyCost}</b></span></div></div>
             {calculated.available < 0 && <div className="validation-warning"><CircleAlert size={18} /><span>Você ultrapassou o orçamento por {Math.abs(calculated.available)} pontos. Revise atributos, traços ou a recompensa da campanha.</span></div>}
-            <div className="bottom-actions"><span><ArrowDownRight size={16} /> Esta ficha é salva apenas neste navegador.</span><div className="export-actions"><button type="button" onClick={exportJson}><FileJson size={16} /> Baixar JSON</button><button type="button" className="pdf-action" onClick={exportPdf}><Printer size={16} /> Salvar em PDF</button><button type="button" className="restore-action" onClick={resetSheet}><ArrowUpRight size={16} /> Restaurar exemplo</button></div></div>
+            <div className="bottom-actions"><span><ArrowDownRight size={16} /> {isAuthenticated ? "Alterações salvas e atualizadas no link compartilhado." : "Entre para salvar na nuvem e compartilhar em tempo real."}</span><div className="export-actions"><button type="button" className="share-action" onClick={shareActiveCharacter} disabled={authLoading || createShare.isPending}>{isAuthenticated ? <Share2 size={16} /> : <LogIn size={16} />}{shareStatus === "copied" ? "Link copiado" : shareStatus === "error" ? "Tente novamente" : isAuthenticated ? "Compartilhar ao vivo" : "Entrar e compartilhar"}</button><button type="button" onClick={exportJson}><FileJson size={16} /> Baixar JSON</button><button type="button" className="pdf-action" onClick={exportPdf}><Printer size={16} /> Salvar em PDF</button><button type="button" className="restore-action" onClick={resetSheet}><ArrowUpRight size={16} /> Restaurar exemplo</button></div></div>
           </section>
         </div>
       </main>

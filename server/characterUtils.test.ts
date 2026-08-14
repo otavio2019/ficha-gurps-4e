@@ -1,0 +1,15 @@
+import { describe, expect, it } from "vitest";
+import { parsePortraitDataUrl } from "./characterUtils";
+
+describe("parsePortraitDataUrl", () => {
+  it("accepts a PNG data URL and prepares the bytes for storage", () => {
+    const parsed = parsePortraitDataUrl("data:image/png;base64,aGVsbG8=");
+    expect(parsed?.contentType).toBe("image/png");
+    expect(parsed?.extension).toBe("png");
+    expect(parsed?.buffer.toString()).toBe("hello");
+  });
+
+  it("rejects non-image payloads", () => {
+    expect(parsePortraitDataUrl("data:text/plain;base64,aGVsbG8=")).toBeNull();
+  });
+});
