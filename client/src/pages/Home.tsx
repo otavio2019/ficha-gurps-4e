@@ -6,13 +6,16 @@ import { Button } from "@/components/ui/button";
 import {
   Activity,
   ArrowDownRight,
+  ArrowRight,
   ArrowUpRight,
   Backpack,
   BookOpen,
   CircleAlert,
   Crosshair,
+  Copy,
   Dices,
   FileJson,
+  FilePlus2,
   HeartPulse,
   History,
   Minus,
@@ -25,7 +28,9 @@ import {
   Sparkles,
   Swords,
   Target,
+  Trash2,
   UserRound,
+  UsersRound,
   WandSparkles,
   Weight,
 } from "lucide-react";
@@ -53,12 +58,16 @@ type Sheet = {
   log: LogItem[];
 };
 
+type CharacterRecord = { id: string; sheet: Sheet; createdAt: number; updatedAt: number };
+
 const BANNER = "/manus-storage/codice-campo-banner_a9e63bb6.png";
 const SIDEBAR = "/manus-storage/codice-campo-sidebar_18686b0f.png";
 const PORTRAIT = "/manus-storage/codice-personagem-exemplo_5d5f7042.png";
 const BODY_MAP = "/manus-storage/codice-corpo-defesas_9406c304.png";
 const MARK = "/manus-storage/marca-codice-campo_b9cb5d94.png";
-const STORAGE_KEY = "ficha-gurps-4e-codice-v1";
+const LEGACY_STORAGE_KEY = "ficha-gurps-4e-codice-v1";
+const LIBRARY_STORAGE_KEY = "ficha-gurps-4e-personagens-v2";
+const ACTIVE_CHARACTER_KEY = "ficha-gurps-4e-personagem-ativo-v2";
 
 const makeId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 const now = () => new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(new Date());
@@ -145,21 +154,72 @@ function SectionHeader({ kicker, title, description, icon: Icon, action }: { kic
   );
 }
 
+function CharacterLibrary({ characters, onCreate, onOpen, onDuplicate, onDelete }: { characters: CharacterRecord[]; onCreate: () => void; onOpen: (id: string) => void; onDuplicate: (id: string) => void; onDelete: (id: string) => void }) {
+  return (
+    <main className="library-shell">
+      <section className="library-hero" style={{ backgroundImage: `linear-gradient(90deg, rgba(15, 31, 46, .98), rgba(15, 31, 46, .81) 56%, rgba(15, 31, 46, .24)), url(${SIDEBAR})` }}>
+        <div className="library-brand"><img src={MARK} alt="Marca do Códice de Campo" /><div><span>ARQUIVO DE CAMPANHA</span><strong>GURPS <em>4e</em></strong></div></div>
+        <div className="library-hero__spine"><img src={MARK} alt="" /><span>ARQUIVO</span><b>04</b></div>
+        <div className="library-hero__content"><span className="eyebrow eyebrow--light"><UsersRound size={13} /> PERSONAGENS LOCAIS</span><h1>Seu grupo,<br />em um só códice.</h1><p>Crie fichas separadas, retome a edição de qualquer aventureiro e mantenha cada campanha organizada neste navegador.</p><div className="library-hero__register"><span><img src={MARK} alt="" /> Registro local</span><span>Fichas {String(characters.length).padStart(2, "0")}</span><span>JSON pronto</span></div><button type="button" className="library-create library-create--hero" onClick={onCreate}><img src={MARK} alt="" /> Criar personagem</button></div>
+        <div className="library-hero__count"><img src={MARK} alt="" /><span>Fichas ativas</span><strong>{characters.length}</strong><small>salvas neste dispositivo</small></div>
+      </section>
+      <section className="library-content">
+        <div className="library-heading"><div><span className="eyebrow">ESTANTE DE CAMPO</span><h2>Personagens</h2><p>Selecione uma ficha para continuar a sessão ou comece uma nova página.</p></div><button type="button" className="library-create" onClick={onCreate}><img src={MARK} alt="" /> Nova ficha</button></div>
+        <div className="character-shelf">
+          {characters.map((character, index) => {
+            const { sheet } = character;
+            const hpMax = sheet.attributes.st + sheet.secondary.hpBonus;
+            const fpMax = sheet.attributes.ht + sheet.secondary.fpBonus;
+            const totalPoints = (sheet.attributes.st - 10) * 10 + (sheet.attributes.dx - 10) * 20 + (sheet.attributes.iq - 10) * 20 + (sheet.attributes.ht - 10) * 10 + sheet.advantages.reduce((sum, item) => sum + item.cost, 0) + sheet.disadvantages.reduce((sum, item) => sum + item.cost, 0) + sheet.skills.reduce((sum, item) => sum + item.points, 0);
+            return <article className="character-card" key={character.id}>
+              <div className="character-card__folio"><img src={MARK} alt="" /><span>FICHA</span><b>{String(index + 1).padStart(2, "0")}</b></div>
+              <div className="character-card__portrait"><img src={PORTRAIT} alt="" /></div>
+              <div className="character-card__content"><div className="character-card__meta"><span>{sheet.identity.race || "Sem raça"}</span><i>•</i><span>{sheet.identity.tl || "TL —"}</span></div><h3>{sheet.identity.name || "Sem nome"}</h3><p>{sheet.identity.concept || "Personagem sem conceito definido."}</p><div className="character-card__tags"><span>{sheet.identity.campaign || "Sem campanha"}</span><span>{sheet.skills.length} perícias</span></div><div className="character-card__attributes"><span>ST <b>{sheet.attributes.st}</b></span><span>DX <b>{sheet.attributes.dx}</b></span><span>IQ <b>{sheet.attributes.iq}</b></span><span>HT <b>{sheet.attributes.ht}</b></span></div><div className="character-card__metrics"><div><span>HP</span><b>{sheet.secondary.hpCurrent}/{hpMax}</b></div><div><span>FP</span><b>{sheet.secondary.fpCurrent}/{fpMax}</b></div><div><span>Pontos</span><b>{totalPoints}</b></div></div></div>
+              <div className="character-card__actions"><button type="button" className="character-open" onClick={() => onOpen(character.id)}><img src={MARK} alt="" /> Abrir ficha <ArrowRight size={16} /></button><button type="button" aria-label={`Duplicar ${sheet.identity.name || "personagem"}`} onClick={() => onDuplicate(character.id)}><Copy size={16} /></button><button type="button" className="delete-character" aria-label={`Excluir ${sheet.identity.name || "personagem"}`} onClick={() => onDelete(character.id)} disabled={characters.length === 1}><Trash2 size={16} /></button></div>
+            </article>;
+          })}
+          <button type="button" className="character-card character-card--new" onClick={onCreate}><span className="new-character__seal"><img src={MARK} alt="" /></span><strong>Iniciar outra ficha</strong><small>Uma página limpa para o próximo personagem.</small><span className="new-character__action"><img src={MARK} alt="" /> Criar personagem</span></button>
+        </div>
+        <div className="library-note"><BookOpen size={17} /><span><b>Arquivo local.</b> Suas fichas ficam separadas e salvas apenas neste navegador. Use JSON para manter cópias fora deste dispositivo.</span></div>
+      </section>
+    </main>
+  );
+}
+
 export default function Home() {
-  const [sheet, setSheet] = useState<Sheet>(() => {
+  const [characters, setCharacters] = useState<CharacterRecord[]>(() => {
     try {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
-      return stored ? (JSON.parse(stored) as Sheet) : initialSheet;
+      const storedLibrary = window.localStorage.getItem(LIBRARY_STORAGE_KEY);
+      if (storedLibrary) {
+        const parsed = JSON.parse(storedLibrary) as CharacterRecord[];
+        if (Array.isArray(parsed) && parsed.length) return parsed;
+      }
+      const legacySheet = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+      const sheet = legacySheet ? (JSON.parse(legacySheet) as Sheet) : initialSheet;
+      return [{ id: makeId(), sheet, createdAt: Date.now(), updatedAt: Date.now() }];
     } catch {
-      return initialSheet;
+      return [{ id: makeId(), sheet: initialSheet, createdAt: Date.now(), updatedAt: Date.now() }];
     }
   });
+  const [activeCharacterId, setActiveCharacterId] = useState(() => window.localStorage.getItem(ACTIVE_CHARACTER_KEY) || "");
+  const [view, setView] = useState<"library" | "sheet">("library");
   const [activeSection, setActiveSection] = useState("visao-geral");
   const [lastRoll, setLastRoll] = useState<{ label: string; dice: number[]; total: number; target: number } | null>(null);
+  const activeCharacter = characters.find((character) => character.id === activeCharacterId) || characters[0];
+  const sheet = activeCharacter.sheet;
+
+  const setSheet = (nextSheet: Sheet | ((current: Sheet) => Sheet)) => {
+    setCharacters((current) => current.map((character) => {
+      if (character.id !== activeCharacter.id) return character;
+      const updatedSheet = typeof nextSheet === "function" ? nextSheet(character.sheet) : nextSheet;
+      return { ...character, sheet: updatedSheet, updatedAt: Date.now() };
+    }));
+  };
 
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(sheet));
-  }, [sheet]);
+    window.localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(characters));
+    window.localStorage.setItem(ACTIVE_CHARACTER_KEY, activeCharacter.id);
+  }, [characters, activeCharacter.id]);
 
   const calculated = useMemo(() => {
     const hpMax = sheet.attributes.st + sheet.secondary.hpBonus;
@@ -297,6 +357,59 @@ export default function Home() {
     window.setTimeout(() => window.print(), 80);
   };
 
+  const createCharacter = () => {
+    const blankSheet = JSON.parse(JSON.stringify(initialSheet)) as Sheet;
+    blankSheet.identity = { name: "Novo personagem", player: "", campaign: "", world: "", concept: "Defina a próxima aventura.", race: "Humano", tl: "TL 3" };
+    blankSheet.attributes = { st: 10, dx: 10, iq: 10, ht: 10 };
+    blankSheet.secondary = { hpCurrent: 10, hpBonus: 0, fpCurrent: 10, fpBonus: 0, willBonus: 0, perBonus: 0, speedBonus: 0, moveBase: 5, moveBonus: 0, dodgeBonus: 0 };
+    blankSheet.points = { initial: 150, earned: 0 };
+    blankSheet.advantages = [];
+    blankSheet.disadvantages = [];
+    blankSheet.skills = [];
+    blankSheet.inventory = [];
+    blankSheet.attacks = [];
+    blankSheet.armor = [];
+    blankSheet.conditions = [];
+    blankSheet.log = [{ id: makeId(), time: now(), text: "Nova ficha criada no Arquivo de Campanha.", kind: "note" }];
+    const character = { id: makeId(), sheet: blankSheet, createdAt: Date.now(), updatedAt: Date.now() };
+    setCharacters((current) => [character, ...current]);
+    setActiveCharacterId(character.id);
+    setActiveSection("visao-geral");
+    setLastRoll(null);
+    setView("sheet");
+  };
+
+  const openCharacter = (id: string) => {
+    setActiveCharacterId(id);
+    setActiveSection("visao-geral");
+    setLastRoll(null);
+    setView("sheet");
+    window.setTimeout(() => window.scrollTo({ top: 0 }), 0);
+  };
+
+  const duplicateCharacter = (id: string) => {
+    const source = characters.find((character) => character.id === id);
+    if (!source) return;
+    const duplicateSheet = JSON.parse(JSON.stringify(source.sheet)) as Sheet;
+    duplicateSheet.identity.name = `Cópia de ${source.sheet.identity.name || "personagem"}`;
+    duplicateSheet.log = [{ id: makeId(), time: now(), text: `Ficha duplicada a partir de ${source.sheet.identity.name || "personagem"}.`, kind: "note" }];
+    const duplicate = { id: makeId(), sheet: duplicateSheet, createdAt: Date.now(), updatedAt: Date.now() };
+    setCharacters((current) => [duplicate, ...current]);
+    setActiveCharacterId(duplicate.id);
+    setView("sheet");
+  };
+
+  const deleteCharacter = (id: string) => {
+    if (characters.length === 1) return;
+    const character = characters.find((item) => item.id === id);
+    if (!window.confirm(`Excluir permanentemente a ficha “${character?.sheet.identity.name || "Sem nome"}”?`)) return;
+    const remaining = characters.filter((item) => item.id !== id);
+    setCharacters(remaining);
+    if (id === activeCharacter.id) setActiveCharacterId(remaining[0].id);
+  };
+
+  if (view === "library") return <CharacterLibrary characters={characters} onCreate={createCharacter} onOpen={openCharacter} onDuplicate={duplicateCharacter} onDelete={deleteCharacter} />;
+
   return (
     <div className="codex-shell">
       <aside className="codex-sidebar" style={{ backgroundImage: `linear-gradient(180deg, rgba(14, 29, 43, .93), rgba(19, 39, 44, .97)), url(${SIDEBAR})` }}>
@@ -310,6 +423,7 @@ export default function Home() {
           <p>{sheet.identity.concept || "Defina o conceito"}</p>
           <div className="sidebar-character__badges"><span>{sheet.identity.race}</span><span>{sheet.identity.tl}</span></div>
         </div>
+        <button type="button" className="library-entry" onClick={() => setView("library")}><img src={MARK} alt="" /> <span>Arquivo de personagens</span><b>{characters.length}</b></button>
         <nav className="codex-nav" aria-label="Seções da ficha">
           {navItems.map(({ id, label, icon: Icon }, index) => (
             <button key={id} type="button" className={activeSection === id ? "is-active" : ""} onClick={() => navigateTo(id)}>
@@ -321,7 +435,7 @@ export default function Home() {
       </aside>
 
       <main className="codex-main">
-        <div className="mobile-brand"><img src={MARK} alt="" /><span>GURPS 4e</span><button type="button" onClick={() => navigateTo("diario")}><Dices size={17} /> Rolar</button></div>
+        <div className="mobile-brand"><img src={MARK} alt="" /><span>GURPS 4e</span><button type="button" onClick={() => setView("library")}><UsersRound size={16} /> Arquivo</button><button type="button" onClick={() => navigateTo("diario")}><Dices size={17} /> Rolar</button></div>
         <section className="banner" style={{ backgroundImage: `linear-gradient(90deg, rgba(248, 244, 235, .96) 0%, rgba(248, 244, 235, .82) 53%, rgba(248, 244, 235, .22) 100%), url(${BANNER})` }}>
           <div className="banner__topline"><span>FICHA DE AVENTUREIRO</span><span className="banner__sync"><Activity size={14} /> Estado de sessão</span></div>
           <div className="banner__content"><p className="eyebrow">{sheet.identity.campaign || "Campanha sem título"} <i>•</i> {sheet.identity.world || "Mundo sem título"}</p><h2>{sheet.identity.name || "Nome do personagem"}</h2><p>{sheet.identity.concept || "Descreva o papel deste personagem na mesa."}</p></div>
