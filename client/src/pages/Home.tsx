@@ -12,11 +12,13 @@ import {
   CircleAlert,
   Crosshair,
   Dices,
+  FileJson,
   HeartPulse,
   History,
   Minus,
   PackagePlus,
   Plus,
+  Printer,
   Save,
   ScrollText,
   Shield,
@@ -132,7 +134,7 @@ function MetricCard({ label, value, detail, tone = "navy" }: { label: string; va
 function SectionHeader({ kicker, title, description, icon: Icon, action }: { kicker: string; title: string; description: string; icon: typeof BookOpen; action?: React.ReactNode }) {
   return (
     <div className="section-header">
-      <div className="section-header__tab"><img src={MARK} alt="" /><b>{kicker.slice(0, 2)}</b><span>{title}</span></div>
+      <div className="section-header__tab"><img src={MARK} alt="" /><b>{kicker.slice(0, 2)}</b><span>{title.split(" ").map((word) => word[0]).join("").slice(0, 3)}</span></div>
       <div>
         <span className="eyebrow"><Icon size={12} /> {kicker}</span>
         <h2>{title}</h2>
@@ -248,6 +250,51 @@ export default function Home() {
   const resetSheet = () => {
     setSheet(initialSheet);
     setLastRoll(null);
+  };
+
+  const safeFileName = (value: string) => value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .toLowerCase() || "personagem";
+
+  const exportJson = () => {
+    const exportedSheet = {
+      schemaVersion: "1.0",
+      application: "Ficha GURPS 4e — Códice de Campo",
+      exportedAt: new Date().toISOString(),
+      character: sheet,
+      calculations: {
+        hpMax: calculated.hpMax,
+        fpMax: calculated.fpMax,
+        will: calculated.will,
+        perception: calculated.perception,
+        speed: calculated.speed,
+        move: calculated.move,
+        dodge: calculated.dodge,
+        basicLift: calculated.basicLift,
+        carriedWeight: calculated.carriedWeight,
+        encumbrance: calculated.encumbrance,
+        pointsSpent: calculated.totalSpent,
+        pointsAvailable: calculated.available,
+      },
+    };
+    const blob = new Blob([JSON.stringify(exportedSheet, null, 2)], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `ficha-gurps4e-${safeFileName(sheet.identity.name)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    addLog("Exportou a ficha em JSON.", "note");
+  };
+
+  const exportPdf = () => {
+    addLog("Abriu a ficha para salvar em PDF.", "note");
+    window.setTimeout(() => window.print(), 80);
   };
 
   return (
@@ -406,7 +453,7 @@ export default function Home() {
             </div>
             <div className="points-ledger"><div><span className="eyebrow">ORÇAMENTO</span><h3>Pontos de personagem</h3><p>A conta abaixo muda ao editar atributos, traços e perícias.</p></div><div className="ledger-values"><label><span>Iniciais</span><input type="number" value={sheet.points.initial} onChange={(event) => setSheet((current) => ({ ...current, points: { ...current.points, initial: number(event.target.value) } }))} /></label><label><span>Ganhos</span><input type="number" value={sheet.points.earned} onChange={(event) => setSheet((current) => ({ ...current, points: { ...current.points, earned: number(event.target.value) } }))} /></label><div><span>Gastos</span><strong>{calculated.totalSpent}</strong></div><div className={calculated.available < 0 ? "ledger-total is-negative" : "ledger-total"}><span>Disponíveis</span><strong>{calculated.available}</strong></div></div><div className="ledger-breakdown"><span>Atributos <b>{calculated.attributePoints}</b></span><span>Vantagens <b>{calculated.advantagePoints}</b></span><span>Desvantagens <b>{calculated.disadvantagePoints}</b></span><span>Perícias <b>{calculated.skillPoints}</b></span></div></div>
             {calculated.available < 0 && <div className="validation-warning"><CircleAlert size={18} /><span>Você ultrapassou o orçamento por {Math.abs(calculated.available)} pontos. Revise atributos, traços ou a recompensa da campanha.</span></div>}
-            <div className="bottom-actions"><span><ArrowDownRight size={16} /> Esta ficha é salva apenas neste navegador.</span><button type="button" onClick={resetSheet}><ArrowUpRight size={16} /> Restaurar exemplo</button></div>
+            <div className="bottom-actions"><span><ArrowDownRight size={16} /> Esta ficha é salva apenas neste navegador.</span><div className="export-actions"><button type="button" onClick={exportJson}><FileJson size={16} /> Baixar JSON</button><button type="button" className="pdf-action" onClick={exportPdf}><Printer size={16} /> Salvar em PDF</button><button type="button" className="restore-action" onClick={resetSheet}><ArrowUpRight size={16} /> Restaurar exemplo</button></div></div>
           </section>
         </div>
       </main>
