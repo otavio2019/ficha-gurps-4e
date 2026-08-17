@@ -717,10 +717,10 @@ input:focus, textarea:focus { border-bottom-color: #e14144 !important; }
 .ally-sheet__header p { margin: 0; color: #aaa9af; font-size: .62rem; }
 .ally-sheet__status { display: grid; grid-template-columns: 1fr 28px; gap: .28rem; min-width: 155px; }
 .ally-sheet__status > span { grid-column: 1 / -1; color: #ff989a; font-size: .52rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
-.ally-status-select { width: 100% !important; height: 1.75rem !important; min-width: 0; justify-content: space-between; border: 1px solid rgb(225 65 68 / .52) !important; border-radius: 0 !important; background: #15171c !important; color: #f5f1e9 !important; font-size: .62rem !important; box-shadow: none !important; }
-.ally-status-select:hover { border-color: #ff989a !important; background: #1b1e25 !important; }
+.ally-status-select { width: 100% !important; height: 1.75rem !important; min-width: 0; justify-content: space-between; border: 1px solid rgb(225 65 68 / .52) !important; border-radius: 0 !important; background: #000 !important; color: #f5f1e9 !important; font-size: .62rem !important; box-shadow: none !important; }
+.ally-status-select:hover { border-color: #ff989a !important; background: #000 !important; }
 .ally-status-select:focus-visible { outline: 2px solid #ff989a !important; outline-offset: 2px; }
-.ally-status-menu { z-index: 70 !important; min-width: var(--radix-select-trigger-width) !important; border: 1px solid #e14144 !important; border-radius: 0 !important; background: #101217 !important; color: #f5f1e9 !important; box-shadow: 5px 6px 0 rgb(0 0 0 / .35) !important; }
+.ally-status-menu { z-index: 70 !important; min-width: var(--radix-select-trigger-width) !important; border: 1px solid #e14144 !important; border-radius: 0 !important; background: #000 !important; color: #f5f1e9 !important; box-shadow: 5px 6px 0 rgb(0 0 0 / .35) !important; }
 .ally-status-menu [data-slot="select-item"] { min-height: 30px; border-radius: 0; color: #f5f1e9 !important; font-size: .66rem; }
 .ally-status-menu [data-slot="select-item"][data-highlighted] { background: #b5373a !important; color: #fff !important; }
 .ally-status-menu [data-slot="select-item"][data-state="checked"] { color: #ffb7b8 !important; }

@@ -41,3 +41,6 @@
 - A prévia de desenvolvimento carregou após a substituição do seletor nativo, pronta para a validação visual do menu personalizado.
 - A mini-ficha de aliado agora expõe o estado como um botão de combobox acessível, em vez do seletor nativo que não permitia controlar o contraste das opções.
 - O menu personalizado exibiu todas as sete opções sobre fundo escuro com texto claro e destaque vermelho. A seleção de “Ferido” atualizou corretamente tanto o controle quanto o resumo do aliado.
+- O combobox de estado e o menu de opções foram ajustados para fundo preto sólido, mantendo texto claro e realce vermelho na seleção.
+- Um aliado temporário foi criado na prévia para confirmar visualmente o novo acabamento preto sólido do combobox.
+- A prévia confirmou que o combobox fechado e o menu aberto usam preto sólido, enquanto os itens continuam em texto claro com a opção destacada em vermelho.

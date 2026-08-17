@@ -99,3 +99,4 @@
 ## Correção de contraste do seletor
 
 - [x] Ajustar o contraste das opções do seletor de status para mantê-las legíveis no tema escuro.
+- [x] Aplicar fundo preto sólido ao combobox de status e ao respectivo menu de opções.
