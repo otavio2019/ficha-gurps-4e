@@ -1,0 +1,32 @@
+{
+  "viewportWidth": 375,
+  "scrollWidth": 375,
+  "sectionTitles": [
+    "BASE DO PERSONAGEM",
+    "ESTADO DA SESSÃO",
+    "COMBATE, ARMAS E PODERES",
+    "PERÍCIAS",
+    "VANTAGENS",
+    "DESVANTAGENS",
+    "EQUIPAMENTO",
+    "ALIADOS",
+    "MISSÕES",
+    "HOMEBREW",
+    "DIÁRIO RECENTE"
+  ],
+  "allyVisible": true,
+  "allyWidth": 309,
+  "cardWidths": [
+    343,
+    343,
+    343,
+    343,
+    343,
+    343,
+    343,
+    343,
+    343,
+    343,
+    343
+  ]
+}

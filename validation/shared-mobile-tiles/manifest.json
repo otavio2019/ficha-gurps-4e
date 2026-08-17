@@ -1,0 +1,203 @@
+{
+  "source": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-production-full.png",
+  "pixel_width": 375,
+  "pixel_height": 12000,
+  "aspect_ratio": "1:32",
+  "aspect_ratio_decimal_width_over_height": 0.03125,
+  "orientation": "portrait",
+  "tiled": true,
+  "mode": "vertical",
+  "overlap_fraction_requested_target": 0.12,
+  "overlap_fraction_actual_minimum": {
+    "horizontal": 0.0,
+    "vertical": 0.135
+  },
+  "reading_order": "top-to-bottom",
+  "tile_count": 23,
+  "tiles": [
+    {
+      "index": 1,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_001_x000000_y000000.png",
+      "x": 0,
+      "y": 0,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 2,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_002_x000000_y000518.png",
+      "x": 0,
+      "y": 518,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 3,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_003_x000000_y001036.png",
+      "x": 0,
+      "y": 1036,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 4,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_004_x000000_y001555.png",
+      "x": 0,
+      "y": 1555,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 5,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_005_x000000_y002073.png",
+      "x": 0,
+      "y": 2073,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 6,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_006_x000000_y002591.png",
+      "x": 0,
+      "y": 2591,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 7,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_007_x000000_y003109.png",
+      "x": 0,
+      "y": 3109,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 8,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_008_x000000_y003627.png",
+      "x": 0,
+      "y": 3627,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 9,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_009_x000000_y004145.png",
+      "x": 0,
+      "y": 4145,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 10,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_010_x000000_y004664.png",
+      "x": 0,
+      "y": 4664,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 11,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_011_x000000_y005182.png",
+      "x": 0,
+      "y": 5182,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 12,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_012_x000000_y005700.png",
+      "x": 0,
+      "y": 5700,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 13,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_013_x000000_y006218.png",
+      "x": 0,
+      "y": 6218,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 14,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_014_x000000_y006736.png",
+      "x": 0,
+      "y": 6736,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 15,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_015_x000000_y007255.png",
+      "x": 0,
+      "y": 7255,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 16,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_016_x000000_y007773.png",
+      "x": 0,
+      "y": 7773,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 17,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_017_x000000_y008291.png",
+      "x": 0,
+      "y": 8291,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 18,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_018_x000000_y008809.png",
+      "x": 0,
+      "y": 8809,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 19,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_019_x000000_y009327.png",
+      "x": 0,
+      "y": 9327,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 20,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_020_x000000_y009845.png",
+      "x": 0,
+      "y": 9845,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 21,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_021_x000000_y010364.png",
+      "x": 0,
+      "y": 10364,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 22,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_022_x000000_y010882.png",
+      "x": 0,
+      "y": 10882,
+      "pixel_width": 375,
+      "pixel_height": 600
+    },
+    {
+      "index": 23,
+      "path": "/home/ubuntu/ficha-gurps-4e/validation/shared-mobile-tiles/tile_023_x000000_y011400.png",
+      "x": 0,
+      "y": 11400,
+      "pixel_width": 375,
+      "pixel_height": 600
+    }
+  ]
+}
