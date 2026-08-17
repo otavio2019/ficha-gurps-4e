@@ -863,6 +863,19 @@ export default function Home() {
 
       <main className="codex-main">
         <div className="mobile-brand"><img src={MARK} alt="" /><span>GURPS 4e</span><button type="button" onClick={() => setView("library")}><UsersRound size={16} /> Arquivo</button><button type="button" onClick={() => navigateTo("diario")}><Dices size={17} /> Rolar</button></div>
+        <nav className="mobile-section-nav" aria-label="Navegação móvel pelas abas da ficha">
+          <span className="mobile-section-nav__label">ABAS DA FICHA</span>
+          <Select value={activeSection} onValueChange={navigateTo}>
+            <SelectTrigger className="mobile-section-nav__trigger" aria-label="Escolher uma aba da ficha">
+              <SelectValue placeholder="Escolha uma aba" />
+            </SelectTrigger>
+            <SelectContent className="mobile-section-nav__content">
+              {navItems.map(({ id, label, icon: Icon }, index) => (
+                <SelectItem key={id} value={id} className="mobile-section-nav__item"><Icon size={15} /> {String(index + 1).padStart(2, "0")} · {label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </nav>
         <section className="banner" style={{ backgroundImage: `linear-gradient(90deg, rgba(248, 244, 235, .96) 0%, rgba(248, 244, 235, .82) 53%, rgba(248, 244, 235, .22) 100%), url(${BANNER})` }}>
           <div className="banner__topline"><span>FICHA DE AVENTUREIRO</span><span className="banner__sync"><Activity size={14} /> Estado de sessão</span></div>
           <div className="banner__content"><p className="eyebrow">{sheet.identity.campaign || "Campanha sem título"} <i>•</i> {sheet.identity.world || "Mundo sem título"}</p><h2>{sheet.identity.name || "Nome do personagem"}</h2><p>{sheet.identity.concept || "Descreva o papel deste personagem na mesa."}</p></div>

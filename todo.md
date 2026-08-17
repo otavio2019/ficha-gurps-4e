@@ -169,4 +169,11 @@
 
 - [x] Verificar a nova falha ocorrida no agendamento remoto do construtor.
 - [x] Confirmar a compilação local e a ausência de erro de código antes de repetir a publicação.
-- [ ] Repetir a publicação e confirmar a disponibilidade do domínio.
+- [x] Repetir a publicação e confirmar a disponibilidade do domínio.
+
+## Navegação móvel entre abas
+
+- [x] Analisar a acessibilidade atual das abas em telas pequenas.
+- [x] Adicionar um controle móvel para acessar e trocar todas as abas da ficha.
+- [x] Validar em viewport móvel real que o seletor aparece, abre e troca o painel ativo.
+- [x] Confirmar em documentação a barra lateral preservada em desktop e o seletor nativo abaixo de 880 px.
