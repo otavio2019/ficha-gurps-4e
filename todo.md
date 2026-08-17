@@ -160,6 +160,7 @@
 
 ## Correção de implantação
 
-- [ ] Investigar os registros da falha de implantação e identificar sua causa.
-- [ ] Corrigir a causa no código ou na configuração do projeto.
-- [ ] Validar a compilação e publicar uma nova versão com sucesso.
+- [x] Investigar os registros disponíveis da falha de implantação: a tentativa parou no agendamento remoto antes de iniciar a compilação.
+- [x] Confirmar que não havia erro de código ou configuração de implantação no projeto local.
+- [x] Validar a compilação e publicar uma nova versão com sucesso.
+- [x] Registrar formalmente que a causa raiz da falha anterior é inconclusiva por falta de logs adicionais da plataforma.
