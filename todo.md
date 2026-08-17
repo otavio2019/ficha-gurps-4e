@@ -82,10 +82,10 @@
 
 ## Missões e Homebrew
 
-- [ ] Adicionar controles individuais para excluir ataques, poderes e itens.
-- [ ] Criar uma aba de Missões com relatório, dificuldade, pontos ganhos, dinheiro e observações.
-- [ ] Aplicar pontos ganhos da missão ao orçamento do personagem e registrar a conclusão no diário.
-- [ ] Criar uma aba de Homebrew para regras, raças, habilidades e notas personalizadas.
+- [x] Adicionar controles individuais para excluir ataques, poderes e itens.
+- [x] Criar uma aba de Missões com relatório, dificuldade, pontos ganhos, dinheiro e observações.
+- [x] Aplicar pontos ganhos da missão ao orçamento do personagem e registrar a conclusão no diário.
+- [x] Criar uma aba de Homebrew para regras, raças, habilidades e notas personalizadas.
 - [ ] Validar as abas de Missões e Homebrew, incluindo os controles de exclusão, em desktop e celular.
 
 ## Correções de remoção e pontos
@@ -95,3 +95,7 @@
 - [x] Descontar corretamente todos os valores adicionais dos pontos disponíveis.
 - [x] Adicionar testes automatizados para cálculo de pontos e remoções de listas.
 - [x] Validar os controles de exclusão e os totais na interface.
+
+## Correção de contraste do seletor
+
+- [x] Ajustar o contraste das opções do seletor de status para mantê-las legíveis no tema escuro.

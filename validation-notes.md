@@ -23,3 +23,21 @@
 - A Visão geral agora mostra os custos por nível de HP, FP, Will, Per, Speed, Move e Dodge; os bônus existentes de Will e Per passaram a reduzir os pontos disponíveis em 10 no total.
 - Ao elevar Speed em um nível, os pontos disponíveis caíram de 53 para 48 e Dodge subiu de 8 para 9; ao restaurar o valor, ambos retornaram ao estado original.
 - As abas Características e Perícias agora exibem um controle individual de exclusão para cada vantagem, desvantagem e perícia, além dos controles já existentes de ataques, itens, aliados e poderes.
+- A biblioteca de personagens mantém ações de criação, compartilhamento, abertura e exclusão acessíveis em 375 px de largura.
+- Um link público existente foi aberto em 375 px sem autenticação, exibindo identidade, retrato, estatísticas, atributos, ataques e perícias; a interface informa que as atualizações são instantâneas.
+- Na versão publicada, o estado visitante exibe os controles Entrar e Criar conta, informa o salvamento local e mantém as ações de abrir, duplicar e excluir personagem disponíveis.
+- Após abrir a ficha local, as dez abas laterais foram exibidas e somente Visão geral permaneceu ativa no fluxo inicial, preservando a navegação por painéis exclusivos.
+- A aba Combate exibiu ataques com rolagem e exclusão individual, mapa corporal clicável com DR por região e o painel de poderes de combate.
+- A aba Poderes exibiu corretamente o estado vazio, o controle de adição e os indicadores de custo em pontos, habilidades disponíveis e FP restante.
+- A aba Equipamento exibiu itens de inventário com exclusão individual e recalculou carga, movimento e Dodge a partir do peso carregado.
+- A aba Missões exibiu o estado vazio, o controle de novo relatório e os indicadores de quantidade de registros, missões concluídas e pontos aplicados.
+- A aba Homebrew exibiu o estado vazio, o controle de criação de conteúdo e os indicadores de entradas e regras da mesa.
+- A aba Diário preservou os controles de download JSON, impressão em PDF e compartilhamento; o detalhamento do orçamento exibiu corretamente a linha de valores adicionais com 10 pontos.
+- O botão de entrada iniciou corretamente o redirecionamento OAuth. A sessão automatizada do portal ficou indisponível antes de concluir o retorno, portanto o teste ponta a ponta de login, upload e sincronização entre duas sessões continua pendente nesta execução.
+- As regras responsivas da interface foram revisadas: em até 820 px, combate, Homebrew e missões passam a uma coluna; em até 620 px, ataques, inventário, poderes, missões e cartões de aliados reorganizam campos e preservam seus controles de ação.
+- A ficha local publicada foi reaberta após o ajuste de contraste para validar o seletor de estado de aliados diretamente na interface.
+- Um aliado local temporário foi criado para expor o seletor de estado e suas sete opções durante a validação visual; ele será removido após o teste.
+- A validação confirmou que o menu nativo mantém o painel de opções sob controle visual do navegador, ignorando as cores das opções. O seletor será substituído por um menu acessível do próprio aplicativo para garantir contraste consistente.
+- A prévia de desenvolvimento carregou após a substituição do seletor nativo, pronta para a validação visual do menu personalizado.
+- A mini-ficha de aliado agora expõe o estado como um botão de combobox acessível, em vez do seletor nativo que não permitia controlar o contraste das opções.
+- O menu personalizado exibiu todas as sete opções sobre fundo escuro com texto claro e destaque vermelho. A seleção de “Ferido” atualizou corretamente tanto o controle quanto o resumo do aliado.
