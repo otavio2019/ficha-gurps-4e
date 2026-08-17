@@ -52,3 +52,11 @@
 - A área de aliados agora mantém a mini-ficha contida no painel principal, com a lista lateral mais compacta e os blocos de conteúdo distribuídos sem ultrapassar a largura disponível.
 - Na aba interna de atributos, os quatro atributos foram reorganizados em uma grade de duas colunas e os recursos derivados permaneceram contidos no painel, sem sobreposição. O aliado temporário usado no teste foi removido ao final.
 - As regras responsivas agora empilham a mini-ficha e convertem suas abas internas para duas colunas em telas estreitas; a validação interativa confirmou que a visualização em desktop não cria rolagem horizontal.
+- A versão publicada permaneceu disponível após o ajuste, mantendo a biblioteca sincronizada e os links compartilhados visíveis na tela inicial.
+- A prévia de desenvolvimento foi reaberta após a inclusão dos controles de exclusão individuais nas listas da mini-ficha de aliados.
+- Um aliado temporário foi criado para adicionar e remover entradas de vantagens, desvantagens, perícias e ataques durante a validação dos novos controles.
+- Na aba Características, uma vantagem temporária exibiu o botão individual de exclusão ao lado de seu custo, confirmando a ação disponível para cada registro do aliado.
+- A exclusão removeu corretamente a vantagem temporária. Na aba Perícias, a nova linha exibiu também um botão individual de exclusão ao lado dos campos de nível e pontos.
+- A exclusão removeu corretamente a perícia temporária. Na aba Combate, a nova linha de ataque exibiu o botão individual de exclusão após os campos de dano e alcance.
+- A exclusão removeu corretamente o ataque temporário. A aba Características foi reaberta para testar o mesmo fluxo em uma desvantagem.
+- A desvantagem temporária exibiu o botão individual e foi removida corretamente, concluindo a validação das quatro listas solicitadas: vantagens, desvantagens, perícias e ataques.

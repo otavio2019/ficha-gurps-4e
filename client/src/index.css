@@ -759,14 +759,18 @@ input:focus, textarea:focus { border-bottom-color: #e14144 !important; }
 .ally-derived span { padding: .4rem; border-left: 2px solid rgb(225 65 68 / .55); background: #0d0f13; color: #aaa9af; font-size: .52rem; }
 .ally-derived b { display: block; margin-top: .12rem; color: #f5f1e9; font-family: "DM Serif Display", serif; font-size: 1rem; font-weight: 400; }
 .ally-mini-list { display: grid; gap: .35rem; margin-top: .5rem; }
-.ally-mini-list > div { display: grid; grid-template-columns: 1fr 42px; gap: .28rem; padding-bottom: .35rem; border-bottom: 1px solid rgb(255 255 255 / .08); }
+.ally-mini-list > div { display: grid; grid-template-columns: minmax(0, 1fr) 42px 27px; gap: .28rem; padding-bottom: .35rem; border-bottom: 1px solid rgb(255 255 255 / .08); }
 .ally-mini-list textarea { grid-column: 1 / -1; min-height: 30px; color: #aaa9af; font-size: .59rem; resize: vertical; }
-.ally-skill-table > div, .ally-inventory-table > div { display: grid; grid-template-columns: minmax(100px, 1fr) 54px 54px 42px 42px; gap: .28rem; align-items: center; padding: .38rem 0; border-bottom: 1px solid rgb(255 255 255 / .08); color: #ff989a; font-size: .52rem; font-weight: 700; }
+.ally-skill-table > div { display: grid; grid-template-columns: minmax(100px, 1fr) 54px 54px 42px 42px 27px; gap: .28rem; align-items: center; padding: .38rem 0; border-bottom: 1px solid rgb(255 255 255 / .08); color: #ff989a; font-size: .52rem; font-weight: 700; }
+.ally-inventory-table > div { display: grid; grid-template-columns: minmax(100px, 1fr) 54px 54px 42px 42px; gap: .28rem; align-items: center; padding: .38rem 0; border-bottom: 1px solid rgb(255 255 255 / .08); color: #ff989a; font-size: .52rem; font-weight: 700; }
 .ally-skill-table > div:not(:first-child), .ally-inventory-table > div:not(:first-child) { color: inherit; font-weight: 400; }
 .ally-skill-table input, .ally-inventory-table input { min-width: 0; color: #f5f1e9 !important; font-size: .6rem; }
 .ally-attack-list { display: grid; gap: .35rem; margin-top: .5rem; }
-.ally-attack-list > div { display: grid; grid-template-columns: 1.25fr 42px 1fr 45px; gap: .28rem; }
+.ally-attack-list > div { display: grid; grid-template-columns: minmax(0, 1.25fr) 42px minmax(0, 1fr) 45px 27px; gap: .28rem; }
 .ally-attack-list input { min-width: 0; color: #f5f1e9 !important; font-size: .6rem; }
+.ally-list-delete { display: grid; width: 27px; height: 27px; place-items: center; align-self: center; border: 1px solid rgb(225 65 68 / .5); background: #0d0f13; color: #ff989a; transition: background .16s var(--ease-out), border-color .16s var(--ease-out), transform .16s var(--ease-out); }
+.ally-list-delete:hover { border-color: #ff989a; background: rgb(181 55 58 / .26); color: #fff3ef; }
+.ally-list-delete:active { transform: scale(.94); }
 .ally-condition-grid { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .55rem; }
 .ally-condition-grid button { padding: .32rem .42rem; border: 1px solid rgb(255 255 255 / .14); background: transparent; color: #aaa9af; font-size: .56rem; }
 .ally-condition-grid button.is-on { border-color: #e14144; background: rgb(181 55 58 / .25); color: #fff3ef; }
