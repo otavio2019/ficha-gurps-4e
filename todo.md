@@ -149,3 +149,11 @@
 - [x] Validar a exibição e a inclusão de perícias traduzidas na ficha principal e em aliados.
 - [x] Normalizar termos de famílias relacionadas, incluindo as variantes de chicote, monofio e força.
 - [x] Testar convenções terminológicas e categorias esperadas no catálogo traduzido.
+
+## Descrições automáticas do catálogo
+
+- [x] Adicionar uma descrição curta em português para cada perícia do banco.
+- [x] Preencher automaticamente a descrição ao incluir uma perícia na ficha principal ou em um aliado.
+- [x] Validar o preenchimento de descrição na ficha principal e na mini-ficha de aliado.
+- [x] Integrar as descrições específicas de cada perícia ao catálogo publicado.
+- [x] Testar descrições distintas para Briga, Abrir Fechaduras/NT e Contabilidade.

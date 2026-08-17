@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { filterSkillCatalog, toSkillCatalogSearchText } from "../shared/gurpsSkillCatalog";
+import { getSkillCatalogDescription } from "../shared/skillCatalogDescription";
 import { appendCatalogSkill, createSkillFromCatalog } from "../shared/skillCatalogSelection";
 import { listGurpsSkillCatalog } from "./db";
 import { createAppRouter } from "./routers";
@@ -12,8 +13,12 @@ describe("catálogo de perícias", () => {
     expect(new Set(catalog.map(skill => skill.id)).size).toBe(catalog.length);
     expect(new Set(catalog.map(skill => skill.name)).size).toBe(catalog.length);
     expect(catalog.every(skill => skill.name && skill.originalName)).toBe(true);
+    expect(catalog.every(skill => skill.summary && skill.summary.length > 20)).toBe(true);
     expect(catalog.find(skill => skill.id === "brawling")).toMatchObject({ name: "Briga", originalName: "Brawling" });
     expect(catalog.find(skill => skill.id === "stealth")).toMatchObject({ name: "Furtividade", originalName: "Stealth" });
+    expect(catalog.find(skill => skill.id === "brawling")?.summary).toBe("Trocar socos e impedir adversários corpo a corpo, usando improvisação e controle de distância para dominar o confronto.");
+    expect(catalog.find(skill => skill.id === "lockpicking-tl")?.summary).toBe("Desarma fechaduras tecnológicas e mecânicas, avaliando mecanismos e aplicando ferramentas para acesso discreto.");
+    expect(catalog.find(skill => skill.id === "accounting")?.summary).toBe("Avaliar finanças, detectar fraudes e organizar registros econômicos complexos para tomada de decisões informadas.");
     expect(catalog.filter(skill => skill.id.includes("whip")).map(skill => ({ id: skill.id, name: skill.name, category: skill.category }))).toEqual([
       { id: "force-whip", name: "Chicote de Força", category: "Combate" },
       { id: "monowire-whip", name: "Chicote de Monofio", category: "Combate" },
@@ -21,6 +26,7 @@ describe("catálogo de perícias", () => {
       { id: "whip-force", name: "Chicote (Força)", category: "Combate" },
       { id: "whip-monowire", name: "Chicote (Monofio)", category: "Combate" },
     ]);
+    expect(getSkillCatalogDescription({ name: "Briga", category: "Combate", requiresSpecialization: false, usesTechLevel: false })).toContain("técnicas de combate");
   });
 
   it("normaliza a busca em português e inglês, limita o resultado e não muta os registros", () => {
@@ -50,10 +56,10 @@ describe("catálogo de perícias", () => {
   });
 
   it("preenche a perícia escolhida em português para personagem e aliado com o atributo correto", () => {
-    const brawling = { id: "brawling", name: "Briga", originalName: "Brawling", attribute: "DX", difficulty: "Fácil", category: "Combate", requiresSpecialization: false, usesTechLevel: false, reference: "Teste" };
+    const brawling = { id: "brawling", name: "Briga", originalName: "Brawling", attribute: "DX", difficulty: "Fácil", category: "Combate", requiresSpecialization: false, usesTechLevel: false, summary: "Descrição de Briga vinda do catálogo.", reference: "Teste" };
     const accounting = { ...brawling, id: "accounting", name: "Contabilidade", originalName: "Accounting", attribute: "IQ", difficulty: "Difícil", category: "Geral" };
 
-    expect(createSkillFromCatalog(brawling, { st: 12, dx: 12, iq: 11, ht: 11 }, "main")).toMatchObject({ id: "main", name: "Briga", relative: "DX+0", level: 12, points: 1 });
+    expect(createSkillFromCatalog(brawling, { st: 12, dx: 12, iq: 11, ht: 11 }, "main")).toMatchObject({ id: "main", name: "Briga", relative: "DX+0", level: 12, points: 1, description: "Descrição de Briga vinda do catálogo." });
     expect(createSkillFromCatalog(accounting, { st: 10, dx: 10, iq: 10, ht: 10 }, "ally")).toMatchObject({ id: "ally", name: "Contabilidade", relative: "IQ+0", level: 10, points: 1 });
   });
 

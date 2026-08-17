@@ -31,7 +31,7 @@ export function createSkillFromCatalog(entry: CatalogSkillSelection, values: Ski
     relative: `${entry.attribute}+0`,
     level: skillLevelFromCatalog(entry.attribute, values, willBonus, perBonus),
     points: 1,
-    description: entry.summary || "",
+    description: entry.summary?.trim() || "",
   };
 }
 

@@ -175,6 +175,7 @@ export async function seedGurpsSkillCatalog() {
       category: sql`VALUES(${gurpsSkillCatalog.category})`,
       requiresSpecialization: sql`VALUES(${gurpsSkillCatalog.requiresSpecialization})`,
       usesTechLevel: sql`VALUES(${gurpsSkillCatalog.usesTechLevel})`,
+      summary: sql`VALUES(${gurpsSkillCatalog.summary})`,
       reference: sql`VALUES(${gurpsSkillCatalog.reference})`,
     },
   });
