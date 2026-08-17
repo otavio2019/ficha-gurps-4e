@@ -106,3 +106,7 @@
 ## Apresentação
 
 - [x] Escrever um texto simples de apresentação da ficha digital GURPS 4e.
+
+## Correção de sincronização local
+
+- [x] Impedir mutações na nuvem para fichas locais ou sem autorização de edição.

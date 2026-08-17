@@ -61,3 +61,4 @@
 - A exclusão removeu corretamente o ataque temporário. A aba Características foi reaberta para testar o mesmo fluxo em uma desvantagem.
 - A desvantagem temporária exibiu o botão individual e foi removida corretamente, concluindo a validação das quatro listas solicitadas: vantagens, desvantagens, perícias e ataques.
 - Em 375 px, a biblioteca publicada manteve a conta conectada, o painel de links compartilhados, os cartões de personagem e suas ações sem sobreposição ou rolagem horizontal.
+- A sincronização agora separa fichas locais de fichas carregadas da conta: o salvamento automático ignora registros locais e ações de retrato ou compartilhamento criam uma cópia própria na nuvem antes de mutar. A biblioteca local foi carregada sem erros no console; o teste de regressão confirma que registros locais não entram na lista de mutações de nuvem.

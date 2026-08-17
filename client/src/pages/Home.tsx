@@ -10,6 +10,7 @@ import { liveSocket } from "@/lib/live";
 import { trpc } from "@/lib/trpc";
 import { allyFrequencyMultipliers, allyPowerCosts, calculateAllyCostByRule } from "@shared/allyRules";
 import { calculatePointBudget, SECONDARY_POINT_COSTS } from "@shared/characterPoints";
+import { selectCloudBackedRecords } from "@shared/cloudSync";
 import {
   Activity,
   ArrowDownRight,
@@ -318,6 +319,7 @@ export default function Home() {
   const [selectedAllyId, setSelectedAllyId] = useState<string | null>(null);
   const [activeAllyTab, setActiveAllyTab] = useState<AllyTab>("visao");
   const [remoteLoaded, setRemoteLoaded] = useState(false);
+  const [cloudCharacterIds, setCloudCharacterIds] = useState<string[]>([]);
   const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "error">("idle");
   const [portraitPreview, setPortraitPreview] = useState<string | null>(null);
   const saveDelay = useRef<number | null>(null);
@@ -360,6 +362,7 @@ export default function Home() {
       }));
       setCharacters(remoteCharacters);
       setActiveCharacterId(remoteCharacters[0].id);
+      setCloudCharacterIds(remoteCharacters.map((character) => character.id));
     }
     setRemoteLoaded(true);
   }, [charactersQuery.data, isAuthenticated, remoteLoaded]);
@@ -391,14 +394,16 @@ export default function Home() {
   useEffect(() => {
     if (!isAuthenticated || !remoteLoaded) return;
     if (applyingCloudUpdate.current) { applyingCloudUpdate.current = false; return; }
+    const cloudCharacters = selectCloudBackedRecords(characters, cloudCharacterIds);
+    if (!cloudCharacters.length) return;
     if (saveDelay.current) window.clearTimeout(saveDelay.current);
     saveDelay.current = window.setTimeout(() => {
-      characters.forEach((character) => {
+      cloudCharacters.forEach((character) => {
         saveCharacter.mutate({ id: character.id, name: character.sheet.identity.name || "Sem nome", portraitUrl: character.portraitUrl ?? null, sheet: character.sheet as unknown as Record<string, unknown> });
       });
     }, 700);
     return () => { if (saveDelay.current) window.clearTimeout(saveDelay.current); };
-  }, [characters, isAuthenticated, remoteLoaded]);
+  }, [characters, cloudCharacterIds, isAuthenticated, remoteLoaded]);
 
   const calculated = useMemo(() => {
     const hpMax = sheet.attributes.st + sheet.secondary.hpBonus;
@@ -680,6 +685,23 @@ export default function Home() {
     window.setTimeout(() => window.print(), 80);
   };
 
+  const ensureCloudCharacter = async (character: CharacterRecord) => {
+    if (!isAuthenticated) return null;
+    if (cloudCharacterIds.includes(character.id)) return character;
+
+    const cloudCharacter = { ...character, id: makeId(), createdAt: Date.now(), updatedAt: Date.now() };
+    await saveCharacter.mutateAsync({
+      id: cloudCharacter.id,
+      name: cloudCharacter.sheet.identity.name || "Sem nome",
+      portraitUrl: cloudCharacter.portraitUrl ?? null,
+      sheet: cloudCharacter.sheet as unknown as Record<string, unknown>,
+    });
+    setCharacters((current) => current.map((item) => item.id === character.id ? cloudCharacter : item));
+    setCloudCharacterIds((current) => current.includes(cloudCharacter.id) ? current : [...current, cloudCharacter.id]);
+    if (activeCharacter.id === character.id) setActiveCharacterId(cloudCharacter.id);
+    return cloudCharacter;
+  };
+
   const createCharacter = () => {
     const blankSheet = JSON.parse(JSON.stringify(initialSheet)) as Sheet;
     blankSheet.identity = { name: "Novo personagem", player: "", campaign: "", world: "", concept: "Defina a próxima aventura.", race: "Humano", tl: "TL 3" };
@@ -704,6 +726,9 @@ export default function Home() {
     setActiveSection("visao-geral");
     setLastRoll(null);
     setView("sheet");
+    if (isAuthenticated) void ensureCloudCharacter(character).then((cloudCharacter) => {
+      if (cloudCharacter) setActiveCharacterId(cloudCharacter.id);
+    });
   };
 
   const openCharacter = (id: string) => {
@@ -724,6 +749,9 @@ export default function Home() {
     setCharacters((current) => [duplicate, ...current]);
     setActiveCharacterId(duplicate.id);
     setView("sheet");
+    if (isAuthenticated) void ensureCloudCharacter(duplicate).then((cloudCharacter) => {
+      if (cloudCharacter) setActiveCharacterId(cloudCharacter.id);
+    });
   };
 
   const deleteCharacter = (id: string) => {
@@ -732,25 +760,26 @@ export default function Home() {
     if (!window.confirm(`Excluir permanentemente a ficha “${character?.sheet.identity.name || "Sem nome"}”?`)) return;
     const remaining = characters.filter((item) => item.id !== id);
     setCharacters(remaining);
-    if (isAuthenticated) removeCharacter.mutate({ id });
+    if (isAuthenticated && cloudCharacterIds.includes(id)) removeCharacter.mutate({ id });
+    setCloudCharacterIds((current) => current.filter((cloudId) => cloudId !== id));
     if (id === activeCharacter.id) setActiveCharacterId(remaining[0].id);
   };
 
   const handlePortraitUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !activeCharacter) return;
+    if (!isAuthenticated) { startLogin(); return; }
     if (!file.type.startsWith("image/")) { window.alert("Escolha um arquivo de imagem."); return; }
     if (file.size > 12_000_000) { window.alert("Escolha uma imagem de até 12 MB."); return; }
-    const currentId = activeCharacter.id;
-    const currentSheet = activeCharacter.sheet;
-    const previousPortrait = activeCharacter.portraitUrl ?? null;
     void (async () => {
       try {
+        const cloudCharacter = await ensureCloudCharacter(activeCharacter);
+        if (!cloudCharacter) return;
         const dataUrl = await preparePortraitUpload(file);
         setPortraitPreview(dataUrl);
-        await saveCharacter.mutateAsync({ id: currentId, name: currentSheet.identity.name || "Sem nome", portraitUrl: previousPortrait, sheet: currentSheet as unknown as Record<string, unknown> });
-        const uploaded = await uploadPortrait.mutateAsync({ characterId: currentId, dataUrl });
-        setCharacters((current) => current.map((character) => character.id === currentId ? { ...character, portraitUrl: uploaded.portraitUrl, updatedAt: Date.now() } : character));
+        await saveCharacter.mutateAsync({ id: cloudCharacter.id, name: cloudCharacter.sheet.identity.name || "Sem nome", portraitUrl: cloudCharacter.portraitUrl ?? null, sheet: cloudCharacter.sheet as unknown as Record<string, unknown> });
+        const uploaded = await uploadPortrait.mutateAsync({ characterId: cloudCharacter.id, dataUrl });
+        setCharacters((current) => current.map((character) => character.id === cloudCharacter.id ? { ...character, portraitUrl: uploaded.portraitUrl, updatedAt: Date.now() } : character));
         setPortraitPreview(null);
       } catch (error) {
         setPortraitPreview(null);
@@ -764,8 +793,10 @@ export default function Home() {
   const shareActiveCharacter = async () => {
     if (!isAuthenticated) { startLogin(); return; }
     try {
-      await saveCharacter.mutateAsync({ id: activeCharacter.id, name: activeCharacter.sheet.identity.name || "Sem nome", portraitUrl: activeCharacter.portraitUrl ?? null, sheet: activeCharacter.sheet as unknown as Record<string, unknown> });
-      const share = await createShare.mutateAsync({ characterId: activeCharacter.id });
+      const cloudCharacter = await ensureCloudCharacter(activeCharacter);
+      if (!cloudCharacter) return;
+      await saveCharacter.mutateAsync({ id: cloudCharacter.id, name: cloudCharacter.sheet.identity.name || "Sem nome", portraitUrl: cloudCharacter.portraitUrl ?? null, sheet: cloudCharacter.sheet as unknown as Record<string, unknown> });
+      const share = await createShare.mutateAsync({ characterId: cloudCharacter.id });
       if (!share.token) throw new Error("Link indisponível");
       await sharesQuery.refetch();
       const url = `${window.location.origin}/compartilhar/${share.token}`;
