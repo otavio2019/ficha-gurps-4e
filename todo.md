@@ -164,3 +164,9 @@
 - [x] Confirmar que não havia erro de código ou configuração de implantação no projeto local.
 - [x] Validar a compilação e publicar uma nova versão com sucesso.
 - [x] Registrar formalmente que a causa raiz da falha anterior é inconclusiva por falta de logs adicionais da plataforma.
+
+## Nova investigação de implantação
+
+- [x] Verificar a nova falha ocorrida no agendamento remoto do construtor.
+- [x] Confirmar a compilação local e a ausência de erro de código antes de repetir a publicação.
+- [ ] Repetir a publicação e confirmar a disponibilidade do domínio.
