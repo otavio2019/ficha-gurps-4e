@@ -15,3 +15,11 @@
 - A aba Poderes foi validada ao criar um poder ofensivo com custo de 5 pontos e 1 FP; o orçamento disponível foi atualizado de 56 para 51 pontos.
 - O uso do poder reduziu FP de 11/11 para 10/11, e o mesmo poder apareceu automaticamente no painel de Combate como uma ação disponível com NH e custo de FP.
 - O poder foi acionado diretamente no painel de Combate, reduziu FP novamente para 9/11 e registrou tanto o gasto quanto a rolagem 3d6 no Diário de sessão.
+- Após reabrir a ficha pelo Arquivo de Campanha, a aba Visão geral foi exibida como único painel ativo e preservou o valor de FP atualizado em 9/11.
+- A aba Diário preservou os controles de exportação após a navegação por abas; Baixar JSON foi acionado e seu registro apareceu imediatamente no histórico de sessão.
+- A aba Missões criou o relatório “Defesa da Ponte Carmesim”; ao aplicar 12 pontos e 80 mo, o estado foi marcado como concluído, a recompensa ficou bloqueada contra duplicação e os pontos disponíveis passaram de 51 para 63.
+- A aba Homebrew abriu como painel independente e criou uma entrada editável com categoria, fonte, descrição e controle individual de exclusão.
+- O controle individual de exclusão removeu “Espada longa” do painel de Combate, mantendo “Ponta da espada” como o único ataque remanescente.
+- A Visão geral agora mostra os custos por nível de HP, FP, Will, Per, Speed, Move e Dodge; os bônus existentes de Will e Per passaram a reduzir os pontos disponíveis em 10 no total.
+- Ao elevar Speed em um nível, os pontos disponíveis caíram de 53 para 48 e Dodge subiu de 8 para 9; ao restaurar o valor, ambos retornaram ao estado original.
+- As abas Características e Perícias agora exibem um controle individual de exclusão para cada vantagem, desvantagem e perícia, além dos controles já existentes de ataques, itens, aliados e poderes.

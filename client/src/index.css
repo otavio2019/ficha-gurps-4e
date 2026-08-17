@@ -242,17 +242,18 @@
   .trait-card__head button { display: grid; width: 27px; height: 27px; place-items: center; border: 1px solid oklch(0.3 0.055 253 / .34); border-radius: 50%; background: transparent; color: oklch(0.3 0.055 253); }
   .trait-card__head button:hover { background: oklch(0.3 0.055 253); color: white; }
   .trait-rows { padding: 0 1.15rem; }
-  .trait-row { display: grid; grid-template-columns: 1fr 46px 78px; gap: .55rem; align-items: start; padding: .5rem 0; border-top: 1px solid oklch(0.76 0.018 79); }
-  .trait-row > input { grid-column: 1 / 3; height: 1.6rem; font-size: .78rem; font-weight: 600; }
-  .trait-row textarea { grid-column: 1 / 3; min-height: 1.75rem; resize: vertical; color: oklch(0.48 0.023 253); font-size: .66rem; line-height: 1.35; }
-  .trait-row label { grid-column: 3; grid-row: 1; display: flex; align-items: center; gap: .18rem; padding-top: .2rem; }
+.trait-row { display: grid; grid-template-columns: 1fr 46px 78px 29px; gap: .55rem; align-items: start; padding: .5rem 0; border-top: 1px solid oklch(0.76 0.018 79); }
+.trait-row > input { grid-column: 1 / 3; height: 1.6rem; font-size: .78rem; font-weight: 600; }
+.trait-row textarea { grid-column: 1 / 3; min-height: 1.75rem; resize: vertical; color: oklch(0.48 0.023 253); font-size: .66rem; line-height: 1.35; }
+.trait-row label { grid-column: 3; grid-row: 1; display: flex; align-items: center; gap: .18rem; padding-top: .2rem; }
   .trait-row label span { color: oklch(0.49 0.16 27); font-size: .56rem; font-weight: 700; }
   .trait-row label input { text-align: right; font-size: .75rem; font-weight: 700; }
-  .trait-row__source { grid-column: 3; grid-row: 2; height: 1.6rem; font-size: .59rem !important; text-align: right; }
+.trait-row__source { grid-column: 3; grid-row: 2; height: 1.6rem; font-size: .59rem !important; text-align: right; }
+.trait-row__delete { grid-column: 4; grid-row: 1 / span 2; align-self: center; }
   .trait-card__total { display: flex; justify-content: space-between; margin-top: .18rem; padding: .72rem 1.15rem; background: oklch(0.92 0.018 79); color: oklch(0.39 0.04 253); font-size: .69rem; }
   .trait-card__total strong { color: oklch(0.26 0.04 253); }
   .table-card { overflow: hidden; }
-  .skill-table { display: grid; grid-template-columns: minmax(150px, 2fr) .55fr .7fr .7fr .4fr .45fr 35px; gap: .5rem; align-items: center; padding: .51rem 1rem; border-bottom: 1px solid oklch(0.76 0.018 79); }
+.skill-table { display: grid; grid-template-columns: minmax(150px, 2fr) .55fr .7fr .7fr .4fr .45fr 35px 35px; gap: .5rem; align-items: center; padding: .51rem 1rem; border-bottom: 1px solid oklch(0.76 0.018 79); }
   .skill-table--head { padding-block: .56rem; background: oklch(0.92 0.018 79); color: oklch(0.44 0.035 253); font-size: .58rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
   .skill-table input { height: 1.45rem; padding: 0 .05rem; font-size: .72rem; }
   .skill-table button { display: grid; width: 27px; height: 27px; place-items: center; border: 1px solid oklch(0.49 0.16 27 / .44); border-radius: 50%; background: transparent; color: oklch(0.49 0.16 27); }
@@ -525,7 +526,8 @@
   .skill-table input:nth-child(2), .skill-table input:nth-child(3) { grid-column: span 1; }
   .skill-table input:nth-child(4) { grid-column: span 1; }
   .skill-table input:nth-child(5), .skill-table input:nth-child(6) { grid-column: span 1; }
-  .skill-table button { grid-column: 4; grid-row: 1; }
+  .skill-table .sigil-action { grid-column: 3; grid-row: 1; }
+  .skill-table .row-delete { grid-column: 4; grid-row: 1; }
   .skill-table__footer { grid-template-columns: 1fr auto; }
   .skill-table__footer small { grid-column: 1 / -1; }
   .item-grid { grid-template-columns: 1.35fr .8fr .48fr .67fr; gap: .4rem; padding: .55rem 0; }
@@ -811,6 +813,62 @@ input:focus, textarea:focus { border-bottom-color: #e14144 !important; }
 .powers-empty strong { font-family: "DM Serif Display", serif; font-size: 1.45rem; font-weight: 400; }
 .powers-empty small { max-width: 360px; color: #aaa9af; font-size: .68rem; line-height: 1.42; }
 .powers-empty b { display: inline-flex; align-items: center; gap: .28rem; color: #ff989a; font-size: .63rem; }
+.row-delete { display: grid; width: 29px; height: 29px; place-items: center; border: 1px solid rgb(225 65 68 / .52) !important; background: transparent !important; color: #ff989a !important; }
+.row-delete:hover { background: #b5373a !important; color: white !important; }
+.attack-row { grid-template-columns: minmax(130px, 1.4fr) minmax(125px, 1fr) .42fr .42fr 33px 33px; }
+.item-grid { grid-template-columns: minmax(130px, 1.7fr) minmax(100px, 1fr) .5fr .75fr .6fr .6fr 31px; }
+.power-delete { border-color: rgb(225 65 68 / .62) !important; background: transparent !important; color: #ff989a !important; }
+.power-delete:hover { background: #b5373a !important; color: white !important; }
+.missions-summary { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: .55rem; margin-bottom: .85rem; }
+.missions-summary > div { padding: .68rem .75rem; border: 1px solid rgb(255 255 255 / .11); border-top: 2px solid rgb(225 65 68 / .7); background: #101217; }
+.missions-summary > div:first-child { background: radial-gradient(circle at 100% 0%, rgb(225 65 68 / .22), transparent 55%), #101217; }
+.missions-summary span, .missions-summary small { display: block; color: #aaa9af; font-size: .54rem; font-weight: 700; letter-spacing: .05em; }
+.missions-summary strong { display: block; margin: .15rem 0; color: #f5f1e9; font-family: "DM Serif Display", serif; font-size: 2rem; font-weight: 400; line-height: .9; }
+.missions-summary b { display: block; margin-top: .38rem; color: #ff989a; font-family: "DM Serif Display", serif; font-size: 1.2rem; font-weight: 400; }
+.missions-list { display: grid; gap: .75rem; }
+.mission-card { display: grid; grid-template-columns: 42px minmax(0, 1fr) 142px; border: 1px solid rgb(255 255 255 / .12); border-top: 2px solid #e14144; background: repeating-linear-gradient(0deg, #111318 0, #111318 26px, rgb(255 255 255 / .025) 27px); box-shadow: 4px 5px 0 rgb(0 0 0 / .16); }
+.mission-card__folio { display: grid; align-content: start; justify-items: center; gap: .25rem; padding-top: .6rem; border-right: 1px solid rgb(255 255 255 / .1); color: #ff989a; }
+.mission-card__folio img { width: 18px; height: 18px; object-fit: contain; }
+.mission-card__folio span { writing-mode: vertical-rl; font-size: .47rem; font-weight: 700; letter-spacing: .1em; }
+.mission-card__folio b { font-family: "DM Serif Display", serif; font-size: 1rem; font-weight: 400; }
+.mission-card__main { padding: .7rem .75rem; }
+.mission-card__head { display: flex; gap: .45rem; }
+.mission-card__head input { min-width: 0; flex: 1; height: 1.8rem; color: #f5f1e9 !important; font-family: "DM Serif Display", serif; font-size: 1.2rem; }
+.mission-fields { display: grid; grid-template-columns: repeat(5, 1fr); gap: .4rem; margin-top: .55rem; }
+.mission-fields label { display: grid; gap: .16rem; min-width: 0; color: #aaa9af; font-size: .51rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.mission-fields label.wide { grid-column: 1 / -1; }
+.mission-fields input, .mission-fields select, .mission-fields textarea { min-width: 0; color: #f5f1e9 !important; font-size: .62rem; }
+.mission-fields textarea { min-height: 40px; resize: vertical; }
+.mission-rewards { display: flex; flex-direction: column; gap: .45rem; padding: .75rem; border-left: 1px solid rgb(255 255 255 / .1); background: rgb(0 0 0 / .22); }
+.mission-rewards > span { color: #ff989a; font-size: .5rem; font-weight: 700; letter-spacing: .06em; }
+.mission-rewards strong { color: #f5f1e9; font-family: "DM Serif Display", serif; font-size: 1.25rem; font-weight: 400; }
+.mission-rewards strong small, .mission-rewards b { color: #aaa9af; font-family: "IBM Plex Sans", sans-serif; font-size: .6rem; font-weight: 700; }
+.mission-rewards button { margin-top: auto; padding: .45rem; border: 1px solid #e14144; background: #7e2127; color: white; font-size: .6rem; font-weight: 700; }
+.mission-rewards button:hover:not(:disabled) { background: #b5373a; }
+.mission-rewards button:disabled { cursor: default; border-color: rgb(255 255 255 / .15); background: transparent; color: #aaa9af; }
+.missions-empty, .homebrew-empty { display: grid; min-height: 230px; justify-items: start; align-content: center; gap: .55rem; padding: 1.2rem; border: 1px dashed rgb(225 65 68 / .65); background: rgb(225 65 68 / .05); color: #f5f1e9; text-align: left; }
+.missions-empty > span, .homebrew-empty > span { display: grid; width: 40px; height: 40px; place-items: center; border: 1px solid #e14144; color: #ff989a; }
+.missions-empty strong, .homebrew-empty strong { font-family: "DM Serif Display", serif; font-size: 1.45rem; font-weight: 400; }
+.missions-empty small, .homebrew-empty small { max-width: 360px; color: #aaa9af; font-size: .68rem; line-height: 1.42; }
+.missions-empty b, .homebrew-empty b { display: inline-flex; align-items: center; gap: .28rem; color: #ff989a; font-size: .63rem; }
+.homebrew-board { display: grid; grid-template-columns: .32fr .68fr; gap: .85rem; }
+.homebrew-board > aside { display: flex; min-height: 280px; flex-direction: column; padding: 1rem; border-top: 2px solid #e14144; background: radial-gradient(circle at 90% 12%, rgb(225 65 68 / .22), transparent 36%), #101217; }
+.homebrew-board h3 { margin: .3rem 0; color: #f5f1e9; font-family: "DM Serif Display", serif; font-size: 1.55rem; font-weight: 400; }
+.homebrew-board p { margin: 0 0 auto; color: #aaa9af; font-size: .67rem; line-height: 1.45; }
+.homebrew-board > aside > div { display: flex; justify-content: space-between; padding: .35rem 0; border-top: 1px solid rgb(255 255 255 / .1); color: #aaa9af; font-size: .6rem; }
+.homebrew-board > aside b { color: #f5f1e9; font-family: "DM Serif Display", serif; font-size: 1rem; font-weight: 400; }
+.homebrew-list { display: grid; gap: .65rem; }
+.homebrew-card { display: grid; grid-template-columns: 38px 1fr; border: 1px solid rgb(255 255 255 / .12); border-left: 2px solid #e14144; background: #111318; }
+.homebrew-card__index { display: grid; place-items: start center; padding-top: .65rem; border-right: 1px solid rgb(255 255 255 / .1); color: #ff989a; font-family: "DM Serif Display", serif; font-size: 1.05rem; }
+.homebrew-card > div:last-child { padding: .65rem .75rem; }
+.homebrew-card__head { display: grid; grid-template-columns: 1fr 94px 29px; gap: .4rem; }
+.homebrew-card__head input { min-width: 0; height: 1.7rem; color: #f5f1e9 !important; font-family: "DM Serif Display", serif; font-size: 1.1rem; }
+.homebrew-card__head select { color: #ff989a !important; font-size: .58rem; }
+.homebrew-card label { display: grid; gap: .15rem; margin-top: .4rem; color: #aaa9af; font-size: .51rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.homebrew-card label input, .homebrew-card label textarea { color: #f5f1e9 !important; font-size: .62rem; }
+.homebrew-card label textarea { min-height: 43px; resize: vertical; }
+@media (max-width: 820px) { .combat-powers, .homebrew-board { grid-template-columns: 1fr; } .missions-summary { grid-template-columns: repeat(3, 1fr); } .mission-card { grid-template-columns: 34px 1fr; } .mission-rewards { grid-column: 2; border-top: 1px solid rgb(255 255 255 / .1); border-left: 0; } .mission-fields { grid-template-columns: repeat(2, 1fr); } .mission-fields label.wide { grid-column: 1 / -1; } }
+@media (max-width: 620px) { .attack-row { grid-template-columns: 1fr 1fr 30px 30px; } .attack-row__name { grid-column: 1 / 3; } .attack-row button { grid-row: 1; } .item-grid { grid-template-columns: 1.15fr .78fr .48fr .6fr 30px; } .item-grid input:nth-child(1), .item-grid input:nth-child(2) { grid-column: span 2; } .missions-summary { grid-template-columns: 1fr 1fr; } .missions-summary > div:first-child { grid-column: 1 / -1; } .mission-card { grid-template-columns: 30px 1fr; } .mission-card__head input { font-size: 1.05rem; } .mission-fields { grid-template-columns: 1fr 1fr; } .power-card { grid-template-columns: 32px 1fr; } .power-card__use { grid-column: 2; border-top: 1px solid rgb(255 255 255 / .1); border-left: 0; } .power-fields { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 920px) { .allies-layout { grid-template-columns: 1fr; } .ally-command-card { min-height: auto; } .ally-command-card p { margin-bottom: .8rem; } }
 @media (max-width: 620px) { .ally-card { grid-template-columns: 31px 1fr; } .ally-card__folio { grid-row: 1 / span 2; } .ally-vitals { grid-column: 2; border-top: 1px solid rgb(255 255 255 / .1); border-left: 0; } .ally-meta { grid-template-columns: 1fr; } .ally-meta label, .ally-meta label:last-child { grid-template-columns: 56px 1fr auto; } }
 .share-action { border-color: #e14144 !important; background: #7e2127 !important; color: white !important; }

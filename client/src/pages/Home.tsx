@@ -8,6 +8,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { liveSocket } from "@/lib/live";
 import { trpc } from "@/lib/trpc";
 import { allyFrequencyMultipliers, allyPowerCosts, calculateAllyCostByRule } from "@shared/allyRules";
+import { calculatePointBudget, SECONDARY_POINT_COSTS } from "@shared/characterPoints";
 import {
   Activity,
   ArrowDownRight,
@@ -55,6 +56,8 @@ type InventoryItem = { id: string; name: string; category: string; quantity: num
 type Attack = { id: string; name: string; level: number; damage: string; reach: string; parry: string };
 type Armor = { id: string; location: string; dr: number; source: string };
 type Power = { id: string; name: string; source: string; type: "Ofensivo" | "Defensivo" | "Utilidade" | "Controle"; level: number; fpCost: number; pointCost: number; range: string; damage: string; effect: string; combatReady: boolean };
+type Mission = { id: string; title: string; difficulty: "Baixa" | "Média" | "Alta" | "Épica" | "Lendária"; status: "Planejada" | "Em andamento" | "Concluída" | "Fracassada"; pointsReward: number; moneyReward: number; currency: string; notes: string; applied: boolean };
+type HomebrewEntry = { id: string; category: "Regra" | "Raça" | "Habilidade" | "Equipamento" | "Nota"; title: string; content: string; source: string };
 type LogItem = { id: string; time: string; text: string; kind: "roll" | "health" | "note" };
 type Ally = { id: string; name: string; relation: string; description: string; points: number; cost: number; hpCurrent: number; hpMax: number; status: string; type?: string; race?: string; appearance?: string; personality?: string; history?: string; motivation?: string; notes?: string; powerPercent?: 25 | 50 | 75 | 100 | 150; frequency?: 6 | 9 | 12 | 15; isDependent?: boolean; attributes?: { st: number; dx: number; iq: number; ht: number }; fpCurrent?: number; fpMax?: number; advantages?: Trait[]; disadvantages?: Trait[]; skills?: Skill[]; attacks?: Attack[]; inventory?: InventoryItem[]; conditions?: string[] };
 
@@ -71,11 +74,18 @@ type Sheet = {
   armor: Armor[];
   powers: Power[];
   allies: Ally[];
+  missions: Mission[];
+  homebrew: HomebrewEntry[];
   conditions: string[];
   log: LogItem[];
 };
 
 type CharacterRecord = { id: string; sheet: Sheet; portraitUrl?: string | null; createdAt: number; updatedAt: number };
+
+const secondaryModifierFields: Array<{ field: keyof typeof SECONDARY_POINT_COSTS; label: string }> = [
+  { field: "hpBonus", label: "HP bônus" }, { field: "fpBonus", label: "FP bônus" }, { field: "willBonus", label: "Will" },
+  { field: "perBonus", label: "Per" }, { field: "speedBonus", label: "Speed" }, { field: "moveBonus", label: "Move" }, { field: "dodgeBonus", label: "Dodge" },
+];
 
 const BANNER = "/manus-storage/codice-campo-banner_a9e63bb6.png";
 const SIDEBAR = "/manus-storage/codice-campo-sidebar_18686b0f.png";
@@ -189,6 +199,8 @@ const initialSheet: Sheet = {
   ],
   powers: [],
   allies: [],
+  missions: [],
+  homebrew: [],
   conditions: [],
   log: [{ id: "log-1", time: "18:40", text: "Ficha iniciada no Códice de Campo.", kind: "note" }],
 };
@@ -201,6 +213,8 @@ const navItems = [
   { id: "pericias", label: "Perícias", icon: Target },
   { id: "inventario", label: "Equipamento", icon: Backpack },
   { id: "aliados", label: "Aliados", icon: UsersRound },
+  { id: "missoes", label: "Missões", icon: ScrollText },
+  { id: "homebrew", label: "Homebrew", icon: Sparkles },
   { id: "diario", label: "Diário", icon: ScrollText },
 ];
 
@@ -382,15 +396,12 @@ export default function Home() {
     const encNames = ["Nenhuma", "Leve", "Média", "Pesada", "Muito pesada", "Excedida"];
     const dodge = Math.max(1, Math.floor(speed) + 3 + sheet.secondary.dodgeBonus - Math.min(encumbrance, 4));
     const move = Math.max(1, Math.floor(sheet.secondary.moveBase + sheet.secondary.moveBonus - Math.min(encumbrance, 4)));
-    const attributePoints = (sheet.attributes.st - 10) * 10 + (sheet.attributes.dx - 10) * 20 + (sheet.attributes.iq - 10) * 20 + (sheet.attributes.ht - 10) * 10;
-    const advantagePoints = sheet.advantages.reduce((sum, trait) => sum + trait.cost, 0);
-    const disadvantagePoints = sheet.disadvantages.reduce((sum, trait) => sum + trait.cost, 0);
-    const skillPoints = sheet.skills.reduce((sum, skill) => sum + skill.points, 0);
     const powerPoints = (sheet.powers || []).reduce((sum, power) => sum + power.pointCost, 0);
     const allyCost = (sheet.allies || []).reduce((sum, ally) => sum + calculateAllyCost(ally), 0);
-    const totalSpent = attributePoints + advantagePoints + disadvantagePoints + skillPoints + powerPoints + allyCost;
+    const pointBudget = calculatePointBudget({ attributes: sheet.attributes, secondary: sheet.secondary, advantages: sheet.advantages, disadvantages: sheet.disadvantages, skills: sheet.skills, powerPoints, allyPoints: allyCost });
+    const { attributePoints, secondaryPoints, advantagePoints, disadvantagePoints, skillPoints, totalSpent } = pointBudget;
     const available = sheet.points.initial + sheet.points.earned - totalSpent;
-    return { hpMax, fpMax, will, perception, speed, basicLift, carriedWeight, encumbrance, encName: encNames[encumbrance], dodge, move, attributePoints, advantagePoints, disadvantagePoints, skillPoints, powerPoints, allyCost, totalSpent, available };
+    return { hpMax, fpMax, will, perception, speed, basicLift, carriedWeight, encumbrance, encName: encNames[encumbrance], dodge, move, attributePoints, secondaryPoints, advantagePoints, disadvantagePoints, skillPoints, powerPoints, allyCost, totalSpent, available };
   }, [sheet]);
 
   const addLog = (text: string, kind: LogItem["kind"] = "note") => {
@@ -438,8 +449,18 @@ export default function Home() {
     setSheet((current) => ({ ...current, [kind]: [...current[kind], newTrait] }));
   };
 
+  const removeTrait = (kind: "advantages" | "disadvantages", id: string, name: string) => {
+    setSheet((current) => ({ ...current, [kind]: current[kind].filter((trait) => trait.id !== id) }));
+    addLog(`Removeu ${kind === "advantages" ? "a vantagem" : "a desvantagem"} ${name || "sem nome"}.`, "note");
+  };
+
   const updateSkill = (id: string, field: keyof Skill, value: string | number) => {
     setSheet((current) => ({ ...current, skills: current.skills.map((skill) => skill.id === id ? { ...skill, [field]: value } : skill) }));
+  };
+
+  const removeSkill = (id: string, name: string) => {
+    setSheet((current) => ({ ...current, skills: current.skills.filter((skill) => skill.id !== id) }));
+    addLog(`Removeu a perícia ${name || "sem nome"}.`, "note");
   };
 
   const updateItem = (id: string, field: keyof InventoryItem, value: string | number | boolean) => {
@@ -450,12 +471,27 @@ export default function Home() {
     setSheet((current) => ({ ...current, attacks: current.attacks.map((attack) => attack.id === id ? { ...attack, [field]: value } : attack) }));
   };
 
+  const removeAttack = (id: string, name: string) => {
+    setSheet((current) => ({ ...current, attacks: current.attacks.filter((attack) => attack.id !== id) }));
+    addLog(`Removeu o ataque ${name || "sem nome"}.`, "note");
+  };
+
+  const removeItem = (id: string, name: string) => {
+    setSheet((current) => ({ ...current, inventory: current.inventory.filter((item) => item.id !== id) }));
+    addLog(`Removeu o item ${name || "sem nome"}.`, "note");
+  };
+
   const updateArmor = (id: string, field: keyof Armor, value: string | number) => {
     setSheet((current) => ({ ...current, armor: current.armor.map((armor) => armor.id === id ? { ...armor, [field]: value } : armor) }));
   };
 
   const updatePower = (id: string, field: keyof Power, value: string | number | boolean) => {
     setSheet((current) => ({ ...current, powers: (current.powers || []).map((power) => power.id === id ? { ...power, [field]: value } : power) }));
+  };
+
+  const removePower = (id: string, name: string) => {
+    setSheet((current) => ({ ...current, powers: (current.powers || []).filter((power) => power.id !== id) }));
+    addLog(`Removeu o poder ${name || "sem nome"}.`, "note");
   };
 
   const addPower = () => {
@@ -470,6 +506,41 @@ export default function Home() {
     setSheet((current) => ({ ...current, secondary: { ...current.secondary, fpCurrent: current.secondary.fpCurrent - power.fpCost } }));
     addLog(`Ativou ${power.name} e gastou ${power.fpCost} FP.`, "health");
     roll3d6(`Poder: ${power.name}`, power.level);
+  };
+
+  const updateMission = (id: string, field: keyof Mission, value: string | number | boolean) => {
+    setSheet((current) => ({ ...current, missions: (current.missions || []).map((mission) => mission.id === id ? { ...mission, [field]: value } : mission) }));
+  };
+
+  const addMission = () => {
+    const mission: Mission = { id: makeId(), title: "Nova missão", difficulty: "Média", status: "Planejada", pointsReward: 0, moneyReward: 0, currency: "mo", notes: "Registre objetivos, obstáculos e resultados da missão.", applied: false };
+    setSheet((current) => ({ ...current, missions: [...(current.missions || []), mission] }));
+  };
+
+  const applyMissionRewards = (id: string) => {
+    const mission = (sheet.missions || []).find((item) => item.id === id);
+    if (!mission || mission.applied) return;
+    setSheet((current) => ({ ...current, points: { ...current.points, earned: current.points.earned + mission.pointsReward }, missions: (current.missions || []).map((item) => item.id === id ? { ...item, applied: true, status: "Concluída" } : item) }));
+    addLog(`Concluiu ${mission.title} e recebeu ${mission.pointsReward} pontos e ${mission.moneyReward} ${mission.currency}.`, "note");
+  };
+
+  const removeMission = (id: string, title: string) => {
+    setSheet((current) => ({ ...current, missions: (current.missions || []).filter((mission) => mission.id !== id) }));
+    addLog(`Removeu o relatório de missão ${title || "sem nome"}.`, "note");
+  };
+
+  const updateHomebrew = (id: string, field: keyof HomebrewEntry, value: string) => {
+    setSheet((current) => ({ ...current, homebrew: (current.homebrew || []).map((entry) => entry.id === id ? { ...entry, [field]: value } : entry) }));
+  };
+
+  const addHomebrew = () => {
+    const entry: HomebrewEntry = { id: makeId(), category: "Regra", title: "Novo conteúdo", content: "Descreva a regra, raça, habilidade ou item personalizado.", source: "Campanha" };
+    setSheet((current) => ({ ...current, homebrew: [...(current.homebrew || []), entry] }));
+  };
+
+  const removeHomebrew = (id: string, title: string) => {
+    setSheet((current) => ({ ...current, homebrew: (current.homebrew || []).filter((entry) => entry.id !== id) }));
+    addLog(`Removeu o conteúdo Homebrew ${title || "sem nome"}.`, "note");
   };
 
   const updateAlly = (id: string, field: keyof Ally, value: string | number | boolean) => {
@@ -597,6 +668,8 @@ export default function Home() {
     blankSheet.armor = [];
     blankSheet.powers = [];
     blankSheet.allies = [];
+    blankSheet.missions = [];
+    blankSheet.homebrew = [];
     blankSheet.conditions = [];
     blankSheet.log = [{ id: makeId(), time: now(), text: "Nova ficha criada no Arquivo de Campanha.", kind: "note" }];
     const character = { id: makeId(), sheet: blankSheet, createdAt: Date.now(), updatedAt: Date.now() };
@@ -699,7 +772,7 @@ export default function Home() {
         <nav className="codex-nav" aria-label="Seções da ficha">
           {navItems.map(({ id, label, icon: Icon }, index) => (
             <button key={id} type="button" className={activeSection === id ? "is-active" : ""} onClick={() => navigateTo(id)}>
-              <span className="codex-nav__index"><img src={MARK} alt="" />0{index + 1}</span><Icon size={17} /><span>{label}</span>
+              <span className="codex-nav__index"><img src={MARK} alt="" />{String(index + 1).padStart(2, "0")}</span><Icon size={17} /><span>{label}</span>
             </button>
           ))}
         </nav>
@@ -774,12 +847,7 @@ export default function Home() {
               <div className="paper-card modifier-card">
                 <div><span className="eyebrow">AJUSTES DERIVADOS</span><h3>Modificadores rápidos</h3></div>
                 <div className="modifier-fields">
-                  <label><span>HP bônus</span><input type="number" value={sheet.secondary.hpBonus} onChange={(event) => updateSecondary("hpBonus", number(event.target.value))} /></label>
-                  <label><span>FP bônus</span><input type="number" value={sheet.secondary.fpBonus} onChange={(event) => updateSecondary("fpBonus", number(event.target.value))} /></label>
-                  <label><span>Will</span><input type="number" value={sheet.secondary.willBonus} onChange={(event) => updateSecondary("willBonus", number(event.target.value))} /></label>
-                  <label><span>Per</span><input type="number" value={sheet.secondary.perBonus} onChange={(event) => updateSecondary("perBonus", number(event.target.value))} /></label>
-                  <label><span>Move</span><input type="number" value={sheet.secondary.moveBonus} onChange={(event) => updateSecondary("moveBonus", number(event.target.value))} /></label>
-                  <label><span>Dodge</span><input type="number" value={sheet.secondary.dodgeBonus} onChange={(event) => updateSecondary("dodgeBonus", number(event.target.value))} /></label>
+                  {secondaryModifierFields.map(({ field, label }) => <label key={field}><span>{label} · {SECONDARY_POINT_COSTS[field]} pts/nível</span><input type="number" value={sheet.secondary[field]} onChange={(event) => updateSecondary(field, number(event.target.value))} /></label>)}
                 </div>
               </div>
             </div>
@@ -796,7 +864,7 @@ export default function Home() {
                     <label><span>Dano</span><input value={attack.damage} onChange={(event) => updateAttack(attack.id, "damage", event.target.value)} /></label>
                     <label><span>Reach</span><input value={attack.reach} onChange={(event) => updateAttack(attack.id, "reach", event.target.value)} /></label>
                     <label><span>Parry</span><input value={attack.parry} onChange={(event) => updateAttack(attack.id, "parry", event.target.value)} /></label>
-                    <button type="button" className="sigil-action" aria-label={`Rolar ${attack.name}`} onClick={() => roll3d6(attack.name, attack.level)}><img src={MARK} alt="" /></button>
+                    <button type="button" className="sigil-action" aria-label={`Rolar ${attack.name}`} onClick={() => roll3d6(attack.name, attack.level)}><img src={MARK} alt="" /></button><button type="button" className="row-delete" aria-label={`Excluir ${attack.name}`} onClick={() => removeAttack(attack.id, attack.name)}><Trash2 size={14} /></button>
                   </div>)}
                 </div>
               </div>
@@ -813,7 +881,7 @@ export default function Home() {
           <section id="poderes" className={`codex-section ${activeSection === "poderes" ? "is-active" : "is-hidden"}`}>
             <SectionHeader kicker="03 · PODER" title="Poderes" description="Habilidades sobrenaturais, psíquicas ou especiais conectadas aos recursos de combate." icon={WandSparkles} action={<Button type="button" variant="outline" className="add-button" onClick={addPower}><WandSparkles size={15} /> Adicionar poder</Button>} />
             <div className="powers-summary"><div><span className="eyebrow">FOCO DE PODER</span><strong>{(sheet.powers || []).length}</strong><small>habilidade{(sheet.powers || []).length === 1 ? "" : "s"} registrada{(sheet.powers || []).length === 1 ? "" : "s"}</small></div><div><span>Custo em pontos</span><b>{calculated.powerPoints} pts</b></div><div><span>Poderes de combate</span><b>{(sheet.powers || []).filter((power) => power.combatReady).length}</b></div><div><span>FP disponíveis</span><b>{sheet.secondary.fpCurrent}/{calculated.fpMax}</b></div></div>
-            <div className="powers-list">{(sheet.powers || []).length ? (sheet.powers || []).map((power, index) => <article className="power-card" key={power.id}><div className="power-card__folio"><img src={MARK} alt="" /><span>PODER</span><b>{String(index + 1).padStart(2, "0")}</b></div><div className="power-card__main"><div className="power-card__head"><div><input value={power.name} aria-label="Nome do poder" onChange={(event) => updatePower(power.id, "name", event.target.value)} /><select value={power.type} aria-label="Tipo do poder" onChange={(event) => updatePower(power.id, "type", event.target.value)}><option>Ofensivo</option><option>Defensivo</option><option>Utilidade</option><option>Controle</option></select></div><label className="power-ready"><input type="checkbox" checked={power.combatReady} onChange={(event) => updatePower(power.id, "combatReady", event.target.checked)} /><span>Disponível no combate</span></label></div><div className="power-fields"><label><span>Fonte</span><input value={power.source} onChange={(event) => updatePower(power.id, "source", event.target.value)} /></label><label><span>NH</span><input type="number" value={power.level} onChange={(event) => updatePower(power.id, "level", number(event.target.value))} /></label><label><span>FP</span><input type="number" min="0" value={power.fpCost} onChange={(event) => updatePower(power.id, "fpCost", Math.max(0, number(event.target.value)))} /></label><label><span>Pontos</span><input type="number" min="0" value={power.pointCost} onChange={(event) => updatePower(power.id, "pointCost", Math.max(0, number(event.target.value)))} /></label><label><span>Alcance</span><input value={power.range} onChange={(event) => updatePower(power.id, "range", event.target.value)} /></label><label><span>Dano</span><input value={power.damage} onChange={(event) => updatePower(power.id, "damage", event.target.value)} /></label><label className="wide"><span>Efeito</span><textarea value={power.effect} onChange={(event) => updatePower(power.id, "effect", event.target.value)} /></label></div></div><div className="power-card__use"><span><WandSparkles size={16} /> AÇÃO DE SESSÃO</span><b>{power.fpCost} FP</b><button type="button" onClick={() => usePower(power)} disabled={!power.combatReady || sheet.secondary.fpCurrent < power.fpCost}><Dices size={15} /> Usar poder</button></div></article>) : <button type="button" className="powers-empty" onClick={addPower}><span><WandSparkles size={21} /></span><strong>Nenhum poder cadastrado</strong><small>Crie uma habilidade e deixe-a disponível para usá-la diretamente no combate.</small><b><Plus size={14} /> Adicionar primeiro poder</b></button>}</div>
+            <div className="powers-list">{(sheet.powers || []).length ? (sheet.powers || []).map((power, index) => <article className="power-card" key={power.id}><div className="power-card__folio"><img src={MARK} alt="" /><span>PODER</span><b>{String(index + 1).padStart(2, "0")}</b></div><div className="power-card__main"><div className="power-card__head"><div><input value={power.name} aria-label="Nome do poder" onChange={(event) => updatePower(power.id, "name", event.target.value)} /><select value={power.type} aria-label="Tipo do poder" onChange={(event) => updatePower(power.id, "type", event.target.value)}><option>Ofensivo</option><option>Defensivo</option><option>Utilidade</option><option>Controle</option></select></div><label className="power-ready"><input type="checkbox" checked={power.combatReady} onChange={(event) => updatePower(power.id, "combatReady", event.target.checked)} /><span>Disponível no combate</span></label></div><div className="power-fields"><label><span>Fonte</span><input value={power.source} onChange={(event) => updatePower(power.id, "source", event.target.value)} /></label><label><span>NH</span><input type="number" value={power.level} onChange={(event) => updatePower(power.id, "level", number(event.target.value))} /></label><label><span>FP</span><input type="number" min="0" value={power.fpCost} onChange={(event) => updatePower(power.id, "fpCost", Math.max(0, number(event.target.value)))} /></label><label><span>Pontos</span><input type="number" min="0" value={power.pointCost} onChange={(event) => updatePower(power.id, "pointCost", Math.max(0, number(event.target.value)))} /></label><label><span>Alcance</span><input value={power.range} onChange={(event) => updatePower(power.id, "range", event.target.value)} /></label><label><span>Dano</span><input value={power.damage} onChange={(event) => updatePower(power.id, "damage", event.target.value)} /></label><label className="wide"><span>Efeito</span><textarea value={power.effect} onChange={(event) => updatePower(power.id, "effect", event.target.value)} /></label></div></div><div className="power-card__use"><span><WandSparkles size={16} /> AÇÃO DE SESSÃO</span><b>{power.fpCost} FP</b><button type="button" onClick={() => usePower(power)} disabled={!power.combatReady || sheet.secondary.fpCurrent < power.fpCost}><Dices size={15} /> Usar poder</button><button type="button" className="power-delete" aria-label={`Excluir ${power.name}`} onClick={() => removePower(power.id, power.name)}><Trash2 size={14} /> Excluir</button></div></article>) : <button type="button" className="powers-empty" onClick={addPower}><span><WandSparkles size={21} /></span><strong>Nenhum poder cadastrado</strong><small>Crie uma habilidade e deixe-a disponível para usá-la diretamente no combate.</small><b><Plus size={14} /> Adicionar primeiro poder</b></button>}</div>
           </section>
 
           <section id="caracteristicas" className={`codex-section ${activeSection === "caracteristicas" ? "is-active" : "is-hidden"}`}>
@@ -821,7 +889,7 @@ export default function Home() {
             <div className="traits-grid">
               {(["advantages", "disadvantages"] as const).map((kind) => <div className={`trait-card ${kind === "advantages" ? "trait-card--positive" : "trait-card--negative"}`} key={kind}>
                 <div className="trait-card__head"><div><span className="eyebrow">{kind === "advantages" ? "A FAVOR" : "LIMITES"}</span><h3>{kind === "advantages" ? "Vantagens" : "Desvantagens & quirks"}</h3></div><button type="button" onClick={() => addTrait(kind)}><Plus size={16} /></button></div>
-                <div className="trait-rows">{sheet[kind].map((trait) => <div key={trait.id} className="trait-row"><input value={trait.name} aria-label="Nome" onChange={(event) => updateTrait(kind, trait.id, "name", event.target.value)} /><textarea value={trait.notes} aria-label="Notas" placeholder="Notas de uso" onChange={(event) => updateTrait(kind, trait.id, "notes", event.target.value)} /><label><span>Pts</span><input type="number" value={trait.cost} onChange={(event) => updateTrait(kind, trait.id, "cost", number(event.target.value))} /></label><input className="trait-row__source" value={trait.source} aria-label="Fonte" placeholder="Fonte" onChange={(event) => updateTrait(kind, trait.id, "source", event.target.value)} /></div>)}</div>
+                <div className="trait-rows">{sheet[kind].map((trait) => <div key={trait.id} className="trait-row"><input value={trait.name} aria-label="Nome" onChange={(event) => updateTrait(kind, trait.id, "name", event.target.value)} /><textarea value={trait.notes} aria-label="Notas" placeholder="Notas de uso" onChange={(event) => updateTrait(kind, trait.id, "notes", event.target.value)} /><label><span>Pts</span><input type="number" value={trait.cost} onChange={(event) => updateTrait(kind, trait.id, "cost", number(event.target.value))} /></label><input className="trait-row__source" value={trait.source} aria-label="Fonte" placeholder="Fonte" onChange={(event) => updateTrait(kind, trait.id, "source", event.target.value)} /><button type="button" className="row-delete trait-row__delete" aria-label={`Excluir ${trait.name}`} onClick={() => removeTrait(kind, trait.id, trait.name)}><Trash2 size={14} /></button></div>)}</div>
                 <div className="trait-card__total"><span>Total</span><strong>{kind === "advantages" ? `+${calculated.advantagePoints}` : calculated.disadvantagePoints} pts</strong></div>
               </div>)}
             </div>
@@ -829,12 +897,12 @@ export default function Home() {
 
           <section id="pericias" className={`codex-section ${activeSection === "pericias" ? "is-active" : "is-hidden"}`}>
             <SectionHeader kicker="05 · COMPETÊNCIA" title="Perícias" description="Nível efetivo, dificuldade e pontos em uma leitura compacta de mesa." icon={Target} action={<Button type="button" variant="outline" className="add-button" onClick={() => setSheet((current) => ({ ...current, skills: [...current.skills, { id: makeId(), name: "Nova perícia", attribute: "DX", difficulty: "Média", relative: "DX+0", level: sheet.attributes.dx, points: 1 }] }))}><Plus size={15} /> Perícia</Button>} />
-            <div className="paper-card table-card"><div className="skill-table skill-table--head"><span>Perícia</span><span>Atributo</span><span>Dificuldade</span><span>Relativo</span><span>NH</span><span>Pontos</span><span /></div>{sheet.skills.map((skill) => <div className="skill-table" key={skill.id}><input value={skill.name} onChange={(event) => updateSkill(skill.id, "name", event.target.value)} /><input value={skill.attribute} onChange={(event) => updateSkill(skill.id, "attribute", event.target.value)} /><input value={skill.difficulty} onChange={(event) => updateSkill(skill.id, "difficulty", event.target.value)} /><input value={skill.relative} onChange={(event) => updateSkill(skill.id, "relative", event.target.value)} /><input type="number" value={skill.level} onChange={(event) => updateSkill(skill.id, "level", number(event.target.value))} /><input type="number" value={skill.points} onChange={(event) => updateSkill(skill.id, "points", number(event.target.value))} /><button type="button" className="sigil-action" aria-label={`Rolar ${skill.name}`} onClick={() => roll3d6(skill.name, skill.level)}><img src={MARK} alt="" /></button></div>)}<div className="skill-table__footer"><span>Investimento em perícias</span><strong>{calculated.skillPoints} pts</strong><small>Escolha um nível e role 3d6 diretamente da ficha.</small></div></div>
+            <div className="paper-card table-card"><div className="skill-table skill-table--head"><span>Perícia</span><span>Atributo</span><span>Dificuldade</span><span>Relativo</span><span>NH</span><span>Pontos</span><span /><span /></div>{sheet.skills.map((skill) => <div className="skill-table" key={skill.id}><input value={skill.name} onChange={(event) => updateSkill(skill.id, "name", event.target.value)} /><input value={skill.attribute} onChange={(event) => updateSkill(skill.id, "attribute", event.target.value)} /><input value={skill.difficulty} onChange={(event) => updateSkill(skill.id, "difficulty", event.target.value)} /><input value={skill.relative} onChange={(event) => updateSkill(skill.id, "relative", event.target.value)} /><input type="number" value={skill.level} onChange={(event) => updateSkill(skill.id, "level", number(event.target.value))} /><input type="number" value={skill.points} onChange={(event) => updateSkill(skill.id, "points", number(event.target.value))} /><button type="button" className="sigil-action" aria-label={`Rolar ${skill.name}`} onClick={() => roll3d6(skill.name, skill.level)}><img src={MARK} alt="" /></button><button type="button" className="row-delete" aria-label={`Excluir ${skill.name}`} onClick={() => removeSkill(skill.id, skill.name)}><Trash2 size={14} /></button></div>)}<div className="skill-table__footer"><span>Investimento em perícias</span><strong>{calculated.skillPoints} pts</strong><small>Escolha um nível e role 3d6 diretamente da ficha.</small></div></div>
           </section>
 
           <section id="inventario" className={`codex-section ${activeSection === "inventario" ? "is-active" : "is-hidden"}`}>
             <SectionHeader kicker="06 · CARGA" title="Equipamento" description="Controle o que está carregando e acompanhe o efeito sobre movimento e defesa." icon={Backpack} action={<Button type="button" variant="outline" className="add-button" onClick={() => setSheet((current) => ({ ...current, inventory: [...current.inventory, { id: makeId(), name: "Novo item", category: "Utilidade", quantity: 1, weight: 0, carried: true, equipped: false }] }))}><PackagePlus size={15} /> Item</Button>} />
-            <div className="inventory-layout"><div className="paper-card inventory-table"><div className="item-grid item-grid--head"><span>Item</span><span>Categoria</span><span>Qtd.</span><span>Peso un.</span><span>Carregar</span><span>Equipar</span></div>{sheet.inventory.map((item) => <div className="item-grid" key={item.id}><input value={item.name} onChange={(event) => updateItem(item.id, "name", event.target.value)} /><input value={item.category} onChange={(event) => updateItem(item.id, "category", event.target.value)} /><input type="number" min="0" value={item.quantity} onChange={(event) => updateItem(item.id, "quantity", number(event.target.value))} /><label className="weight-input"><input type="number" min="0" step="0.1" value={item.weight} onChange={(event) => updateItem(item.id, "weight", number(event.target.value))} /><span>lb</span></label><label className="switch-label"><input type="checkbox" checked={item.carried} onChange={(event) => updateItem(item.id, "carried", event.target.checked)} /><i /></label><label className="switch-label"><input type="checkbox" checked={item.equipped} onChange={(event) => updateItem(item.id, "equipped", event.target.checked)} /><i /></label></div>)}</div>
+            <div className="inventory-layout"><div className="paper-card inventory-table"><div className="item-grid item-grid--head"><span>Item</span><span>Categoria</span><span>Qtd.</span><span>Peso un.</span><span>Carregar</span><span>Equipar</span><span /></div>{sheet.inventory.map((item) => <div className="item-grid" key={item.id}><input value={item.name} onChange={(event) => updateItem(item.id, "name", event.target.value)} /><input value={item.category} onChange={(event) => updateItem(item.id, "category", event.target.value)} /><input type="number" min="0" value={item.quantity} onChange={(event) => updateItem(item.id, "quantity", number(event.target.value))} /><label className="weight-input"><input type="number" min="0" step="0.1" value={item.weight} onChange={(event) => updateItem(item.id, "weight", number(event.target.value))} /><span>lb</span></label><label className="switch-label"><input type="checkbox" checked={item.carried} onChange={(event) => updateItem(item.id, "carried", event.target.checked)} /><i /></label><label className="switch-label"><input type="checkbox" checked={item.equipped} onChange={(event) => updateItem(item.id, "equipped", event.target.checked)} /><i /></label><button type="button" className="row-delete" aria-label={`Excluir ${item.name}`} onClick={() => removeItem(item.id, item.name)}><Trash2 size={14} /></button></div>)}</div>
               <div className={`load-card load-card--${calculated.encumbrance >= 3 ? "danger" : calculated.encumbrance >= 1 ? "watch" : "safe"}`}><Weight size={23} /><span className="eyebrow">CARGA ATUAL</span><strong>{format(calculated.carriedWeight, 1)} <small>lb</small></strong><p>Basic Lift: <b>{format(calculated.basicLift, 1)} lb</b></p><div className="load-scale">{[0, 1, 2, 3, 4].map((level) => <i key={level} className={calculated.encumbrance >= level ? "is-filled" : ""} />)}</div><div className="load-card__status"><span>{calculated.encName}</span><b>Move {calculated.move} · Dodge {calculated.dodge}</b></div><small>{calculated.encumbrance >= 5 ? "A carga excede o limite de referência." : "Movimento e Dodge já incluem a carga."}</small></div>
             </div>
           </section>
@@ -854,12 +922,23 @@ export default function Home() {
             </div>
           </section>
 
+          <section id="missoes" className={`codex-section ${activeSection === "missoes" ? "is-active" : "is-hidden"}`}>
+            <SectionHeader kicker="08 · MISSÕES" title="Relatórios de missão" description="Registre dificuldade, recompensas e desfecho para refletir o progresso real da campanha." icon={ScrollText} action={<Button type="button" variant="outline" className="add-button" onClick={addMission}><Plus size={15} /> Nova missão</Button>} />
+            <div className="missions-summary"><div><span className="eyebrow">ARQUIVO DE MISSÕES</span><strong>{(sheet.missions || []).length}</strong><small>registro{(sheet.missions || []).length === 1 ? "" : "s"} na campanha</small></div><div><span>Concluídas</span><b>{(sheet.missions || []).filter((mission) => mission.status === "Concluída").length}</b></div><div><span>Pontos aplicados</span><b>{(sheet.missions || []).filter((mission) => mission.applied).reduce((sum, mission) => sum + mission.pointsReward, 0)}</b></div></div>
+            <div className="missions-list">{(sheet.missions || []).length ? (sheet.missions || []).map((mission, index) => <article className="mission-card" key={mission.id}><div className="mission-card__folio"><img src={MARK} alt="" /><span>MISSÃO</span><b>{String(index + 1).padStart(2, "0")}</b></div><div className="mission-card__main"><div className="mission-card__head"><input value={mission.title} aria-label="Título da missão" onChange={(event) => updateMission(mission.id, "title", event.target.value)} /><button type="button" className="row-delete" aria-label={`Excluir ${mission.title}`} onClick={() => removeMission(mission.id, mission.title)}><Trash2 size={14} /></button></div><div className="mission-fields"><label><span>Dificuldade</span><select value={mission.difficulty} onChange={(event) => updateMission(mission.id, "difficulty", event.target.value)}><option>Baixa</option><option>Média</option><option>Alta</option><option>Épica</option><option>Lendária</option></select></label><label><span>Estado</span><select value={mission.status} onChange={(event) => updateMission(mission.id, "status", event.target.value)}><option>Planejada</option><option>Em andamento</option><option>Concluída</option><option>Fracassada</option></select></label><label><span>Pontos ganhos</span><input type="number" min="0" value={mission.pointsReward} onChange={(event) => updateMission(mission.id, "pointsReward", Math.max(0, number(event.target.value)))} /></label><label><span>Dinheiro ganho</span><input type="number" min="0" value={mission.moneyReward} onChange={(event) => updateMission(mission.id, "moneyReward", Math.max(0, number(event.target.value)))} /></label><label><span>Moeda</span><input value={mission.currency} onChange={(event) => updateMission(mission.id, "currency", event.target.value)} /></label><label className="wide"><span>Relatório</span><textarea value={mission.notes} onChange={(event) => updateMission(mission.id, "notes", event.target.value)} /></label></div></div><div className="mission-rewards"><span>{mission.applied ? "RECOMPENSAS APLICADAS" : "RECOMPENSAS"}</span><strong>{mission.pointsReward} <small>pts</small></strong><b>{mission.moneyReward} {mission.currency}</b><button type="button" onClick={() => applyMissionRewards(mission.id)} disabled={mission.applied}>{mission.applied ? "Aplicado" : "Concluir e aplicar"}</button></div></article>) : <button type="button" className="missions-empty" onClick={addMission}><span><ScrollText size={21} /></span><strong>Nenhuma missão registrada</strong><small>Crie um relatório para registrar a dificuldade, as recompensas e o resultado de uma aventura.</small><b><Plus size={14} /> Registrar primeira missão</b></button>}</div>
+          </section>
+
+          <section id="homebrew" className={`codex-section ${activeSection === "homebrew" ? "is-active" : "is-hidden"}`}>
+            <SectionHeader kicker="09 · HOMEbrew" title="Arquivo Homebrew" description="Mantenha regras, raças, habilidades e equipamentos personalizados junto da campanha." icon={Sparkles} action={<Button type="button" variant="outline" className="add-button" onClick={addHomebrew}><Plus size={15} /> Novo conteúdo</Button>} />
+            <div className="homebrew-board"><aside><span className="eyebrow">CÓDICE DA MESA</span><h3>Conteúdo personalizado</h3><p>Use este arquivo para guardar tudo o que sua campanha altera, cria ou interpreta de forma própria.</p><div><span>Entradas</span><b>{(sheet.homebrew || []).length}</b></div><div><span>Regras</span><b>{(sheet.homebrew || []).filter((entry) => entry.category === "Regra").length}</b></div></aside><div className="homebrew-list">{(sheet.homebrew || []).length ? (sheet.homebrew || []).map((entry, index) => <article key={entry.id} className="homebrew-card"><div className="homebrew-card__index">{String(index + 1).padStart(2, "0")}</div><div><div className="homebrew-card__head"><input value={entry.title} aria-label="Título do conteúdo Homebrew" onChange={(event) => updateHomebrew(entry.id, "title", event.target.value)} /><select value={entry.category} onChange={(event) => updateHomebrew(entry.id, "category", event.target.value)}><option>Regra</option><option>Raça</option><option>Habilidade</option><option>Equipamento</option><option>Nota</option></select><button type="button" className="row-delete" aria-label={`Excluir ${entry.title}`} onClick={() => removeHomebrew(entry.id, entry.title)}><Trash2 size={14} /></button></div><label><span>Fonte</span><input value={entry.source} onChange={(event) => updateHomebrew(entry.id, "source", event.target.value)} /></label><label><span>Descrição</span><textarea value={entry.content} onChange={(event) => updateHomebrew(entry.id, "content", event.target.value)} /></label></div></article>) : <button type="button" className="homebrew-empty" onClick={addHomebrew}><span><Sparkles size={21} /></span><strong>Seu arquivo Homebrew está vazio</strong><small>Adicione uma regra da mesa, raça, habilidade ou item personalizado.</small><b><Plus size={14} /> Criar primeira entrada</b></button>}</div></div>
+          </section>
+
           <section id="diario" className={`codex-section codex-section--last ${activeSection === "diario" ? "is-active" : "is-hidden"}`}>
-            <SectionHeader kicker="08 · SESSÃO" title="Diário e dados" description="Todo evento que muda a cena pode ficar registrado aqui." icon={History} />
+            <SectionHeader kicker="10 · SESSÃO" title="Diário e dados" description="Todo evento que muda a cena pode ficar registrado aqui." icon={History} />
             <div className="diary-grid"><div className="roll-station"><div className="roll-station__top"><img className="roll-station__sigil" src={MARK} alt="" /><div><span className="eyebrow eyebrow--light">ROLAGEM PADRÃO</span><h3>3d6 de mesa</h3></div></div><p>Selecione qualquer ataque ou perícia e use o selo de dados. Para um teste livre, role o atributo desejado.</p><div className="quick-rolls"><button type="button" onClick={() => roll3d6("Teste de ST", sheet.attributes.st)}>ST {sheet.attributes.st}</button><button type="button" onClick={() => roll3d6("Teste de DX", sheet.attributes.dx)}>DX {sheet.attributes.dx}</button><button type="button" onClick={() => roll3d6("Teste de IQ", sheet.attributes.iq)}>IQ {sheet.attributes.iq}</button><button type="button" onClick={() => roll3d6("Teste de HT", sheet.attributes.ht)}>HT {sheet.attributes.ht}</button></div>{lastRoll ? <div className="roll-result"><div className="dice-set">{lastRoll.dice.map((die, index) => <span key={`${die}-${index}`} data-value={die}>{die}</span>)}</div><div><span>{lastRoll.label}</span><strong>{lastRoll.total}</strong><small>{lastRoll.total <= lastRoll.target ? `Sucesso por ${lastRoll.target - lastRoll.total}` : `Falha por ${lastRoll.total - lastRoll.target}`}</small></div></div> : <div className="roll-result roll-result--idle"><Dices size={21} /><span>A próxima rolagem aparecerá aqui.</span></div>}</div>
               <div className="paper-card log-card"><div className="log-card__head"><div><span className="eyebrow">HISTÓRICO</span><h3>Registro da sessão</h3></div><button type="button" onClick={() => addLog("Nota manual adicionada à sessão.", "note")}><Plus size={15} /> Nota</button></div><div className="log-list">{sheet.log.map((entry) => <div className={`log-entry log-entry--${entry.kind}`} key={entry.id}><time>{entry.time}</time><i>{entry.kind === "roll" ? <Dices size={15} /> : entry.kind === "health" ? <HeartPulse size={15} /> : <ScrollText size={15} />}</i><p>{entry.text}</p></div>)}</div></div>
             </div>
-            <div className="points-ledger"><div><span className="eyebrow">ORÇAMENTO</span><h3>Pontos de personagem</h3><p>A conta abaixo muda ao editar atributos, traços, perícias, poderes e aliados.</p></div><div className="ledger-values"><label><span>Iniciais</span><input type="number" value={sheet.points.initial} onChange={(event) => setSheet((current) => ({ ...current, points: { ...current.points, initial: number(event.target.value) } }))} /></label><label><span>Ganhos</span><input type="number" value={sheet.points.earned} onChange={(event) => setSheet((current) => ({ ...current, points: { ...current.points, earned: number(event.target.value) } }))} /></label><div><span>Gastos</span><strong>{calculated.totalSpent}</strong></div><div className={calculated.available < 0 ? "ledger-total is-negative" : "ledger-total"}><span>Disponíveis</span><strong>{calculated.available}</strong></div></div><div className="ledger-breakdown"><span>Atributos <b>{calculated.attributePoints}</b></span><span>Vantagens <b>{calculated.advantagePoints}</b></span><span>Desvantagens <b>{calculated.disadvantagePoints}</b></span><span>Perícias <b>{calculated.skillPoints}</b></span><span>Poderes <b>{calculated.powerPoints}</b></span><span>Aliados <b>{calculated.allyCost}</b></span></div></div>
+            <div className="points-ledger"><div><span className="eyebrow">ORÇAMENTO</span><h3>Pontos de personagem</h3><p>A conta abaixo muda ao editar atributos, valores adicionais, traços, perícias, poderes e aliados.</p></div><div className="ledger-values"><label><span>Iniciais</span><input type="number" value={sheet.points.initial} onChange={(event) => setSheet((current) => ({ ...current, points: { ...current.points, initial: number(event.target.value) } }))} /></label><label><span>Ganhos</span><input type="number" value={sheet.points.earned} onChange={(event) => setSheet((current) => ({ ...current, points: { ...current.points, earned: number(event.target.value) } }))} /></label><div><span>Gastos</span><strong>{calculated.totalSpent}</strong></div><div className={calculated.available < 0 ? "ledger-total is-negative" : "ledger-total"}><span>Disponíveis</span><strong>{calculated.available}</strong></div></div><div className="ledger-breakdown"><span>Atributos <b>{calculated.attributePoints}</b></span><span>Valores adicionais <b>{calculated.secondaryPoints}</b></span><span>Vantagens <b>{calculated.advantagePoints}</b></span><span>Desvantagens <b>{calculated.disadvantagePoints}</b></span><span>Perícias <b>{calculated.skillPoints}</b></span><span>Poderes <b>{calculated.powerPoints}</b></span><span>Aliados <b>{calculated.allyCost}</b></span></div></div>
             {calculated.available < 0 && <div className="validation-warning"><CircleAlert size={18} /><span>Você ultrapassou o orçamento por {Math.abs(calculated.available)} pontos. Revise atributos, traços ou a recompensa da campanha.</span></div>}
             <div className="bottom-actions"><span><ArrowDownRight size={16} /> {isAuthenticated ? "Alterações salvas e atualizadas no link compartilhado." : "Entre para salvar na nuvem e compartilhar em tempo real."}</span><div className="export-actions"><button type="button" className="share-action" onClick={shareActiveCharacter} disabled={authLoading || createShare.isPending}>{isAuthenticated ? <Share2 size={16} /> : <LogIn size={16} />}{shareStatus === "copied" ? "Link copiado" : shareStatus === "error" ? "Tente novamente" : isAuthenticated ? "Compartilhar ao vivo" : "Entrar e compartilhar"}</button><button type="button" onClick={exportJson}><FileJson size={16} /> Baixar JSON</button><button type="button" className="pdf-action" onClick={exportPdf}><Printer size={16} /> Salvar em PDF</button><button type="button" className="restore-action" onClick={resetSheet}><ArrowUpRight size={16} /> Restaurar exemplo</button></div></div>
           </section>

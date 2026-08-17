@@ -55,18 +55,21 @@
 
 ## Mini-ficha de aliado
 
-- [ ] Expandir o modelo de aliado com identificação, atributos e dados específicos de Ally.
-- [ ] Criar abas ou menu lateral interno para visão geral, atributos, características, perícias, combate e inventário do aliado.
-- [ ] Garantir que todos os campos e controles do aliado apareçam somente na aba interna correspondente.
-- [ ] Calcular custo de Ally por porcentagem de pontos e frequência de aparecimento.
-- [ ] Permitir editar os dados da mini-ficha e manter a integração com a sessão principal.
+- [x] Expandir o modelo de aliado com identificação, atributos e dados específicos de Ally.
+- [x] Criar abas ou menu lateral interno para visão geral, atributos, características, perícias, combate e inventário do aliado.
+- [x] Garantir que todos os campos e controles do aliado apareçam somente na aba interna correspondente.
+- [x] Calcular custo de Ally por porcentagem de pontos e frequência de aparecimento.
+- [x] Permitir editar os dados da mini-ficha e manter a integração com a sessão principal.
 - [ ] Validar a navegação e a mini-ficha de aliado em desktop e celular.
 
 ## Navegação integral da ficha
 
-- [ ] Converter Visão geral, Combate, Características, Perícias, Equipamento, Aliados e Diário em seções exclusivas de um menu lateral interno.
-- [ ] Remover a rolagem longa da ficha e manter apenas o painel ativo visível.
+- [x] Converter Visão geral, Combate, Características, Perícias, Equipamento, Aliados e Diário em seções exclusivas de um menu lateral interno.
+- [x] Remover a rolagem longa da ficha e manter apenas o painel ativo visível.
 - [ ] Preservar todos os controles, cálculos, exportações e links compartilhados em suas abas correspondentes.
+- [ ] Validar exportação JSON e PDF após a reorganização por abas.
+- [ ] Validar o acesso e a operação de links compartilhados após a reorganização por abas.
+- [ ] Registrar a checagem dos cálculos e controles principais em cada aba.
 - [ ] Validar a navegação integral em desktop e celular.
 
 ## Poderes e combate
@@ -76,3 +79,19 @@
 - [x] Exibir poderes de combate e permitir ativá-los diretamente no painel de Combate.
 - [x] Registrar uso de poder, rolagem e gasto de FP no histórico da sessão.
 - [ ] Validar a aba de Poderes e sua integração com Combate em desktop e celular.
+
+## Missões e Homebrew
+
+- [ ] Adicionar controles individuais para excluir ataques, poderes e itens.
+- [ ] Criar uma aba de Missões com relatório, dificuldade, pontos ganhos, dinheiro e observações.
+- [ ] Aplicar pontos ganhos da missão ao orçamento do personagem e registrar a conclusão no diário.
+- [ ] Criar uma aba de Homebrew para regras, raças, habilidades e notas personalizadas.
+- [ ] Validar as abas de Missões e Homebrew, incluindo os controles de exclusão, em desktop e celular.
+
+## Correções de remoção e pontos
+
+- [x] Garantir botão de remoção individual para ataques, vantagens, desvantagens, itens, perícias, aliados e poderes.
+- [x] Revisar custos de atributos e valores adicionais no orçamento de pontos.
+- [x] Descontar corretamente todos os valores adicionais dos pontos disponíveis.
+- [x] Adicionar testes automatizados para cálculo de pontos e remoções de listas.
+- [x] Validar os controles de exclusão e os totais na interface.
