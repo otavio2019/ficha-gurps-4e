@@ -31,7 +31,7 @@
 - [x] Exibir o perfil conectado, a saída de conta e o estado de sincronização.
 - [x] Organizar fichas próprias e links compartilhados no menu principal.
 - [x] Exibir no menu principal um resumo separado das fichas com link público ativo.
-- [ ] Validar a navegação de acesso e os estados autenticado e visitante.
+- [x] Validar a navegação de acesso e os estados autenticado e visitante.
 - [ ] Confirmar no navegador o perfil conectado, a saída e a seção de links compartilhados após login.
 
 ## Correção de retrato
@@ -70,7 +70,7 @@
 - [x] Remover a rolagem longa da ficha e manter apenas o painel ativo visível.
 - [ ] Preservar todos os controles, cálculos, exportações e links compartilhados em suas abas correspondentes.
 - [ ] Validar exportação JSON e PDF após a reorganização por abas.
-- [ ] Validar o acesso e a operação de links compartilhados após a reorganização por abas.
+- [x] Validar o acesso e a operação de links compartilhados após a reorganização por abas.
 - [ ] Registrar a checagem dos cálculos e controles principais em cada aba.
 - [ ] Validar a navegação integral em desktop e celular.
 

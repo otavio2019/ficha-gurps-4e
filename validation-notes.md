@@ -60,3 +60,4 @@
 - A exclusão removeu corretamente a perícia temporária. Na aba Combate, a nova linha de ataque exibiu o botão individual de exclusão após os campos de dano e alcance.
 - A exclusão removeu corretamente o ataque temporário. A aba Características foi reaberta para testar o mesmo fluxo em uma desvantagem.
 - A desvantagem temporária exibiu o botão individual e foi removida corretamente, concluindo a validação das quatro listas solicitadas: vantagens, desvantagens, perícias e ataques.
+- Em 375 px, a biblioteca publicada manteve a conta conectada, o painel de links compartilhados, os cartões de personagem e suas ações sem sobreposição ou rolagem horizontal.
