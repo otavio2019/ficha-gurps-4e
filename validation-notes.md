@@ -44,3 +44,7 @@
 - O combobox de estado e o menu de opções foram ajustados para fundo preto sólido, mantendo texto claro e realce vermelho na seleção.
 - Um aliado temporário foi criado na prévia para confirmar visualmente o novo acabamento preto sólido do combobox.
 - A prévia confirmou que o combobox fechado e o menu aberto usam preto sólido, enquanto os itens continuam em texto claro com a opção destacada em vermelho.
+- A tela publicada foi exibida em sessão autenticada, com perfil conectado, botão de saída, duas fichas sincronizadas e a seção de links compartilhados com duas fichas em sessão ao vivo.
+- Um link de campanha foi aberto e exibiu a ficha em modo de visualização ao vivo, com identidade, retrato, recursos, atributos, ataques e perícias, além do aviso de atualizações instantâneas.
+- A ficha local foi aberta novamente na prévia para seguir a validação dos painéis exclusivos da navegação por abas.
+- As evidências atuais confirmam a tela autenticada, a seção de links compartilhados e a visualização pública ao vivo. A execução de logout, envio de retrato e edição sincronizada em uma segunda sessão permanece pendente por exigir uma sessão proprietária interativa.
