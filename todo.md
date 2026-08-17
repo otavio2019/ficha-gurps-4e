@@ -119,3 +119,9 @@
 - [x] Validar em celular a rota pública simplificada no domínio publicado, incluindo a mini-ficha de aliados e os blocos completos.
 - [x] Exibir uma mini-ficha simplificada de cada aliado compartilhado, incluindo atributos, recursos, características, perícias, combate e inventário.
 - [x] Validar a visualização pública com aliados e missões preenchidos.
+
+## Descrições de perícias
+
+- [x] Adicionar um campo de descrição às perícias da ficha principal e da mini-ficha de aliados.
+- [x] Exibir a descrição de cada perícia na ficha compartilhada.
+- [ ] Validar ponta a ponta as descrições preenchidas em um link público autenticado.

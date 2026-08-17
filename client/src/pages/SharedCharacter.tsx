@@ -1,5 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { liveSocket } from "@/lib/live";
+import { hasSkillDescription } from "@shared/skillDescriptions";
 import { Activity, Backpack, BookOpen, Cloud, Eye, HeartPulse, Loader2, Shield, Swords, Target, UsersRound, WandSparkles } from "lucide-react";
 import { useEffect } from "react";
 import { useRoute } from "wouter";
@@ -8,14 +9,14 @@ type SharedSheet = {
   identity: { name: string; player: string; campaign: string; world: string; concept: string; race: string; tl: string };
   attributes: { st: number; dx: number; iq: number; ht: number };
   secondary: { hpCurrent: number; hpBonus: number; fpCurrent: number; fpBonus: number; willBonus?: number; perBonus?: number; speedBonus?: number; dodgeBonus: number; moveBase: number; moveBonus: number };
-  skills?: Array<{ id: string; name: string; attribute: string; difficulty: string; relative?: string; level: number; points: number }>;
+  skills?: Array<{ id: string; name: string; attribute: string; difficulty: string; relative?: string; level: number; points: number; description?: string }>;
   attacks?: Array<{ id: string; name: string; level: number; damage: string; reach: string; parry: string }>;
   advantages?: Array<{ id: string; name: string; cost: number; notes?: string; source?: string }>;
   disadvantages?: Array<{ id: string; name: string; cost: number; notes?: string; source?: string }>;
   inventory?: Array<{ id: string; name: string; category: string; quantity: number; weight: number; carried: boolean; equipped: boolean }>;
   armor?: Array<{ id: string; location: string; dr: number; source: string }>;
   powers?: Array<{ id: string; name: string; source: string; type: string; level: number; fpCost: number; pointCost: number; range: string; damage: string; effect: string; combatReady: boolean }>;
-  allies?: Array<{ id: string; name: string; relation: string; description: string; points: number; cost?: number; hpCurrent: number; hpMax: number; status: string; type?: string; race?: string; appearance?: string; personality?: string; history?: string; motivation?: string; notes?: string; powerPercent?: number; frequency?: number; isDependent?: boolean; attributes?: { st: number; dx: number; iq: number; ht: number }; fpCurrent?: number; fpMax?: number; advantages?: Array<{ id: string; name: string; cost: number; notes?: string; source?: string }>; disadvantages?: Array<{ id: string; name: string; cost: number; notes?: string; source?: string }>; skills?: Array<{ id: string; name: string; attribute: string; difficulty: string; relative?: string; level: number; points: number }>; attacks?: Array<{ id: string; name: string; level: number; damage: string; reach: string; parry: string }>; inventory?: Array<{ id: string; name: string; category: string; quantity: number; weight: number; carried: boolean; equipped: boolean }>; conditions?: string[] }>;
+  allies?: Array<{ id: string; name: string; relation: string; description: string; points: number; cost?: number; hpCurrent: number; hpMax: number; status: string; type?: string; race?: string; appearance?: string; personality?: string; history?: string; motivation?: string; notes?: string; powerPercent?: number; frequency?: number; isDependent?: boolean; attributes?: { st: number; dx: number; iq: number; ht: number }; fpCurrent?: number; fpMax?: number; advantages?: Array<{ id: string; name: string; cost: number; notes?: string; source?: string }>; disadvantages?: Array<{ id: string; name: string; cost: number; notes?: string; source?: string }>; skills?: Array<{ id: string; name: string; attribute: string; difficulty: string; relative?: string; level: number; points: number; description?: string }>; attacks?: Array<{ id: string; name: string; level: number; damage: string; reach: string; parry: string }>; inventory?: Array<{ id: string; name: string; category: string; quantity: number; weight: number; carried: boolean; equipped: boolean }>; conditions?: string[] }>;
   missions?: Array<{ id: string; title: string; difficulty: string; status: string; pointsReward: number; moneyReward: number; currency: string; notes: string }>;
   homebrew?: Array<{ id: string; category: string; title: string; content: string; source: string }>;
   conditions?: string[];
@@ -116,7 +117,7 @@ export default function SharedCharacter() {
 
         <article className="shared-card shared-card--wide">
           <h3><Target size={15} /> PERÍCIAS</h3>
-          {skills.length ? <div className="shared-skill-list">{skills.map((skill) => <div key={skill.id}><b>{skill.name}</b><span>{skill.attribute} · {skill.difficulty}{skill.relative ? ` · ${skill.relative}` : ""}</span><strong>NH {skill.level}</strong><small>{skill.points} pts</small></div>)}</div> : <Empty>Nenhuma perícia cadastrada.</Empty>}
+          {skills.length ? <div className="shared-skill-list">{skills.map((skill) => <div key={skill.id}><b>{skill.name}</b><span>{skill.attribute} · {skill.difficulty}{skill.relative ? ` · ${skill.relative}` : ""}</span><strong>NH {skill.level}</strong><small>{skill.points} pts</small>{hasSkillDescription(skill.description) && <p>{skill.description}</p>}</div>)}</div> : <Empty>Nenhuma perícia cadastrada.</Empty>}
         </article>
 
         <article className="shared-card">
@@ -148,7 +149,7 @@ export default function SharedCharacter() {
               <div className="shared-ally-card__summary"><span><b>{ally.points}</b> pts</span><span>custo <b>{ally.cost ?? "—"}</b></span><span>poder <b>{ally.powerPercent ?? "—"}%</b></span><span>frequência <b>{ally.frequency ?? "—"}</b></span><span>ST <b>{ally.attributes?.st ?? "—"}</b> · DX <b>{ally.attributes?.dx ?? "—"}</b> · IQ <b>{ally.attributes?.iq ?? "—"}</b> · HT <b>{ally.attributes?.ht ?? "—"}</b></span></div>
               <div className="shared-ally-card__details">
                 <div><h5>Características</h5>{allyAdvantages.length || allyDisadvantages.length ? <div className="shared-compact-list">{allyAdvantages.map((item) => <span key={item.id}>+ {item.name} ({item.cost} pts){item.notes ? ` · ${item.notes}` : ""}</span>)}{allyDisadvantages.map((item) => <span key={item.id}>− {item.name} ({item.cost} pts){item.notes ? ` · ${item.notes}` : ""}</span>)}</div> : <small>Sem características cadastradas.</small>}</div>
-                <div><h5>Perícias</h5>{allySkills.length ? <div className="shared-compact-list">{allySkills.map((item) => <span key={item.id}>{item.name} · {item.attribute} {item.relative || ""} · NH {item.level} · {item.points} pts</span>)}</div> : <small>Nenhuma perícia cadastrada.</small>}</div>
+                <div><h5>Perícias</h5>{allySkills.length ? <div className="shared-compact-list">{allySkills.map((item) => <span key={item.id}>{item.name} · {item.attribute} {item.relative || ""} · NH {item.level} · {item.points} pts{hasSkillDescription(item.description) ? ` · ${item.description}` : ""}</span>)}</div> : <small>Nenhuma perícia cadastrada.</small>}</div>
                 <div><h5>Combate</h5>{allyAttacks.length ? <div className="shared-compact-list">{allyAttacks.map((item) => <span key={item.id}>{item.name} · NH {item.level} · {item.damage} · alcance {item.reach} · aparar {item.parry}</span>)}</div> : <small>Nenhum ataque cadastrado.</small>}</div>
                 <div><h5>Inventário</h5>{allyInventory.length ? <div className="shared-compact-list">{allyInventory.map((item) => <span key={item.id}>{item.name} · {item.category} · {item.quantity}× · {item.weight} kg{item.carried ? " · carregado" : ""}{item.equipped ? " · equipado" : ""}</span>)}</div> : <small>Nenhum item cadastrado.</small>}</div>
                 <div><h5>Condições</h5>{allyConditions.length ? <div className="shared-chip-list">{allyConditions.map((condition) => <span className="shared-chip" key={condition}>{condition}</span>)}</div> : <small>Sem condições ativas.</small>}</div>

@@ -256,6 +256,10 @@
   .trait-card__total strong { color: oklch(0.26 0.04 253); }
   .table-card { overflow: hidden; }
 .skill-table { display: grid; grid-template-columns: minmax(150px, 2fr) .55fr .7fr .7fr .4fr .45fr 35px 35px; gap: .5rem; align-items: center; padding: .51rem 1rem; border-bottom: 1px solid oklch(0.76 0.018 79); }
+.skill-entry { border-bottom: 1px solid oklch(0.76 0.018 79); }
+.skill-entry .skill-table { border-bottom: 0; }
+.skill-description { display: grid; grid-template-columns: 68px minmax(0, 1fr); gap: .6rem; align-items: start; padding: 0 1rem .65rem; color: oklch(0.44 0.035 253); font-size: .58rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.skill-description textarea { min-height: 2.2rem; width: 100%; resize: vertical; border: 1px solid oklch(0.76 0.018 79); border-radius: 3px; background: oklch(0.98 0.01 79); color: oklch(0.22 0.04 253); font: 400 .72rem/1.35 "IBM Plex Sans", sans-serif; letter-spacing: normal; text-transform: none; }
   .skill-table--head { padding-block: .56rem; background: oklch(0.92 0.018 79); color: oklch(0.44 0.035 253); font-size: .58rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
   .skill-table input { height: 1.45rem; padding: 0 .05rem; font-size: .72rem; }
   .skill-table button { display: grid; width: 27px; height: 27px; place-items: center; border: 1px solid oklch(0.49 0.16 27 / .44); border-radius: 50%; background: transparent; color: oklch(0.49 0.16 27); }
@@ -761,9 +765,13 @@ input:focus, textarea:focus { border-bottom-color: #e14144 !important; }
 .ally-mini-list { display: grid; gap: .35rem; margin-top: .5rem; }
 .ally-mini-list > div { display: grid; grid-template-columns: minmax(0, 1fr) 42px 27px; gap: .28rem; padding-bottom: .35rem; border-bottom: 1px solid rgb(255 255 255 / .08); }
 .ally-mini-list textarea { grid-column: 1 / -1; min-height: 30px; color: #aaa9af; font-size: .59rem; resize: vertical; }
-.ally-skill-table > div { display: grid; grid-template-columns: minmax(100px, 1fr) 54px 54px 42px 42px 27px; gap: .28rem; align-items: center; padding: .38rem 0; border-bottom: 1px solid rgb(255 255 255 / .08); color: #ff989a; font-size: .52rem; font-weight: 700; }
+.ally-skill-table__head, .ally-skill-row { display: grid; grid-template-columns: minmax(100px, 1fr) 54px 54px 42px 42px 27px; gap: .28rem; align-items: center; padding: .38rem 0; color: #ff989a; font-size: .52rem; font-weight: 700; }
+.ally-skill-entry { padding: .38rem 0; border-bottom: 1px solid rgb(255 255 255 / .08); }
+.ally-skill-row { padding: 0; color: inherit; font-weight: 400; }
+.ally-skill-description { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: .35rem; align-items: start; padding-top: .35rem; color: #aaa9af; font-size: .52rem; }
+.ally-skill-description textarea { min-height: 30px; width: 100%; resize: vertical; border: 1px solid rgb(255 255 255 / .12); border-radius: 2px; background: #0c0d10; color: #f5f1e9; font-size: .6rem; }
 .ally-inventory-table > div { display: grid; grid-template-columns: minmax(100px, 1fr) 54px 54px 42px 42px; gap: .28rem; align-items: center; padding: .38rem 0; border-bottom: 1px solid rgb(255 255 255 / .08); color: #ff989a; font-size: .52rem; font-weight: 700; }
-.ally-skill-table > div:not(:first-child), .ally-inventory-table > div:not(:first-child) { color: inherit; font-weight: 400; }
+.ally-inventory-table > div:not(:first-child) { color: inherit; font-weight: 400; }
 .ally-skill-table input, .ally-inventory-table input { min-width: 0; color: #f5f1e9 !important; font-size: .6rem; }
 .ally-attack-list { display: grid; gap: .35rem; margin-top: .5rem; }
 .ally-attack-list > div { display: grid; grid-template-columns: minmax(0, 1.25fr) 42px minmax(0, 1fr) 45px 27px; gap: .28rem; }
