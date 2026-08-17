@@ -1,4 +1,4 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { gurpsCharacters, gurpsCharacterShares, gurpsSkillCatalog, InsertUser, users } from "../drizzle/schema";
 import { filterSkillCatalog } from "../shared/gurpsSkillCatalog";
@@ -166,8 +166,18 @@ export async function listGurpsSkillCatalog(query = "", repository?: SkillCatalo
 export async function seedGurpsSkillCatalog() {
   const db = await getDb();
   if (!db) throw new Error("Banco de dados indisponível");
-  const existing = await db.select({ id: gurpsSkillCatalog.id }).from(gurpsSkillCatalog).limit(1);
-  if (!existing.length) await db.insert(gurpsSkillCatalog).values(getGurpsSkillCatalogSeed());
+  await db.insert(gurpsSkillCatalog).values(getGurpsSkillCatalogSeed()).onDuplicateKeyUpdate({
+    set: {
+      name: sql`VALUES(${gurpsSkillCatalog.name})`,
+      originalName: sql`VALUES(${gurpsSkillCatalog.originalName})`,
+      attribute: sql`VALUES(${gurpsSkillCatalog.attribute})`,
+      difficulty: sql`VALUES(${gurpsSkillCatalog.difficulty})`,
+      category: sql`VALUES(${gurpsSkillCatalog.category})`,
+      requiresSpecialization: sql`VALUES(${gurpsSkillCatalog.requiresSpecialization})`,
+      usesTechLevel: sql`VALUES(${gurpsSkillCatalog.usesTechLevel})`,
+      reference: sql`VALUES(${gurpsSkillCatalog.reference})`,
+    },
+  });
   const records = await db.select({ id: gurpsSkillCatalog.id }).from(gurpsSkillCatalog);
   return records.length;
 }

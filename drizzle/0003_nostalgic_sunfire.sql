@@ -1,0 +1,1 @@
+ALTER TABLE `gurps_skill_catalog` MODIFY COLUMN `originalName` varchar(180) NOT NULL DEFAULT '';

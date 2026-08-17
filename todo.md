@@ -140,3 +140,12 @@
 - [x] Adicionar teste tRPC do procedimento público, incluindo busca, limite e ausência de escrita.
 - [x] Adicionar teste de integração de estado para inclusão do catálogo na ficha principal e em aliados.
 - [x] Validar no procedimento tRPC o limite de 80 registros em uma consulta pública sem escrita.
+
+## Tradução do catálogo de perícias
+
+- [x] Definir convenções consistentes de tradução para as perícias e seus marcadores técnicos.
+- [x] Traduzir os 263 nomes do catálogo para português brasileiro.
+- [x] Preservar a busca por nomes em português e inglês no banco de perícias.
+- [x] Validar a exibição e a inclusão de perícias traduzidas na ficha principal e em aliados.
+- [x] Normalizar termos de famílias relacionadas, incluindo as variantes de chicote, monofio e força.
+- [x] Testar convenções terminológicas e categorias esperadas no catálogo traduzido.

@@ -49,6 +49,7 @@ export const gurpsCharacterShares = mysqlTable("gurps_character_shares", {
 export const gurpsSkillCatalog = mysqlTable("gurps_skill_catalog", {
   id: varchar("id", { length: 80 }).primaryKey(),
   name: varchar("name", { length: 180 }).notNull(),
+  originalName: varchar("originalName", { length: 180 }).default("").notNull(),
   attribute: varchar("attribute", { length: 32 }).notNull(),
   difficulty: varchar("difficulty", { length: 32 }).notNull(),
   category: varchar("category", { length: 80 }).notNull(),
@@ -60,6 +61,7 @@ export const gurpsSkillCatalog = mysqlTable("gurps_skill_catalog", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, table => ({
   nameIndex: index("gurps_skill_catalog_name_index").on(table.name),
+  originalNameIndex: index("gurps_skill_catalog_original_name_index").on(table.originalName),
   categoryIndex: index("gurps_skill_catalog_category_index").on(table.category),
 }));
 
