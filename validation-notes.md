@@ -48,3 +48,7 @@
 - Um link de campanha foi aberto e exibiu a ficha em modo de visualização ao vivo, com identidade, retrato, recursos, atributos, ataques e perícias, além do aviso de atualizações instantâneas.
 - A ficha local foi aberta novamente na prévia para seguir a validação dos painéis exclusivos da navegação por abas.
 - As evidências atuais confirmam a tela autenticada, a seção de links compartilhados e a visualização pública ao vivo. A execução de logout, envio de retrato e edição sincronizada em uma segunda sessão permanece pendente por exigir uma sessão proprietária interativa.
+- A ficha de desenvolvimento foi reaberta após a reorganização da grade de aliados, pronta para validação visual do painel atualizado.
+- A área de aliados agora mantém a mini-ficha contida no painel principal, com a lista lateral mais compacta e os blocos de conteúdo distribuídos sem ultrapassar a largura disponível.
+- Na aba interna de atributos, os quatro atributos foram reorganizados em uma grade de duas colunas e os recursos derivados permaneceram contidos no painel, sem sobreposição. O aliado temporário usado no teste foi removido ao final.
+- As regras responsivas agora empilham a mini-ficha e convertem suas abas internas para duas colunas em telas estreitas; a validação interativa confirmou que a visualização em desktop não cria rolagem horizontal.

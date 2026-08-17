@@ -61,6 +61,7 @@
 - [x] Calcular custo de Ally por porcentagem de pontos e frequência de aparecimento.
 - [x] Permitir editar os dados da mini-ficha e manter a integração com a sessão principal.
 - [ ] Validar a navegação e a mini-ficha de aliado em desktop e celular.
+- [x] Corrigir a grade da mini-ficha de aliado para evitar overflow e melhorar a distribuição de atributos e recursos.
 
 ## Navegação integral da ficha
 
