@@ -157,3 +157,9 @@
 - [x] Validar o preenchimento de descrição na ficha principal e na mini-ficha de aliado.
 - [x] Integrar as descrições específicas de cada perícia ao catálogo publicado.
 - [x] Testar descrições distintas para Briga, Abrir Fechaduras/NT e Contabilidade.
+
+## Correção de implantação
+
+- [ ] Investigar os registros da falha de implantação e identificar sua causa.
+- [ ] Corrigir a causa no código ou na configuração do projeto.
+- [ ] Validar a compilação e publicar uma nova versão com sucesso.
