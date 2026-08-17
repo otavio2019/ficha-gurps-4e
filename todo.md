@@ -171,6 +171,14 @@
 - [x] Confirmar a compilação local e a ausência de erro de código antes de repetir a publicação.
 - [x] Repetir a publicação e confirmar a disponibilidade do domínio.
 
+## Falha recorrente de implantação
+
+- [x] Conferir os registros de implantação e validar localmente o projeto após a falha recorrente.
+- [x] Determinar que não há correção de projeto identificável: a falha ocorre antes do início do construtor remoto.
+- [ ] Repetir a publicação somente após a validação e confirmar a disponibilidade do domínio.
+- [x] Verificar arquivos grandes e scripts de instalação que possam impedir o construtor remoto antes dos logs.
+- [x] Reproduzir localmente a instalação limpa que o construtor remoto executaria.
+
 ## Navegação móvel entre abas
 
 - [x] Analisar a acessibilidade atual das abas em telas pequenas.
