@@ -1,9 +1,12 @@
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { gurpsCharacters, gurpsCharacterShares, InsertUser, users } from "../drizzle/schema";
+import { gurpsCharacters, gurpsCharacterShares, gurpsSkillCatalog, InsertUser, users } from "../drizzle/schema";
+import { filterSkillCatalog } from "../shared/gurpsSkillCatalog";
 import { ENV } from './_core/env';
+import { getGurpsSkillCatalogSeed } from "./skillCatalogSeed";
 
 let _db: ReturnType<typeof drizzle> | null = null;
+type SkillCatalogReadRepository = { list: () => Promise<Array<typeof gurpsSkillCatalog.$inferSelect>> };
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
@@ -150,4 +153,21 @@ export async function getSharedGurpsCharacter(token: string) {
   const share = await db.select().from(gurpsCharacterShares).where(eq(gurpsCharacterShares.token, token)).limit(1);
   if (!share[0]) return undefined;
   return getGurpsCharacter(share[0].characterId);
+}
+
+export async function listGurpsSkillCatalog(query = "", repository?: SkillCatalogReadRepository) {
+  if (repository) return filterSkillCatalog(await repository.list(), query);
+  const db = await getDb();
+  if (!db) return [];
+  const records = await db.select().from(gurpsSkillCatalog).orderBy(asc(gurpsSkillCatalog.name));
+  return filterSkillCatalog(records, query);
+}
+
+export async function seedGurpsSkillCatalog() {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  const existing = await db.select({ id: gurpsSkillCatalog.id }).from(gurpsSkillCatalog).limit(1);
+  if (!existing.length) await db.insert(gurpsSkillCatalog).values(getGurpsSkillCatalogSeed());
+  const records = await db.select({ id: gurpsSkillCatalog.id }).from(gurpsSkillCatalog);
+  return records.length;
 }

@@ -2,7 +2,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { TRPCError } from "@trpc/server";
 import { nanoid } from "nanoid";
 import { z } from "zod";
-import { createCharacterShare, deleteGurpsCharacter, getCharacterShare, getGurpsCharacter, getSharedGurpsCharacter, listCharacterShares, listGurpsCharacters, saveGurpsCharacter } from "./db";
+import { createCharacterShare, deleteGurpsCharacter, getCharacterShare, getGurpsCharacter, getSharedGurpsCharacter, listCharacterShares, listGurpsCharacters, listGurpsSkillCatalog, saveGurpsCharacter } from "./db";
 import { parsePortraitDataUrl } from "./characterUtils";
 import { emitCharacterUpdated } from "./live";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -17,7 +17,7 @@ const characterInput = z.object({
   sheet: z.record(z.string(), z.unknown()),
 });
 
-export const appRouter = router({
+export const createAppRouter = (catalogReader = listGurpsSkillCatalog) => router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
   auth: router({
@@ -69,6 +69,9 @@ export const appRouter = router({
   shares: router({
     list: protectedProcedure.query(({ ctx }) => listCharacterShares(ctx.user.id)),
   }),
+  skills: router({
+    listCatalog: publicProcedure.input(z.object({ query: z.string().trim().max(80).optional() })).query(({ input }) => catalogReader(input.query || "")),
+  }),
   shared: router({
     get: publicProcedure.input(z.object({ token: z.string().min(8).max(64) })).query(async ({ input }) => {
       const character = await getSharedGurpsCharacter(input.token);
@@ -77,5 +80,7 @@ export const appRouter = router({
     }),
   }),
 });
+
+export const appRouter = createAppRouter();
 
 export type AppRouter = typeof appRouter;

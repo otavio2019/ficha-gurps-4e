@@ -125,3 +125,18 @@
 - [x] Adicionar um campo de descrição às perícias da ficha principal e da mini-ficha de aliados.
 - [x] Exibir a descrição de cada perícia na ficha compartilhada.
 - [ ] Validar ponta a ponta as descrições preenchidas em um link público autenticado.
+
+## Banco de perícias
+
+- [x] Definir o modelo do catálogo pesquisável de perícias de GURPS 4e.
+- [x] Criar tabela, migração e procedimentos seguros para consultar o catálogo.
+- [x] Popular o catálogo inicial com 263 perícias-base, atributos e dificuldades de referência.
+- [x] Permitir buscar e adicionar uma perícia do catálogo à ficha principal e à mini-ficha de aliados.
+- [x] Cobrir o catálogo com testes e validar a experiência na interface.
+- [x] Mover a semeadura inicial para uma rotina explícita, sem escrita em consultas públicas.
+- [x] Testar busca, limite de resultados e ausência de escrita na consulta pública do catálogo.
+- [x] Adicionar teste do procedimento público de catálogo, cobrindo consulta, busca, limite e ausência de mutação.
+- [x] Adicionar teste de integração da inclusão de uma perícia do catálogo na ficha principal e na mini-ficha de aliados.
+- [x] Adicionar teste tRPC do procedimento público, incluindo busca, limite e ausência de escrita.
+- [x] Adicionar teste de integração de estado para inclusão do catálogo na ficha principal e em aliados.
+- [x] Validar no procedimento tRPC o limite de 80 registros em uma consulta pública sem escrita.
