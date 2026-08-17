@@ -110,3 +110,11 @@
 ## Correção de sincronização local
 
 - [x] Impedir mutações na nuvem para fichas locais ou sem autorização de edição.
+
+## Visualização compartilhada
+
+- [x] Simplificar a ficha pública para exibir todos os dados em seções claras e fáceis de acompanhar.
+- [x] Incluir, de forma simplificada, os detalhes ainda omitidos de poderes, missões, traços e mini-fichas de aliados na visualização pública.
+- [ ] Validar a rota pública simplificada após publicação em desktop e celular.
+- [x] Exibir uma mini-ficha simplificada de cada aliado compartilhado, incluindo atributos, recursos, características, perícias, combate e inventário.
+- [x] Validar a visualização pública com aliados e missões preenchidos.
