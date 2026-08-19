@@ -73,7 +73,8 @@
 - [x] Corrigir a composição impressa do PDF para remover a página inicial subutilizada e preservar uma primeira página legível.
 - [x] Confirmar programaticamente que a primeira página do PDF contém cabeçalho e conteúdo da Visão geral após a correção de impressão.
 - [x] Validar o acesso e a operação de links compartilhados após a reorganização por abas.
-- [ ] Registrar a checagem dos cálculos e controles principais em cada aba.
+- [x] Registrar a checagem dos cálculos e controles principais em cada aba.
+- [x] Reler e confirmar o registro persistido da checagem consolidada das dez abas em `validation-notes.md`.
 - [x] Validar a navegação integral em desktop e celular.
 
 ## Poderes e combate
