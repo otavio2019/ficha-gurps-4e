@@ -12,6 +12,7 @@ import { allyFrequencyMultipliers, allyPowerCosts, calculateAllyCostByRule } fro
 import { calculatePointBudget, SECONDARY_POINT_COSTS } from "@shared/characterPoints";
 import { calculateAttackNh, calculateNh } from "@shared/gurpsNh";
 import { rollCheck3d6, rollDamage as rollDamageExpression, type CheckRoll, type DamageRoll } from "@shared/gurpsRolls";
+import { clampResource, describeResourceChange } from "@shared/gurpsResources";
 import { HOMEBREW_CATEGORIES, HOMEBREW_FIELDS, canAddHomebrewToSheet, filterHomebrewEntries, normalizeHomebrewEntry, type HomebrewCategory, type HomebrewEntry } from "@shared/homebrew";
 import { getHomebrewRaceEffects, hasHomebrewRaceEffects, type RaceAttributeBonuses } from "@shared/homebrewRace";
 import { selectCloudBackedRecords } from "@shared/cloudSync";
@@ -509,11 +510,17 @@ export default function Home() {
     setSheet((current) => ({ ...current, secondary: { ...current.secondary, [field]: value } }));
   };
 
-  const changeResource = (resource: "hpCurrent" | "fpCurrent", delta: number) => {
+  const setResource = (resource: "hpCurrent" | "fpCurrent", value: number, record = true) => {
     const max = resource === "hpCurrent" ? calculated.hpMax : calculated.fpMax;
-    const label = resource === "hpCurrent" ? "HP" : "FP";
-    setSheet((current) => ({ ...current, secondary: { ...current.secondary, [resource]: Math.max(0, Math.min(max, current.secondary[resource] + delta)) } }));
-    addLog(`${delta > 0 ? "Recuperou" : "Perdeu"} ${Math.abs(delta)} ${label}.`, "health");
+    const label = resource === "hpCurrent" ? "PV" : "PF";
+    const previous = sheet.secondary[resource];
+    const next = clampResource(value, max);
+    setSheet((current) => ({ ...current, secondary: { ...current.secondary, [resource]: next } }));
+    if (record && next !== previous) addLog(describeResourceChange(label, previous, next), "health");
+  };
+
+  const changeResource = (resource: "hpCurrent" | "fpCurrent", delta: number) => {
+    setResource(resource, sheet.secondary[resource] + delta);
   };
 
   const roll3d6 = (label: string, target: number) => {
@@ -1084,8 +1091,8 @@ export default function Home() {
               <div className="paper-card resource-card">
                 <div><span className="eyebrow">RECURSO CRÍTICO</span><h3>Vida e fadiga</h3><p>Ajustes rápidos registrados no diário.</p></div>
                 <div className="resource-controls">
-                  <div className="resource-line"><HeartPulse size={20} /><span>HP</span><div className="resource-bar"><i style={{ width: `${Math.min(100, (sheet.secondary.hpCurrent / calculated.hpMax) * 100)}%` }} /></div><b>{sheet.secondary.hpCurrent}/{calculated.hpMax}</b><button type="button" onClick={() => changeResource("hpCurrent", -1)}><Minus size={14} /></button><button type="button" onClick={() => changeResource("hpCurrent", 1)}><Plus size={14} /></button></div>
-                  <div className="resource-line"><Activity size={20} /><span>FP</span><div className="resource-bar resource-bar--moss"><i style={{ width: `${Math.min(100, (sheet.secondary.fpCurrent / calculated.fpMax) * 100)}%` }} /></div><b>{sheet.secondary.fpCurrent}/{calculated.fpMax}</b><button type="button" onClick={() => changeResource("fpCurrent", -1)}><Minus size={14} /></button><button type="button" onClick={() => changeResource("fpCurrent", 1)}><Plus size={14} /></button></div>
+                  <div className="resource-line"><HeartPulse size={20} /><span>PV</span><div className="resource-bar"><i style={{ width: `${Math.min(100, (sheet.secondary.hpCurrent / calculated.hpMax) * 100)}%` }} /></div><label className="resource-value"><input aria-label="PV atual" type="number" min="0" max={calculated.hpMax} value={sheet.secondary.hpCurrent} onChange={(event) => setResource("hpCurrent", number(event.target.value), false)} onBlur={() => addLog(`Ajustou PV diretamente para ${sheet.secondary.hpCurrent}.`, "health")} /><small>/{calculated.hpMax}</small></label><button type="button" aria-label="Diminuir PV em 5" onClick={() => changeResource("hpCurrent", -5)}>−5</button><button type="button" aria-label="Diminuir PV em 1" onClick={() => changeResource("hpCurrent", -1)}><Minus size={14} /></button><button type="button" aria-label="Aumentar PV em 1" onClick={() => changeResource("hpCurrent", 1)}><Plus size={14} /></button><button type="button" aria-label="Aumentar PV em 5" onClick={() => changeResource("hpCurrent", 5)}>+5</button></div>
+                  <div className="resource-line"><Activity size={20} /><span>PF</span><div className="resource-bar resource-bar--moss"><i style={{ width: `${Math.min(100, (sheet.secondary.fpCurrent / calculated.fpMax) * 100)}%` }} /></div><label className="resource-value"><input aria-label="PF atual" type="number" min="0" max={calculated.fpMax} value={sheet.secondary.fpCurrent} onChange={(event) => setResource("fpCurrent", number(event.target.value), false)} onBlur={() => addLog(`Ajustou PF diretamente para ${sheet.secondary.fpCurrent}.`, "health")} /><small>/{calculated.fpMax}</small></label><button type="button" aria-label="Diminuir PF em 5" onClick={() => changeResource("fpCurrent", -5)}>−5</button><button type="button" aria-label="Diminuir PF em 1" onClick={() => changeResource("fpCurrent", -1)}><Minus size={14} /></button><button type="button" aria-label="Aumentar PF em 1" onClick={() => changeResource("fpCurrent", 1)}><Plus size={14} /></button><button type="button" aria-label="Aumentar PF em 5" onClick={() => changeResource("fpCurrent", 5)}>+5</button></div>
                 </div>
               </div>
               <div className="paper-card modifier-card">

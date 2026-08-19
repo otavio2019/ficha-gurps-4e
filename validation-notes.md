@@ -130,3 +130,6 @@
 - A ficha atualizada foi aberta para validar os novos controles de rolagem de ataque e dano no painel de Combate.
 - O botão Dano da Espada longa gerou resultado 4 para a expressão 1d+2 corte e exibiu, no painel de resultado, a composição “2 + 2”, o dano final e a origem da ação.
 - Em 375×812, a rolagem de dano deixou o painel “RESULTADO DA AÇÃO” visível com a origem, a expressão e o total, sem overflow horizontal. O motor central também passou em testes de sucesso, falha, margem, interpretação de dano e aplicação de modificador.
+- Em desktop, a ficha exibiu valores editáveis de PV e PF, os quatro controles de −5, −1, +1 e +5 e os respectivos máximos calculados.
+- O acionamento por DOM do controle de −5 PV atualizou o recurso de 12 para 7. A edição direta de PV para 9 também recalculou o resumo e os cartões da ficha, confirmando a atualização do estado no fluxo de sessão.
+- Em 375 × 812, os oito controles de PV e PF permaneceram acessíveis, cada um com 26 × 26 px, sem overflow horizontal. O teste confirmou redução rápida de PV de 10 para 5, edição direta de PF para 6 e os dois registros correspondentes no Diário.

@@ -315,3 +315,9 @@
 - [x] Integrar botões de rolagem rápida a ataques, perícias e poderes.
 - [x] Criar histórico de rolagens com horário, origem, resultado e margem.
 - [x] Validar a central de rolagens e combate em desktop e celular.
+
+## Prioridade de sessão: recursos rápidos
+
+- [x] Adicionar controles de −5, −1, +1 e +5 para PV e PF, respeitando os limites calculados.
+- [x] Permitir editar diretamente o valor atual de PV e PF durante a sessão.
+- [x] Registrar alterações de recursos no histórico e validar em desktop e celular.
