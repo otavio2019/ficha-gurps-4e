@@ -282,3 +282,11 @@
 - [x] Corrigir a compactação excessiva das abas e dos atributos da mini-ficha de Aliados em celular.
 - [x] Garantir espaço inferior seguro para que a barra fixa não cubra os controles da mini-ficha.
 - [x] Corrigir a exibição dos valores de ST, DX, IQ e HT no bloco de atributos da mini-ficha móvel.
+
+## Biblioteca Homebrew da campanha
+
+- [x] Expandir o modelo Homebrew para fonte, categoria, tags, descrição curta, observações e dados específicos por tipo.
+- [x] Criar a biblioteca Homebrew com busca textual, filtros por categoria, cards e painel-resumo lateral.
+- [x] Adicionar visualização detalhada e editor dinâmico para regras, notas, armas, vantagens, perícias, raças e poderes.
+- [x] Permitir adicionar conteúdos Homebrew compatíveis diretamente a equipamentos, traços, perícias e poderes da ficha.
+- [x] Validar os fluxos principais da biblioteca Homebrew em desktop e celular e adicionar testes de regressão.

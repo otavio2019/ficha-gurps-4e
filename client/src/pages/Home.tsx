@@ -11,6 +11,7 @@ import { trpc } from "@/lib/trpc";
 import { allyFrequencyMultipliers, allyPowerCosts, calculateAllyCostByRule } from "@shared/allyRules";
 import { calculatePointBudget, SECONDARY_POINT_COSTS } from "@shared/characterPoints";
 import { calculateAttackNh, calculateNh } from "@shared/gurpsNh";
+import { HOMEBREW_CATEGORIES, HOMEBREW_FIELDS, canAddHomebrewToSheet, filterHomebrewEntries, normalizeHomebrewEntry, type HomebrewCategory, type HomebrewEntry } from "@shared/homebrew";
 import { selectCloudBackedRecords } from "@shared/cloudSync";
 import { appendCatalogSkill, createSkillFromCatalog } from "@shared/skillCatalogSelection";
 import { appendCatalogTrait, createTraitFromCatalog } from "@shared/traitCatalogSelection";
@@ -65,7 +66,6 @@ type Attack = { id: string; name: string; level: number; damage: string; reach: 
 type Armor = { id: string; location: string; dr: number; source: string };
 type Power = { id: string; name: string; source: string; type: "Ofensivo" | "Defensivo" | "Utilidade" | "Controle"; level: number; bonus?: number; skillId?: string; fpCost: number; pointCost: number; range: string; duration?: string; area?: string; resistance?: string; prerequisites?: string; notes?: string; damage: string; effect: string; combatReady: boolean };
 type Mission = { id: string; title: string; difficulty: "Baixa" | "Média" | "Alta" | "Épica" | "Lendária"; status: "Planejada" | "Em andamento" | "Concluída" | "Fracassada"; pointsReward: number; moneyReward: number; currency: string; notes: string; applied: boolean };
-type HomebrewEntry = { id: string; category: "Regra" | "Raça" | "Habilidade" | "Equipamento" | "Nota"; title: string; content: string; source: string };
 type LogItem = { id: string; time: string; text: string; kind: "roll" | "health" | "note" };
 type Ally = { id: string; name: string; relation: string; description: string; points: number; cost: number; hpCurrent: number; hpMax: number; status: string; type?: string; race?: string; appearance?: string; personality?: string; history?: string; motivation?: string; notes?: string; powerPercent?: 25 | 50 | 75 | 100 | 150; frequency?: 6 | 9 | 12 | 15; isDependent?: boolean; attributes?: { st: number; dx: number; iq: number; ht: number }; fpCurrent?: number; fpMax?: number; advantages?: Trait[]; disadvantages?: Trait[]; skills?: Skill[]; attacks?: Attack[]; inventory?: InventoryItem[]; conditions?: string[] };
 
@@ -89,6 +89,29 @@ function AllyTraitCatalog({ kind, search, onSearch, entries, loading, onSelect }
   return <div className="ally-trait-catalog">
     <label><Search size={13} /><input value={search} onChange={(event) => onSearch(event.target.value)} placeholder={`Buscar no banco de ${label}`} aria-label={`Buscar ${label} para aliado`} /></label>
     <div>{loading ? <small>Carregando catálogo...</small> : entries?.length ? entries.slice(0, 6).map((entry) => <button type="button" key={entry.id} onClick={() => onSelect(entry)}><span><b>{entry.name}</b><small>{entry.category} · {entry.costLabel} pts</small></span><Plus size={13} /></button>) : <small>Nenhum traço encontrado.</small>}</div>
+  </div>;
+}
+
+function HomebrewLibrary({ entries, onCreate, onUpdate, onRemove, onAddToSheet }: { entries: HomebrewEntry[]; onCreate: () => string; onUpdate: (id: string, update: Partial<HomebrewEntry>) => void; onRemove: (id: string, title: string) => void; onAddToSheet: (entry: HomebrewEntry) => void }) {
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState<"Todos" | HomebrewCategory>("Todos");
+  const [detailId, setDetailId] = useState<string | null>(null);
+  const [editorId, setEditorId] = useState<string | null>(null);
+  const normalizedEntries = useMemo(() => entries.map(normalizeHomebrewEntry), [entries]);
+  const filteredEntries = useMemo(() => filterHomebrewEntries(normalizedEntries, search, category), [normalizedEntries, search, category]);
+  const detail = normalizedEntries.find((entry) => entry.id === detailId) || null;
+  const editor = normalizedEntries.find((entry) => entry.id === editorId) || null;
+  const categoryCounts = useMemo(() => Object.fromEntries(HOMEBREW_CATEGORIES.map((item) => [item, normalizedEntries.filter((entry) => entry.category === item).length])) as Record<HomebrewCategory, number>, [normalizedEntries]);
+  const createEntry = () => { const id = onCreate(); setDetailId(id); setEditorId(id); };
+  const tags = (value?: string) => String(value || "").split(",").map((tag) => tag.trim()).filter(Boolean);
+
+  return <div className="homebrew-library">
+    <aside className="homebrew-library__sidebar"><div><span className="eyebrow">CÓDICE DA MESA</span><h3>Biblioteca Homebrew</h3><p>Organize regras, personagens, poderes e equipamentos próprios da campanha em um arquivo pronto para a sessão.</p></div><div className="homebrew-library__total"><span>Conteúdos</span><b>{normalizedEntries.length}</b></div><div className="homebrew-category-counts">{HOMEBREW_CATEGORIES.map((item) => <button type="button" key={item} onClick={() => setCategory(item)}><span>{item}</span><b>{categoryCounts[item]}</b></button>)}</div></aside>
+    <div className="homebrew-library__main"><div className="homebrew-library__toolbar"><label><Search size={16} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por nome, descrição ou tags" aria-label="Buscar conteúdo Homebrew" /></label><button type="button" className="homebrew-create" onClick={createEntry}><Plus size={16} /> Criar conteúdo</button></div><div className="homebrew-filter-row"><button type="button" className={category === "Todos" ? "is-active" : ""} onClick={() => setCategory("Todos")}>Todos <b>{normalizedEntries.length}</b></button>{HOMEBREW_CATEGORIES.map((item) => <button type="button" key={item} className={category === item ? "is-active" : ""} onClick={() => setCategory(item)}>{item} <b>{categoryCounts[item] || 0}</b></button>)}</div>
+      {detail && <aside className="homebrew-detail" aria-label={`Detalhes de ${detail.title}`}><div className="homebrew-detail__head"><div><span className="eyebrow">{detail.category}</span><h3>{detail.title || "Sem título"}</h3><p>{detail.source}</p></div><button type="button" className="row-delete" aria-label="Fechar detalhes" onClick={() => setDetailId(null)}>×</button></div><p className="homebrew-detail__description">{detail.description || "Sem descrição registrada."}</p>{Object.keys(detail.details || {}).length > 0 && <div className="homebrew-detail__facts">{Object.entries(detail.details || {}).filter(([, value]) => value !== "" && value !== 0).map(([key, value]) => <span key={key}><b>{HOMEBREW_FIELDS[detail.category].find((field) => field.key === key)?.label || key}</b>{value}</span>)}</div>}<div className="homebrew-tag-list">{tags(detail.tags).map((tag) => <span key={tag}>#{tag}</span>)}</div>{detail.notes && <small>Observações: {detail.notes}</small>}<footer><button type="button" onClick={() => setEditorId(detail.id)}>Editar</button>{canAddHomebrewToSheet(detail.category) && <button type="button" className="homebrew-add-sheet" onClick={() => onAddToSheet(detail)}>Adicionar à ficha <ArrowRight size={14} /></button>}</footer></aside>}
+      {editor && <section className="homebrew-editor"><header><div><span className="eyebrow">EDITOR DINÂMICO</span><h3>{editor.title || "Novo conteúdo"}</h3></div><button type="button" onClick={() => setEditorId(null)}>Concluir</button></header><div className="homebrew-editor__base"><label><span>Nome</span><input value={editor.title} onChange={(event) => onUpdate(editor.id, { title: event.target.value })} /></label><label><span>Categoria</span><select value={editor.category} onChange={(event) => onUpdate(editor.id, { category: event.target.value as HomebrewCategory })}>{HOMEBREW_CATEGORIES.map((item) => <option key={item}>{item}</option>)}</select></label><label><span>Fonte</span><input value={editor.source} onChange={(event) => onUpdate(editor.id, { source: event.target.value })} placeholder="Ex.: Campanha Aurora" /></label><label><span>Tags</span><input value={editor.tags || ""} onChange={(event) => onUpdate(editor.id, { tags: event.target.value })} placeholder="ex.: raro, arcano, cidade" /></label><label className="wide"><span>Descrição curta</span><textarea value={editor.description || ""} onChange={(event) => onUpdate(editor.id, { description: event.target.value, content: event.target.value })} placeholder="O que este conteúdo acrescenta à campanha?" /></label></div>{HOMEBREW_FIELDS[editor.category].length > 0 && <div className="homebrew-editor__specific"><span className="eyebrow">DADOS DE {editor.category.toUpperCase()}</span><div>{HOMEBREW_FIELDS[editor.category].map((field) => <label key={field.key}><span>{field.label}</span><input type={field.kind} value={editor.details?.[field.key] ?? ""} onChange={(event) => onUpdate(editor.id, { details: { ...editor.details, [field.key]: field.kind === "number" ? number(event.target.value) : event.target.value } })} /></label>)}</div></div>}<label className="homebrew-editor__notes"><span>Observações</span><textarea value={editor.notes || ""} onChange={(event) => onUpdate(editor.id, { notes: event.target.value })} placeholder="Restrições, ganchos ou notas para o mestre." /></label><footer><button type="button" onClick={() => { setDetailId(editor.id); setEditorId(null); }}>Visualizar detalhes</button>{canAddHomebrewToSheet(editor.category) && <button type="button" className="homebrew-add-sheet" onClick={() => onAddToSheet(editor)}>Adicionar à ficha <ArrowRight size={14} /></button>}</footer></section>}
+      <div className="homebrew-card-grid">{filteredEntries.length ? filteredEntries.map((entry) => <article className={`homebrew-library-card homebrew-library-card--${entry.category.toLowerCase()}`} key={entry.id}><div className="homebrew-library-card__meta"><span>{entry.category}</span><small>{entry.source}</small></div><h3>{entry.title || "Conteúdo sem nome"}</h3><p>{entry.description || "Sem descrição registrada."}</p><div className="homebrew-tag-list">{tags(entry.tags).slice(0, 4).map((tag) => <span key={tag}>#{tag}</span>)}</div><footer><button type="button" onClick={() => setDetailId(entry.id)}>Detalhes</button><button type="button" onClick={() => setEditorId(entry.id)}>Editar</button>{canAddHomebrewToSheet(entry.category) && <button type="button" onClick={() => onAddToSheet(entry)}>À ficha</button>}<button type="button" className="row-delete" aria-label={`Excluir ${entry.title}`} onClick={() => onRemove(entry.id, entry.title)}><Trash2 size={14} /></button></footer></article>) : <button type="button" className="homebrew-empty" onClick={createEntry}><span><Sparkles size={21} /></span><strong>{normalizedEntries.length ? "Nenhum conteúdo encontrado" : "Seu arquivo Homebrew está vazio"}</strong><small>{normalizedEntries.length ? "Altere a busca ou os filtros para localizar outro conteúdo." : "Crie regras, itens, poderes e anotações para a sua campanha."}</small><b><Plus size={14} /> Criar conteúdo</b></button>}</div>
+    </div>
   </div>;
 }
 
@@ -594,13 +617,35 @@ export default function Home() {
     addLog(`Removeu o relatório de missão ${title || "sem nome"}.`, "note");
   };
 
-  const updateHomebrew = (id: string, field: keyof HomebrewEntry, value: string) => {
-    setSheet((current) => ({ ...current, homebrew: (current.homebrew || []).map((entry) => entry.id === id ? { ...entry, [field]: value } : entry) }));
+  const updateHomebrew = (id: string, update: Partial<HomebrewEntry>) => {
+    setSheet((current) => ({ ...current, homebrew: (current.homebrew || []).map((entry) => entry.id === id ? { ...normalizeHomebrewEntry(entry), ...update } : entry) }));
   };
 
   const addHomebrew = () => {
-    const entry: HomebrewEntry = { id: makeId(), category: "Regra", title: "Novo conteúdo", content: "Descreva a regra, raça, habilidade ou item personalizado.", source: "Campanha" };
+    const entry: HomebrewEntry = { id: makeId(), category: "Regra", title: "Novo conteúdo", description: "Descreva o conteúdo personalizado da campanha.", content: "Descreva o conteúdo personalizado da campanha.", source: "Campanha", tags: "", notes: "", details: {} };
     setSheet((current) => ({ ...current, homebrew: [...(current.homebrew || []), entry] }));
+    addLog("Criou um novo conteúdo na biblioteca Homebrew.", "note");
+    return entry.id;
+  };
+
+  const addHomebrewToSheet = (rawEntry: HomebrewEntry) => {
+    const entry = normalizeHomebrewEntry(rawEntry);
+    const details = entry.details || {};
+    const detailNumber = (key: string, fallback = 0) => Number(details[key] ?? fallback);
+    const description = entry.description || entry.content || "";
+    setSheet((current) => {
+      if (entry.category === "Vantagem") return { ...current, advantages: [...current.advantages, { id: makeId(), name: entry.title, cost: Math.abs(detailNumber("cost", 5)), notes: description, source: entry.source }] };
+      if (entry.category === "Desvantagem") return { ...current, disadvantages: [...current.disadvantages, { id: makeId(), name: entry.title, cost: -Math.abs(detailNumber("cost", 5)), notes: description, source: entry.source }] };
+      if (entry.category === "Perícia" || entry.category === "Técnica") {
+        const attribute = String(details.attribute || "DX");
+        return { ...current, skills: [...current.skills, { id: makeId(), name: entry.title, attribute, difficulty: String(details.difficulty || "Média"), relative: `${attribute}+0`, level: detailNumber("nh", 10), points: Math.max(1, detailNumber("points", 1)), description }] };
+      }
+      if (entry.category === "Poder" || entry.category === "Magia") return { ...current, powers: [...(current.powers || []), { id: makeId(), name: entry.title, source: entry.source, type: "Utilidade", level: detailNumber("nh", current.attributes.iq), bonus: 0, fpCost: Math.max(0, detailNumber("fpCost", 1)), pointCost: Math.max(0, detailNumber("pointCost", 5)), range: String(details.range || "—"), duration: String(details.duration || "Instantânea"), area: "Alvo único", resistance: "Nenhuma", prerequisites: "—", notes: entry.notes || "", damage: String(details.damage || "—"), effect: String(details.effect || description), combatReady: true }] };
+      if (entry.category === "Armadura") return { ...current, armor: [...current.armor, { id: makeId(), location: String(details.locations || "Tronco"), dr: Math.max(0, detailNumber("dr", 0)), source: entry.title }] };
+      if (entry.category === "Arma") return { ...current, inventory: [...current.inventory, { id: makeId(), name: entry.title, category: "Arma", quantity: 1, weight: Math.max(0, detailNumber("weight", 0)), carried: true, equipped: true, description }], attacks: [...current.attacks, { id: makeId(), name: entry.title, level: detailNumber("nh", current.attributes.dx), damage: String(details.damage || "—"), reach: String(details.reach || "—"), parry: String(details.parry || "—") }] };
+      return { ...current, inventory: [...current.inventory, { id: makeId(), name: entry.title, category: entry.category === "Equipamentos" ? "Equipamento" : entry.category, quantity: Math.max(1, detailNumber("quantity", 1)), weight: Math.max(0, detailNumber("weight", 0)), carried: true, equipped: false, description }] };
+    });
+    addLog(`Adicionou ${entry.title || "conteúdo Homebrew"} à ficha.`, "note");
   };
 
   const removeHomebrew = (id: string, title: string) => {
@@ -1087,8 +1132,8 @@ export default function Home() {
           </section>
 
           <section id="homebrew" className={`codex-section ${activeSection === "homebrew" ? "is-active" : "is-hidden"}`}>
-            <SectionHeader kicker="09 · HOMEbrew" title="Arquivo Homebrew" description="Mantenha regras, raças, habilidades e equipamentos personalizados junto da campanha." icon={Sparkles} action={<Button type="button" variant="outline" className="add-button" onClick={addHomebrew}><Plus size={15} /> Novo conteúdo</Button>} />
-            <div className="homebrew-board"><aside><span className="eyebrow">CÓDICE DA MESA</span><h3>Conteúdo personalizado</h3><p>Use este arquivo para guardar tudo o que sua campanha altera, cria ou interpreta de forma própria.</p><div><span>Entradas</span><b>{(sheet.homebrew || []).length}</b></div><div><span>Regras</span><b>{(sheet.homebrew || []).filter((entry) => entry.category === "Regra").length}</b></div></aside><div className="homebrew-list">{(sheet.homebrew || []).length ? (sheet.homebrew || []).map((entry, index) => <article key={entry.id} className="homebrew-card"><div className="homebrew-card__index">{String(index + 1).padStart(2, "0")}</div><div><div className="homebrew-card__head"><input value={entry.title} aria-label="Título do conteúdo Homebrew" onChange={(event) => updateHomebrew(entry.id, "title", event.target.value)} /><select value={entry.category} onChange={(event) => updateHomebrew(entry.id, "category", event.target.value)}><option>Regra</option><option>Raça</option><option>Habilidade</option><option>Equipamento</option><option>Nota</option></select><button type="button" className="row-delete" aria-label={`Excluir ${entry.title}`} onClick={() => removeHomebrew(entry.id, entry.title)}><Trash2 size={14} /></button></div><label><span>Fonte</span><input value={entry.source} onChange={(event) => updateHomebrew(entry.id, "source", event.target.value)} /></label><label><span>Descrição</span><textarea value={entry.content} onChange={(event) => updateHomebrew(entry.id, "content", event.target.value)} /></label></div></article>) : <button type="button" className="homebrew-empty" onClick={addHomebrew}><span><Sparkles size={21} /></span><strong>Seu arquivo Homebrew está vazio</strong><small>Adicione uma regra da mesa, raça, habilidade ou item personalizado.</small><b><Plus size={14} /> Criar primeira entrada</b></button>}</div></div>
+            <SectionHeader kicker="09 · HOMEbrew" title="Biblioteca Homebrew" description="Crie, encontre, detalhe e aplique conteúdos personalizados da campanha durante a sessão." icon={Sparkles} />
+            <HomebrewLibrary entries={sheet.homebrew || []} onCreate={addHomebrew} onUpdate={updateHomebrew} onRemove={removeHomebrew} onAddToSheet={addHomebrewToSheet} />
           </section>
 
           <section id="diario" className={`codex-section codex-section--last ${activeSection === "diario" ? "is-active" : "is-hidden"}`}>

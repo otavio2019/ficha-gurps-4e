@@ -953,6 +953,60 @@ input:focus, textarea:focus { border-bottom-color: #e14144 !important; }
 .homebrew-card label { display: grid; gap: .15rem; margin-top: .4rem; color: #aaa9af; font-size: .51rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
 .homebrew-card label input, .homebrew-card label textarea { color: #f5f1e9 !important; font-size: .62rem; }
 .homebrew-card label textarea { min-height: 43px; resize: vertical; }
+.homebrew-library { display: grid; grid-template-columns: minmax(190px, .28fr) minmax(0, .72fr); gap: .85rem; }
+.homebrew-library__sidebar { display: flex; min-height: 330px; flex-direction: column; gap: .7rem; padding: 1rem; border-top: 2px solid #e14144; background: radial-gradient(circle at 90% 12%, rgb(225 65 68 / .22), transparent 36%), #101217; }
+.homebrew-library__sidebar h3 { margin: .3rem 0; color: #f5f1e9; font-family: "DM Serif Display", serif; font-size: 1.5rem; font-weight: 400; }
+.homebrew-library__sidebar p { margin: 0; color: #aaa9af; font-size: .67rem; line-height: 1.45; }
+.homebrew-library__total { display: flex; align-items: end; justify-content: space-between; padding-top: .7rem; border-top: 1px solid rgb(255 255 255 / .12); color: #aaa9af; font-size: .61rem; }
+.homebrew-library__total b { color: #f5f1e9; font-family: "DM Serif Display", serif; font-size: 1.7rem; font-weight: 400; line-height: 1; }
+.homebrew-category-counts { display: grid; gap: .18rem; }
+.homebrew-category-counts button { display: flex; justify-content: space-between; padding: .28rem 0; border: 0; border-bottom: 1px solid rgb(255 255 255 / .07); background: transparent; color: #aaa9af; font-size: .58rem; text-align: left; }
+.homebrew-category-counts button:hover { color: #ff989a; }
+.homebrew-category-counts b { color: #f5f1e9; font-weight: 500; }
+.homebrew-library__main { min-width: 0; }
+.homebrew-library__toolbar { display: grid; grid-template-columns: 1fr auto; gap: .5rem; }
+.homebrew-library__toolbar label { display: flex; min-width: 0; align-items: center; gap: .4rem; padding: 0 .6rem; border: 1px solid rgb(255 255 255 / .14); background: #101217; color: #ff989a; }
+.homebrew-library__toolbar input { min-width: 0; height: 2.25rem; border: 0; background: transparent; color: #f5f1e9 !important; font-size: .68rem; outline: 0; }
+.homebrew-create, .homebrew-add-sheet { display: inline-flex; align-items: center; justify-content: center; gap: .32rem; border: 1px solid #e14144; background: #8d292d; color: white; font-size: .62rem; font-weight: 700; }
+.homebrew-create { min-height: 2.25rem; padding: 0 .72rem; }
+.homebrew-filter-row { display: flex; gap: .3rem; margin: .55rem 0 .7rem; overflow-x: auto; padding-bottom: .18rem; scrollbar-width: thin; }
+.homebrew-filter-row button { flex: 0 0 auto; padding: .3rem .45rem; border: 1px solid rgb(255 255 255 / .12); background: #101217; color: #aaa9af; font-size: .55rem; white-space: nowrap; }
+.homebrew-filter-row button b { margin-left: .15rem; color: #ff989a; font-weight: 500; }
+.homebrew-filter-row button.is-active { border-color: #e14144; background: rgb(225 65 68 / .2); color: white; }
+.homebrew-card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+.homebrew-library-card { display: flex; min-height: 175px; flex-direction: column; gap: .55rem; padding: .75rem; border: 1px solid rgb(255 255 255 / .12); border-left: 3px solid #e14144; background: repeating-linear-gradient(0deg, #111318 0, #111318 24px, rgb(255 255 255 / .02) 25px); }
+.homebrew-library-card--raça, .homebrew-library-card--npc { border-left-color: #6994b5; }
+.homebrew-library-card--poder, .homebrew-library-card--magia { border-left-color: #c28f50; }
+.homebrew-library-card--vantagem { border-left-color: #7b9a73; }
+.homebrew-library-card--desvantagem { border-left-color: #ad6b77; }
+.homebrew-library-card__meta { display: flex; justify-content: space-between; gap: .5rem; color: #ff989a; font-size: .54rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.homebrew-library-card__meta small { overflow: hidden; color: #aaa9af; font-size: .51rem; font-weight: 500; letter-spacing: 0; text-overflow: ellipsis; text-transform: none; white-space: nowrap; }
+.homebrew-library-card h3 { margin: 0; color: #f5f1e9; font-family: "DM Serif Display", serif; font-size: 1.15rem; font-weight: 400; }
+.homebrew-library-card p { display: -webkit-box; overflow: hidden; margin: 0; color: #aaa9af; font-size: .63rem; line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.homebrew-tag-list { display: flex; flex-wrap: wrap; gap: .25rem; }
+.homebrew-tag-list span { padding: .16rem .28rem; border: 1px solid rgb(255 255 255 / .1); color: #c7c5c9; font-size: .5rem; }
+.homebrew-library-card footer, .homebrew-detail footer, .homebrew-editor footer { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: auto; }
+.homebrew-library-card footer button, .homebrew-detail footer button, .homebrew-editor footer button { padding: .28rem .38rem; border: 1px solid rgb(255 255 255 / .15); background: #101217; color: #f5f1e9; font-size: .55rem; }
+.homebrew-library-card footer .row-delete { margin-left: auto; color: #ff989a; }
+.homebrew-detail, .homebrew-editor { margin-bottom: .7rem; padding: .8rem; border: 1px solid rgb(225 65 68 / .5); border-left: 3px solid #e14144; background: #101217; box-shadow: 5px 5px 0 rgb(0 0 0 / .16); }
+.homebrew-detail__head, .homebrew-editor > header { display: flex; align-items: start; justify-content: space-between; gap: .7rem; }
+.homebrew-detail h3, .homebrew-editor h3 { margin: .15rem 0; color: #f5f1e9; font-family: "DM Serif Display", serif; font-size: 1.35rem; font-weight: 400; }
+.homebrew-detail__head p { margin: 0; color: #aaa9af; font-size: .6rem; }
+.homebrew-detail__description { margin: .6rem 0; color: #d0ced2; font-size: .68rem; line-height: 1.45; white-space: pre-wrap; }
+.homebrew-detail__facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .35rem; margin-bottom: .55rem; }
+.homebrew-detail__facts span { display: grid; gap: .1rem; padding: .38rem; border: 1px solid rgb(255 255 255 / .1); color: #f5f1e9; font-size: .62rem; }
+.homebrew-detail__facts b { color: #ff989a; font-size: .48rem; letter-spacing: .05em; text-transform: uppercase; }
+.homebrew-detail > small { display: block; margin-top: .5rem; color: #aaa9af; font-size: .6rem; }
+.homebrew-editor > header > button { padding: .36rem .5rem; border: 1px solid rgb(255 255 255 / .15); background: transparent; color: #ff989a; font-size: .58rem; }
+.homebrew-editor__base, .homebrew-editor__specific > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem; margin-top: .65rem; }
+.homebrew-editor label { display: grid; gap: .17rem; color: #aaa9af; font-size: .51rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.homebrew-editor label.wide { grid-column: 1 / -1; }
+.homebrew-editor input, .homebrew-editor select, .homebrew-editor textarea { min-width: 0; color: #f5f1e9 !important; font-size: .64rem; }
+.homebrew-editor textarea { min-height: 56px; resize: vertical; }
+.homebrew-editor__specific { margin-top: .7rem; padding-top: .6rem; border-top: 1px solid rgb(255 255 255 / .1); }
+.homebrew-editor__notes { margin-top: .65rem; }
+@media (max-width: 700px) { .homebrew-library { grid-template-columns: 1fr; } .homebrew-library__sidebar { min-height: 0; } .homebrew-category-counts { grid-template-columns: repeat(3, minmax(0, 1fr)); } .homebrew-card-grid { grid-template-columns: 1fr; } }
+@media (max-width: 440px) { .homebrew-library__toolbar { grid-template-columns: 1fr; } .homebrew-create { min-height: 2.5rem; } .homebrew-detail__facts, .homebrew-editor__base, .homebrew-editor__specific > div { grid-template-columns: 1fr; } }
 @media (max-width: 820px) { .combat-powers, .homebrew-board { grid-template-columns: 1fr; } .missions-summary { grid-template-columns: repeat(3, 1fr); } .mission-card { grid-template-columns: 34px 1fr; } .mission-rewards { grid-column: 2; border-top: 1px solid rgb(255 255 255 / .1); border-left: 0; } .mission-fields { grid-template-columns: repeat(2, 1fr); } .mission-fields label.wide { grid-column: 1 / -1; } }
 @media (max-width: 620px) { .attack-row { grid-template-columns: 1fr 1fr 30px 30px; } .attack-row__name { grid-column: 1 / 3; } .attack-row button { grid-row: 1; } .item-grid { grid-template-columns: 1.15fr .78fr .48fr .6fr 30px; } .item-grid input:nth-child(1), .item-grid input:nth-child(2) { grid-column: span 2; } .missions-summary { grid-template-columns: 1fr 1fr; } .missions-summary > div:first-child { grid-column: 1 / -1; } .mission-card { grid-template-columns: 30px 1fr; } .mission-card__head input { font-size: 1.05rem; } .mission-fields { grid-template-columns: 1fr 1fr; } .power-type-group { padding: .55rem; } .power-type-group > header strong { font-size: 1.5rem; } .power-card { grid-template-columns: 32px 1fr; } .power-card__use { grid-column: 2; border-top: 1px solid rgb(255 255 255 / .1); border-left: 0; } .power-fields { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 920px) { .allies-layout { grid-template-columns: 1fr; } .ally-command-card { min-height: auto; } .ally-command-card p { margin-bottom: .8rem; } }
