@@ -72,7 +72,7 @@
 - [ ] Validar exportação JSON e PDF após a reorganização por abas.
 - [x] Validar o acesso e a operação de links compartilhados após a reorganização por abas.
 - [ ] Registrar a checagem dos cálculos e controles principais em cada aba.
-- [ ] Validar a navegação integral em desktop e celular.
+- [x] Validar a navegação integral em desktop e celular.
 
 ## Poderes e combate
 
