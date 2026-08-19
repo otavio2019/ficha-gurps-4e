@@ -220,12 +220,12 @@
 ## Automação de NH e bônus extra
 
 - [x] Automatizar o NH das perícias com base no atributo, dificuldade, nível e bônus extra.
-- [ ] Automatizar o NH dos ataques usando a perícia vinculada, nível e bônus extra do ataque.
-- [ ] Adicionar campos editáveis de bônus extra para perícias e ataques, inclusive na mini-ficha de Aliados.
+- [x] Automatizar o NH dos ataques usando a perícia vinculada, nível e bônus extra do ataque.
+- [x] Adicionar campos editáveis de bônus extra para perícias e ataques, inclusive na mini-ficha de Aliados.
 - [ ] Aumentar a largura e a legibilidade dos campos de NH em desktop e celular.
 - [ ] Testar os cálculos, os bônus, a responsividade e a publicação.
 - [x] Implementar cálculo de NH baseado em atributo, dificuldade, pontos e bônus extra, com testes unitários.
-- [ ] Implementar vínculo de ataques a perícias e cálculo de NH final, com testes unitários.
+- [x] Implementar vínculo de ataques a perícias e cálculo de NH final, com testes unitários.
 - [ ] Levar o NH e o bônus extra para os Aliados e validar desktop/celular.
 - [ ] Publicar e confirmar a revisão após a validação específica de NH.
 

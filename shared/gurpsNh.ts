@@ -18,3 +18,11 @@ export function calculateNh(attributeValue: number, difficulty: NhDifficulty, po
   const levelFromPoints = steps < 0 ? -3 : progression[difficulty] + steps;
   return Math.round(attributeValue + relativeModifier(relative) + levelFromPoints + bonus);
 }
+
+export type NhAttackSkill = { attribute: string; difficulty: NhDifficulty; points: number; relative: string };
+
+export function calculateAttackNh(manualLevel: number, bonus: number, skill: NhAttackSkill | undefined, attributes: Record<string, number>): number {
+  if (!skill) return manualLevel + bonus;
+  const attribute = Number(attributes[skill.attribute.toLowerCase()] ?? 10);
+  return calculateNh(attribute, skill.difficulty, skill.points, skill.relative, bonus);
+}
