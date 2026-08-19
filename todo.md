@@ -167,6 +167,7 @@
 - [x] Validar no navegador o catálogo de vantagens na aba Características, incluindo busca, carregamento e inclusão automática com custo, notas e fonte.
 - [x] Validar no navegador o catálogo de desvantagens na aba Características, incluindo busca bilíngue, inclusão automática e impacto no total de pontos.
 - [ ] Validar em viewport móvel o catálogo de vantagens e desvantagens na aba Características e registrar a checagem em `validation-notes.md`.
+- [ ] Integrar o catálogo de vantagens e desvantagens à aba Características da mini-ficha de Aliados, com busca e preenchimento automático.
 
 ## Correção de implantação
 
@@ -210,3 +211,8 @@
 - [x] Ajustar os campos de escrita para exibir em preto o texto digitado, com fundo que preserve o contraste.
 - [x] Alterar os campos de escrita para fundo preto e texto branco, conforme o tema escuro da ficha.
 - [x] Ajustar o fundo dos campos de escrita para o mesmo preto grafite dos painéis da ficha, mantendo texto branco.
+
+## Sincronização GitHub da versão estável
+
+- [x] Enviar ao GitHub a versão estável atual, preservando o registro de que o catálogo dos Aliados ainda está pendente.
+
