@@ -290,3 +290,10 @@
 - [x] Adicionar visualização detalhada e editor dinâmico para regras, notas, armas, vantagens, perícias, raças e poderes.
 - [x] Permitir adicionar conteúdos Homebrew compatíveis diretamente a equipamentos, traços, perícias e poderes da ficha.
 - [x] Validar os fluxos principais da biblioteca Homebrew em desktop e celular e adicionar testes de regressão.
+
+## Raças aplicáveis do Homebrew
+
+- [x] Estruturar modificadores de atributos, vantagens, desvantagens e características nas raças Homebrew.
+- [x] Exibir um seletor de raças Homebrew na ficha com prévia dos efeitos a aplicar.
+- [x] Aplicar e remover modificadores raciais sem duplicar vantagens, desvantagens ou ajustes de atributos.
+- [x] Validar em testes e no navegador a seleção de uma raça Homebrew e o reflexo na ficha.

@@ -16,7 +16,7 @@ export type HomebrewEntry = {
   details?: Record<string, HomebrewDetailValue>;
 };
 
-export type HomebrewField = { key: string; label: string; kind: "text" | "number" };
+export type HomebrewField = { key: string; label: string; kind: "text" | "number"; hint?: string };
 
 export const HOMEBREW_FIELDS: Record<HomebrewCategory, HomebrewField[]> = {
   Arma: [
@@ -27,7 +27,13 @@ export const HOMEBREW_FIELDS: Record<HomebrewCategory, HomebrewField[]> = {
   Vantagem: [{ key: "cost", label: "Custo em pontos", kind: "number" }, { key: "level", label: "Nível", kind: "number" }, { key: "prerequisites", label: "Pré-requisitos", kind: "text" }, { key: "effect", label: "Efeito", kind: "text" }],
   Desvantagem: [{ key: "cost", label: "Custo em pontos", kind: "number" }, { key: "level", label: "Nível", kind: "number" }, { key: "selfControl", label: "Autocontrole", kind: "text" }, { key: "effect", label: "Efeito", kind: "text" }],
   Perícia: [{ key: "attribute", label: "Atributo", kind: "text" }, { key: "difficulty", label: "Dificuldade", kind: "text" }, { key: "points", label: "Pontos", kind: "number" }, { key: "nh", label: "NH", kind: "number" }],
-  Raça: [{ key: "modifiers", label: "Modificadores", kind: "text" }, { key: "advantages", label: "Vantagens", kind: "text" }, { key: "disadvantages", label: "Desvantagens", kind: "text" }, { key: "traits", label: "Características", kind: "text" }],
+  Raça: [
+    { key: "stBonus", label: "ST (ganho/perda)", kind: "number" }, { key: "dxBonus", label: "DX (ganho/perda)", kind: "number" },
+    { key: "iqBonus", label: "IQ (ganho/perda)", kind: "number" }, { key: "htBonus", label: "HT (ganho/perda)", kind: "number" },
+    { key: "advantages", label: "Vantagens (Nome | custo; …)", kind: "text", hint: "Separe cada vantagem por ponto e vírgula." },
+    { key: "disadvantages", label: "Desvantagens (Nome | custo; …)", kind: "text", hint: "Separe cada desvantagem por ponto e vírgula." },
+    { key: "traits", label: "Características raciais", kind: "text", hint: "Traços descritivos, adaptações e notas" },
+  ],
   Poder: [{ key: "pointCost", label: "Custo em pontos", kind: "number" }, { key: "fpCost", label: "Custo em FP", kind: "number" }, { key: "range", label: "Alcance", kind: "text" }, { key: "duration", label: "Duração", kind: "text" }, { key: "damage", label: "Dano", kind: "text" }, { key: "effect", label: "Efeitos", kind: "text" }],
   Magia: [{ key: "pointCost", label: "Custo em pontos", kind: "number" }, { key: "fpCost", label: "Custo em FP", kind: "number" }, { key: "range", label: "Alcance", kind: "text" }, { key: "duration", label: "Duração", kind: "text" }, { key: "damage", label: "Dano", kind: "text" }, { key: "effect", label: "Efeitos", kind: "text" }],
   Técnica: [{ key: "skill", label: "Perícia-base", kind: "text" }, { key: "default", label: "Padrão", kind: "text" }, { key: "points", label: "Pontos", kind: "number" }, { key: "nh", label: "NH", kind: "number" }],

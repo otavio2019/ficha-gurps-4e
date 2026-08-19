@@ -12,6 +12,7 @@ import { allyFrequencyMultipliers, allyPowerCosts, calculateAllyCostByRule } fro
 import { calculatePointBudget, SECONDARY_POINT_COSTS } from "@shared/characterPoints";
 import { calculateAttackNh, calculateNh } from "@shared/gurpsNh";
 import { HOMEBREW_CATEGORIES, HOMEBREW_FIELDS, canAddHomebrewToSheet, filterHomebrewEntries, normalizeHomebrewEntry, type HomebrewCategory, type HomebrewEntry } from "@shared/homebrew";
+import { getHomebrewRaceEffects, hasHomebrewRaceEffects, type RaceAttributeBonuses } from "@shared/homebrewRace";
 import { selectCloudBackedRecords } from "@shared/cloudSync";
 import { appendCatalogSkill, createSkillFromCatalog } from "@shared/skillCatalogSelection";
 import { appendCatalogTrait, createTraitFromCatalog } from "@shared/traitCatalogSelection";
@@ -115,9 +116,17 @@ function HomebrewLibrary({ entries, onCreate, onUpdate, onRemove, onAddToSheet }
   </div>;
 }
 
+function HomebrewRacePicker({ entries, activeId, onApply, onClear }: { entries: HomebrewEntry[]; activeId?: string; onApply: (entry: HomebrewEntry) => void; onClear: () => void }) {
+  const activeRace = entries.find((entry) => entry.id === activeId);
+  const effects = activeRace ? getHomebrewRaceEffects(activeRace) : null;
+  const bonuses = effects ? (["st", "dx", "iq", "ht"] as const).filter((attribute) => effects.attributes[attribute] !== 0) : [];
+  return <section className="homebrew-race-picker"><div><span className="eyebrow">RAÇA HOMEBREW</span><h3>Origem e herança</h3><p>Escolha uma raça da sua biblioteca para aplicar atributos, vantagens e desvantagens raciais.</p></div><label><span>Raça da biblioteca</span><select value={activeId || ""} onChange={(event) => { const entry = entries.find((item) => item.id === event.target.value); if (entry) onApply(entry); else onClear(); }}><option value="">Sem raça Homebrew aplicada</option>{entries.map((entry) => <option key={entry.id} value={entry.id}>{entry.title || "Raça sem nome"} · {entry.source}</option>)}</select></label>{activeRace && effects && <div className="homebrew-race-picker__effects"><div><b>{activeRace.title}</b><small>{activeRace.source}</small></div><div className="homebrew-race-picker__bonus-list">{bonuses.length ? bonuses.map((attribute) => <span key={attribute}>{attribute.toUpperCase()} {effects.attributes[attribute] > 0 ? "+" : ""}{effects.attributes[attribute]}</span>) : <span>Sem bônus de atributo</span>}<span>{effects.advantages.length} vantagem(ns)</span><span>{effects.disadvantages.length} desvantagem(ns)</span></div>{effects.traits && <p>{effects.traits}</p>}<button type="button" onClick={onClear}>Remover efeitos raciais</button></div>}</section>;
+}
+
 type Sheet = {
   identity: { name: string; player: string; campaign: string; world: string; concept: string; race: string; tl: string };
   attributes: { st: number; dx: number; iq: number; ht: number };
+  raceApplication?: { homebrewId: string; name: string; previousRace: string; attributes: RaceAttributeBonuses; advantageIds: string[]; disadvantageIds: string[]; traits: string };
   secondary: { hpCurrent: number; hpBonus: number; fpCurrent: number; fpBonus: number; willBonus: number; perBonus: number; speedBonus: number; moveBase: number; moveBonus: number; dodgeBonus: number };
   points: { initial: number; earned: number };
   advantages: Trait[];
@@ -648,8 +657,56 @@ export default function Home() {
     addLog(`Adicionou ${entry.title || "conteúdo Homebrew"} à ficha.`, "note");
   };
 
+  const removeAppliedHomebrewRace = (current: Sheet, resetRace = true): Sheet => {
+    const application = current.raceApplication;
+    if (!application) return current;
+    return {
+      ...current,
+      identity: resetRace ? { ...current.identity, race: application.previousRace || "Humano" } : current.identity,
+      attributes: {
+        st: Math.max(1, current.attributes.st - application.attributes.st), dx: Math.max(1, current.attributes.dx - application.attributes.dx),
+        iq: Math.max(1, current.attributes.iq - application.attributes.iq), ht: Math.max(1, current.attributes.ht - application.attributes.ht),
+      },
+      advantages: current.advantages.filter((trait) => !application.advantageIds.includes(trait.id)),
+      disadvantages: current.disadvantages.filter((trait) => !application.disadvantageIds.includes(trait.id)),
+      raceApplication: undefined,
+    };
+  };
+
+  const applyHomebrewRace = (rawEntry: HomebrewEntry) => {
+    const entry = normalizeHomebrewEntry(rawEntry);
+    const effects = getHomebrewRaceEffects(entry);
+    setSheet((current) => {
+      const withoutPreviousRace = removeAppliedHomebrewRace(current, false);
+      const advantageTraits = effects.advantages.map((trait) => ({ id: makeId(), name: trait.name, cost: trait.cost, notes: trait.notes, source: `${entry.source} · Raça Homebrew` }));
+      const disadvantageTraits = effects.disadvantages.map((trait) => ({ id: makeId(), name: trait.name, cost: trait.cost, notes: trait.notes, source: `${entry.source} · Raça Homebrew` }));
+      return {
+        ...withoutPreviousRace,
+        identity: { ...withoutPreviousRace.identity, race: entry.title || "Raça Homebrew" },
+        attributes: {
+          st: Math.max(1, withoutPreviousRace.attributes.st + effects.attributes.st), dx: Math.max(1, withoutPreviousRace.attributes.dx + effects.attributes.dx),
+          iq: Math.max(1, withoutPreviousRace.attributes.iq + effects.attributes.iq), ht: Math.max(1, withoutPreviousRace.attributes.ht + effects.attributes.ht),
+        },
+        advantages: [...withoutPreviousRace.advantages, ...advantageTraits],
+        disadvantages: [...withoutPreviousRace.disadvantages, ...disadvantageTraits],
+        raceApplication: { homebrewId: entry.id, name: entry.title || "Raça Homebrew", previousRace: current.identity.race, attributes: effects.attributes, advantageIds: advantageTraits.map((trait) => trait.id), disadvantageIds: disadvantageTraits.map((trait) => trait.id), traits: effects.traits },
+      };
+    });
+    addLog(`Aplicou a raça Homebrew ${entry.title || "sem nome"} à ficha.`, "note");
+  };
+
+  const clearHomebrewRace = () => {
+    const name = sheet.raceApplication?.name;
+    if (!name) return;
+    setSheet((current) => removeAppliedHomebrewRace(current));
+    addLog(`Removeu os efeitos da raça Homebrew ${name}.`, "note");
+  };
+
   const removeHomebrew = (id: string, title: string) => {
-    setSheet((current) => ({ ...current, homebrew: (current.homebrew || []).filter((entry) => entry.id !== id) }));
+    setSheet((current) => {
+      const withoutRace = current.raceApplication?.homebrewId === id ? removeAppliedHomebrewRace(current) : current;
+      return { ...withoutRace, homebrew: (withoutRace.homebrew || []).filter((entry) => entry.id !== id) };
+    });
     addLog(`Removeu o conteúdo Homebrew ${title || "sem nome"}.`, "note");
   };
 
@@ -987,6 +1044,7 @@ export default function Home() {
                   <label className="field"><span>Nível tecnológico</span><input value={sheet.identity.tl} onChange={(event) => updateIdentity("tl", event.target.value)} /></label>
                   <label className="field field--wide"><span>Conceito</span><input value={sheet.identity.concept} onChange={(event) => updateIdentity("concept", event.target.value)} /></label>
                 </div>
+                <HomebrewRacePicker entries={(sheet.homebrew || []).map(normalizeHomebrewEntry).filter((entry) => entry.category === "Raça")} activeId={sheet.raceApplication?.homebrewId} onApply={applyHomebrewRace} onClear={clearHomebrewRace} />
               </div>
               <div className="attribute-panel">
                 <div className="attribute-panel__title"><span className="eyebrow">Atributos primários</span><p>Valor-base e custo automático.</p></div>

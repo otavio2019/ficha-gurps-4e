@@ -953,6 +953,18 @@ input:focus, textarea:focus { border-bottom-color: #e14144 !important; }
 .homebrew-card label { display: grid; gap: .15rem; margin-top: .4rem; color: #aaa9af; font-size: .51rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
 .homebrew-card label input, .homebrew-card label textarea { color: #f5f1e9 !important; font-size: .62rem; }
 .homebrew-card label textarea { min-height: 43px; resize: vertical; }
+.homebrew-race-picker { display: grid; gap: .55rem; margin-top: .7rem; padding: .7rem; border: 1px solid rgb(225 65 68 / .42); border-left: 3px solid #e14144; background: linear-gradient(115deg, rgb(225 65 68 / .09), transparent 54%), #101217; }
+.homebrew-race-picker h3 { margin: .15rem 0; color: #f5f1e9; font-family: "DM Serif Display", serif; font-size: 1.1rem; font-weight: 400; }
+.homebrew-race-picker p { margin: 0; color: #aaa9af; font-size: .61rem; line-height: 1.4; }
+.homebrew-race-picker > label { display: grid; gap: .18rem; color: #aaa9af; font-size: .5rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.homebrew-race-picker select { min-height: 2rem; color: #f5f1e9 !important; font-size: .64rem; }
+.homebrew-race-picker__effects { display: grid; gap: .42rem; padding-top: .6rem; border-top: 1px solid rgb(255 255 255 / .1); }
+.homebrew-race-picker__effects > div:first-child { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; }
+.homebrew-race-picker__effects > div:first-child b { color: #ff989a; font-family: "DM Serif Display", serif; font-size: 1.05rem; font-weight: 400; }
+.homebrew-race-picker__effects > div:first-child small { color: #aaa9af; font-size: .54rem; }
+.homebrew-race-picker__bonus-list { display: flex; flex-wrap: wrap; gap: .28rem; }
+.homebrew-race-picker__bonus-list span { padding: .22rem .3rem; border: 1px solid rgb(255 255 255 / .13); color: #d8d6da; font-size: .53rem; }
+.homebrew-race-picker__effects > button { justify-self: start; padding: .28rem .42rem; border: 1px solid rgb(255 255 255 / .16); background: transparent; color: #ff989a; font-size: .54rem; }
 .homebrew-library { display: grid; grid-template-columns: minmax(190px, .28fr) minmax(0, .72fr); gap: .85rem; }
 .homebrew-library__sidebar { display: flex; min-height: 330px; flex-direction: column; gap: .7rem; padding: 1rem; border-top: 2px solid #e14144; background: radial-gradient(circle at 90% 12%, rgb(225 65 68 / .22), transparent 36%), #101217; }
 .homebrew-library__sidebar h3 { margin: .3rem 0; color: #f5f1e9; font-family: "DM Serif Display", serif; font-size: 1.5rem; font-weight: 400; }

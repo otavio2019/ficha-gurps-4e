@@ -105,3 +105,10 @@
 - Ao alterar a categoria da entrada para Arma, o editor exibiu dano, alcance, ST mínima, aparar, peso e custo. A visualização detalhada apresentou os valores e as tags “raro” e “aurora” corretamente.
 - A ação “Adicionar à ficha” foi validada com a Lança da Aurora: a entrada gerou um equipamento de categoria Arma, peso 2 lb e descrição correspondente na aba Equipamento. A conversão também cria o ataque compatível na ficha.
 - A biblioteca possui grades responsivas: a barra lateral passa para cima do acervo em 700 px, os cards passam para uma coluna e o editor/detalhes passam para campos de uma coluna em 440 px. Tipagem e a suíte de 31 testes passaram após a implementação.
+- A ficha local Aurora Vale exibiu o painel “Origem e herança” na Visão geral, com o seletor de raça Homebrew inicialmente vazio e os atributos base preservados antes da aplicação de uma raça.
+- A biblioteca Homebrew foi aberta e uma nova entrada de validação foi criada para configurar os modificadores de uma raça.
+- O editor de Raça mostrou os campos de ST, DX, IQ, HT, vantagens, desvantagens e características. A raça Elfo das Cinzas foi configurada com ST −1, DX +1, IQ +1, duas vantagens e uma desvantagem no formato de importação definido.
+- A seleção de Elfo das Cinzas na Visão geral alterou a raça exibida, aplicou ST 12→11, DX 12→13 e IQ 11→12, e mostrou o resumo de duas vantagens e uma desvantagem antes do botão de remoção reversível.
+- Na aba Características, as vantagens Visão Noturna (+10) e Longevidade (+2), bem como a desvantagem Dever com o bosque (−10), foram incluídas com a fonte “Campanha Aurora · Raça Homebrew”, confirmando a integração de traços ao orçamento.
+- Ao remover os efeitos da raça Homebrew, os valores de ST, DX, IQ, HT e o orçamento retornaram ao estado anterior. A raça original também é preservada antes da aplicação para que a remoção restaure o texto anterior, em vez de impor uma raça-padrão.
+- A implementação final passou em tipagem e 34 testes, incluindo cenários de bônus raciais, traços importados, dados legados e preservação da raça original na remoção reversível.
