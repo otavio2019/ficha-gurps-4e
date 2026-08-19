@@ -65,7 +65,32 @@ export const gurpsSkillCatalog = mysqlTable("gurps_skill_catalog", {
   categoryIndex: index("gurps_skill_catalog_category_index").on(table.category),
 }));
 
+export const gurpsTraitCatalog = mysqlTable("gurps_trait_catalog", {
+  id: varchar("id", { length: 80 }).primaryKey(),
+  name: varchar("name", { length: 180 }).notNull(),
+  originalName: varchar("originalName", { length: 180 }).default("").notNull(),
+  kind: varchar("kind", { length: 24 }).notNull(),
+  cost: int("cost").notNull(),
+  costLabel: varchar("costLabel", { length: 80 }).notNull(),
+  category: varchar("category", { length: 80 }).notNull(),
+  nature: varchar("nature", { length: 40 }).notNull(),
+  availability: varchar("availability", { length: 40 }).notNull(),
+  variableCost: boolean("variableCost").default(false).notNull(),
+  requiresSelfControl: boolean("requiresSelfControl").default(false).notNull(),
+  summary: text("summary"),
+  reference: varchar("reference", { length: 160 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({
+  nameIndex: index("gurps_trait_catalog_name_index").on(table.name),
+  originalNameIndex: index("gurps_trait_catalog_original_name_index").on(table.originalName),
+  kindIndex: index("gurps_trait_catalog_kind_index").on(table.kind),
+  categoryIndex: index("gurps_trait_catalog_category_index").on(table.category),
+}));
+
 export type GurpsCharacter = typeof gurpsCharacters.$inferSelect;
 export type InsertGurpsCharacter = typeof gurpsCharacters.$inferInsert;
 export type GurpsSkillCatalogEntry = typeof gurpsSkillCatalog.$inferSelect;
 export type InsertGurpsSkillCatalogEntry = typeof gurpsSkillCatalog.$inferInsert;
+export type GurpsTraitCatalogEntry = typeof gurpsTraitCatalog.$inferSelect;
+export type InsertGurpsTraitCatalogEntry = typeof gurpsTraitCatalog.$inferInsert;

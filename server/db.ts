@@ -1,12 +1,15 @@
 import { and, asc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { gurpsCharacters, gurpsCharacterShares, gurpsSkillCatalog, InsertUser, users } from "../drizzle/schema";
+import { gurpsCharacters, gurpsCharacterShares, gurpsSkillCatalog, gurpsTraitCatalog, InsertUser, users } from "../drizzle/schema";
 import { filterSkillCatalog } from "../shared/gurpsSkillCatalog";
+import { filterTraitCatalog, type TraitCatalogRecord, type TraitKind } from "../shared/gurpsTraitCatalog";
 import { ENV } from './_core/env';
 import { getGurpsSkillCatalogSeed } from "./skillCatalogSeed";
+import { getGurpsTraitCatalogSeed } from "./traitCatalogSeed";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 type SkillCatalogReadRepository = { list: () => Promise<Array<typeof gurpsSkillCatalog.$inferSelect>> };
+type TraitCatalogReadRepository = { list: () => Promise<Array<typeof gurpsTraitCatalog.$inferSelect>> };
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
@@ -180,5 +183,28 @@ export async function seedGurpsSkillCatalog() {
     },
   });
   const records = await db.select({ id: gurpsSkillCatalog.id }).from(gurpsSkillCatalog);
+  return records.length;
+}
+
+export async function listGurpsTraitCatalog(query = "", kind?: TraitKind, repository?: TraitCatalogReadRepository) {
+  if (repository) return filterTraitCatalog(await repository.list() as TraitCatalogRecord[], query, kind);
+  const db = await getDb();
+  if (!db) return [];
+  const records = await db.select().from(gurpsTraitCatalog).orderBy(asc(gurpsTraitCatalog.name));
+  return filterTraitCatalog(records as TraitCatalogRecord[], query, kind);
+}
+
+export async function seedGurpsTraitCatalog() {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  await db.insert(gurpsTraitCatalog).values(getGurpsTraitCatalogSeed()).onDuplicateKeyUpdate({
+    set: {
+      name: sql`VALUES(${gurpsTraitCatalog.name})`, originalName: sql`VALUES(${gurpsTraitCatalog.originalName})`, kind: sql`VALUES(${gurpsTraitCatalog.kind})`,
+      cost: sql`VALUES(${gurpsTraitCatalog.cost})`, costLabel: sql`VALUES(${gurpsTraitCatalog.costLabel})`, category: sql`VALUES(${gurpsTraitCatalog.category})`,
+      nature: sql`VALUES(${gurpsTraitCatalog.nature})`, availability: sql`VALUES(${gurpsTraitCatalog.availability})`, variableCost: sql`VALUES(${gurpsTraitCatalog.variableCost})`,
+      requiresSelfControl: sql`VALUES(${gurpsTraitCatalog.requiresSelfControl})`, summary: sql`VALUES(${gurpsTraitCatalog.summary})`, reference: sql`VALUES(${gurpsTraitCatalog.reference})`,
+    },
+  });
+  const records = await db.select({ id: gurpsTraitCatalog.id }).from(gurpsTraitCatalog);
   return records.length;
 }

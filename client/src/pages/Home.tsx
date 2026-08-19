@@ -12,6 +12,7 @@ import { allyFrequencyMultipliers, allyPowerCosts, calculateAllyCostByRule } fro
 import { calculatePointBudget, SECONDARY_POINT_COSTS } from "@shared/characterPoints";
 import { selectCloudBackedRecords } from "@shared/cloudSync";
 import { appendCatalogSkill, createSkillFromCatalog } from "@shared/skillCatalogSelection";
+import { appendCatalogTrait, createTraitFromCatalog } from "@shared/traitCatalogSelection";
 import {
   Activity,
   ArrowDownRight,
@@ -57,6 +58,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 type Trait = { id: string; name: string; cost: number; notes: string; source: string };
 type Skill = { id: string; name: string; attribute: string; difficulty: string; relative: string; level: number; points: number; description?: string };
 type CatalogSkill = { id: string; name: string; attribute: string; difficulty: string; category: string; requiresSpecialization: boolean; usesTechLevel: boolean; summary?: string | null; reference: string };
+type CatalogTrait = { id: string; name: string; originalName: string; kind: "advantage" | "disadvantage"; cost: number; costLabel: string; category: string; nature: string; availability: string; variableCost: boolean; requiresSelfControl: boolean; summary?: string | null; reference: string };
 type InventoryItem = { id: string; name: string; category: string; quantity: number; weight: number; carried: boolean; equipped: boolean };
 type Attack = { id: string; name: string; level: number; damage: string; reach: string; parry: string };
 type Armor = { id: string; location: string; dr: number; source: string };
@@ -330,6 +332,8 @@ export default function Home() {
   const [portraitPreview, setPortraitPreview] = useState<string | null>(null);
   const [skillCatalogSearch, setSkillCatalogSearch] = useState("");
   const [allySkillCatalogSearch, setAllySkillCatalogSearch] = useState("");
+  const [advantageCatalogSearch, setAdvantageCatalogSearch] = useState("");
+  const [disadvantageCatalogSearch, setDisadvantageCatalogSearch] = useState("");
   const saveDelay = useRef<number | null>(null);
   const applyingCloudUpdate = useRef(false);
   const charactersQuery = trpc.characters.list.useQuery(undefined, { enabled: isAuthenticated });
@@ -340,6 +344,8 @@ export default function Home() {
   const sharesQuery = trpc.shares.list.useQuery(undefined, { enabled: isAuthenticated });
   const skillCatalogQuery = trpc.skills.listCatalog.useQuery({ query: skillCatalogSearch });
   const allySkillCatalogQuery = trpc.skills.listCatalog.useQuery({ query: allySkillCatalogSearch });
+  const advantageCatalogQuery = trpc.traits.listCatalog.useQuery({ query: advantageCatalogSearch, kind: "advantage" });
+  const disadvantageCatalogQuery = trpc.traits.listCatalog.useQuery({ query: disadvantageCatalogSearch, kind: "disadvantage" });
   const activeCharacter = characters.find((character) => character.id === activeCharacterId) || characters[0];
   const sheet = activeCharacter.sheet;
   const selectedAlly = (sheet.allies || []).find((ally) => ally.id === selectedAllyId) || (sheet.allies || [])[0];
@@ -478,6 +484,12 @@ export default function Home() {
   const addTrait = (kind: "advantages" | "disadvantages") => {
     const newTrait: Trait = { id: makeId(), name: kind === "advantages" ? "Nova vantagem" : "Nova desvantagem", cost: kind === "advantages" ? 5 : -5, notes: "", source: "" };
     setSheet((current) => ({ ...current, [kind]: [...current[kind], newTrait] }));
+  };
+
+  const addTraitFromCatalog = (entry: CatalogTrait) => {
+    const kind = entry.kind === "advantage" ? "advantages" : "disadvantages";
+    setSheet((current) => appendCatalogTrait(current, kind, createTraitFromCatalog(entry, makeId())));
+    addLog(`Adicionou ${entry.name} pelo banco de ${entry.kind === "advantage" ? "vantagens" : "desvantagens"}.`, "note");
   };
 
   const removeTrait = (kind: "advantages" | "disadvantages", id: string, name: string) => {
@@ -982,11 +994,12 @@ export default function Home() {
           <section id="caracteristicas" className={`codex-section ${activeSection === "caracteristicas" ? "is-active" : "is-hidden"}`}>
             <SectionHeader kicker="04 · CONSTRUÇÃO" title="Características" description="Vantagens, desvantagens e custos mantêm o orçamento da ficha legível." icon={Sparkles} />
             <div className="traits-grid">
-              {(["advantages", "disadvantages"] as const).map((kind) => <div className={`trait-card ${kind === "advantages" ? "trait-card--positive" : "trait-card--negative"}`} key={kind}>
+              {(["advantages", "disadvantages"] as const).map((kind) => { const isAdvantage = kind === "advantages"; const catalog = isAdvantage ? advantageCatalogQuery : disadvantageCatalogQuery; const search = isAdvantage ? advantageCatalogSearch : disadvantageCatalogSearch; const setSearch = isAdvantage ? setAdvantageCatalogSearch : setDisadvantageCatalogSearch; return <div className={`trait-card ${isAdvantage ? "trait-card--positive" : "trait-card--negative"}`} key={kind}>
                 <div className="trait-card__head"><div><span className="eyebrow">{kind === "advantages" ? "A FAVOR" : "LIMITES"}</span><h3>{kind === "advantages" ? "Vantagens" : "Desvantagens & quirks"}</h3></div><button type="button" onClick={() => addTrait(kind)}><Plus size={16} /></button></div>
+                <div className="skill-catalog-browser trait-catalog-browser"><div className="skill-catalog-browser__head"><div><span className="eyebrow"><Search size={12} /> BANCO DE {isAdvantage ? "VANTAGENS" : "DESVANTAGENS"}</span><b>{catalog.data?.length ? `${catalog.data.length}${catalog.data.length === 80 ? "+" : ""} registros` : "Carregando catálogo"}</b></div><label><Search size={15} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por nome, tipo ou categoria" aria-label={`Buscar no banco de ${isAdvantage ? "vantagens" : "desvantagens"}`} /></label></div><div className="skill-catalog-browser__results">{catalog.isLoading ? <small>Consultando o catálogo...</small> : catalog.data?.length ? catalog.data.map((entry) => <button type="button" key={entry.id} onClick={() => addTraitFromCatalog(entry)}><span><b>{entry.name}</b><small>{entry.category} · {entry.nature}{entry.requiresSelfControl ? " · autocontrole" : ""}</small></span><em>{entry.costLabel} pts</em><Plus size={15} /></button>) : <small>Nenhum traço encontrado. Tente outro termo.</small>}</div></div>
                 <div className="trait-rows">{sheet[kind].map((trait) => <div key={trait.id} className="trait-row"><input value={trait.name} aria-label="Nome" onChange={(event) => updateTrait(kind, trait.id, "name", event.target.value)} /><textarea value={trait.notes} aria-label="Notas" placeholder="Notas de uso" onChange={(event) => updateTrait(kind, trait.id, "notes", event.target.value)} /><label><span>Pts</span><input type="number" value={trait.cost} onChange={(event) => updateTrait(kind, trait.id, "cost", number(event.target.value))} /></label><input className="trait-row__source" value={trait.source} aria-label="Fonte" placeholder="Fonte" onChange={(event) => updateTrait(kind, trait.id, "source", event.target.value)} /><button type="button" className="row-delete trait-row__delete" aria-label={`Excluir ${trait.name}`} onClick={() => removeTrait(kind, trait.id, trait.name)}><Trash2 size={14} /></button></div>)}</div>
                 <div className="trait-card__total"><span>Total</span><strong>{kind === "advantages" ? `+${calculated.advantagePoints}` : calculated.disadvantagePoints} pts</strong></div>
-              </div>)}
+              </div>; })}
             </div>
           </section>
 

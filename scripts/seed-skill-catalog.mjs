@@ -1,4 +1,5 @@
-import { seedGurpsSkillCatalog } from "../server/db.ts";
+import { seedGurpsSkillCatalog, seedGurpsTraitCatalog } from "../server/db.ts";
 
-const total = await seedGurpsSkillCatalog();
-console.log(`Catálogo de perícias disponível com ${total} registros.`);
+const [skillTotal, traitTotal] = await Promise.all([seedGurpsSkillCatalog(), seedGurpsTraitCatalog()]);
+console.log(`Catálogo de perícias disponível com ${skillTotal} registros.`);
+console.log(`Catálogo de vantagens e desvantagens disponível com ${traitTotal} registros.`);

@@ -158,6 +158,16 @@
 - [x] Integrar as descrições específicas de cada perícia ao catálogo publicado.
 - [x] Testar descrições distintas para Briga, Abrir Fechaduras/NT e Contabilidade.
 
+## Catálogo de vantagens e desvantagens
+
+- [x] Modelar um banco pesquisável de vantagens e desvantagens de GURPS 4e, com custo, categoria, tipo e descrição em português.
+- [x] Criar a tabela, a semeadura e a consulta segura do catálogo de vantagens e desvantagens.
+- [x] Permitir buscar e adicionar vantagens e desvantagens do catálogo à ficha com preenchimento automático.
+- [x] Cobrir o catálogo com testes e validar sua experiência na interface.
+- [x] Validar no navegador o catálogo de vantagens na aba Características, incluindo busca, carregamento e inclusão automática com custo, notas e fonte.
+- [x] Validar no navegador o catálogo de desvantagens na aba Características, incluindo busca bilíngue, inclusão automática e impacto no total de pontos.
+- [ ] Validar em viewport móvel o catálogo de vantagens e desvantagens na aba Características e registrar a checagem em `validation-notes.md`.
+
 ## Correção de implantação
 
 - [x] Investigar os registros disponíveis da falha de implantação: a tentativa parou no agendamento remoto antes de iniciar a compilação.
