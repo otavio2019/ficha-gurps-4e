@@ -271,3 +271,4 @@
 
 - [x] Adicionar duração, área de efeito, resistência, pré-requisitos e observações ao modelo de poder.
 - [x] Exibir e editar os detalhes adicionais no painel de Poderes e na visualização compartilhada.
+- [x] Enviar ao GitHub a atualização recente da área de Poderes.
