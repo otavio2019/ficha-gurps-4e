@@ -349,3 +349,9 @@
 - [x] Organizar os itens por Armas, Armaduras, Consumíveis, Ferramentas, Itens-chave e Outros.
 - [x] Adicionar mão utilizada e modificadores de bônus ou penalidade aos itens de inventário.
 - [x] Validar o inventário categorizado em desktop e celular.
+
+## Marcadores de condição e efeitos temporários
+
+- [x] Criar marcadores persistentes de condição com severidade e duração no Combate.
+- [x] Permitir adicionar, avançar, encerrar e remover efeitos temporários durante a sessão.
+- [x] Registrar alterações de marcadores no Diário e validar desktop, celular e persistência local.

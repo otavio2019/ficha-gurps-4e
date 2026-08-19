@@ -258,6 +258,38 @@
   .condition { display: inline-flex; align-items: center; gap: .3rem; padding: .42rem .6rem; border: 1px solid oklch(0.39 0.06 145 / .32); border-radius: 99px; background: transparent; color: oklch(0.32 0.06 145); font-size: .67rem; transition: background .16s var(--ease-out), color .16s var(--ease-out), transform .16s var(--ease-out); }
   .condition:hover, .condition.is-on { background: oklch(0.39 0.06 145); color: white; }
   .condition:active { transform: scale(.96); }
+  .temporary-effects-panel { display: grid; gap: .7rem; margin-top: 1rem; padding: .85rem; border: 1px solid rgb(225 65 68 / .34); border-top: 2px solid #e14144; background: linear-gradient(125deg, rgb(181 55 58 / .13), #121419 60%); }
+  .temporary-effects-panel > header { display: flex; align-items: start; justify-content: space-between; gap: .75rem; }
+  .temporary-effects-panel h3 { margin: .18rem 0; color: #f5f1e9; font-family: "DM Serif Display", serif; font-size: 1.18rem; font-weight: 400; }
+  .temporary-effects-panel p { margin: 0; color: #aaa9af; font-size: .66rem; line-height: 1.4; }
+  .temporary-effects-add { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; gap: .35rem; min-height: 32px; padding: .35rem .52rem; border: 1px solid #e14144; background: #8d292d; color: white; font-size: .65rem; font-weight: 700; }
+  .temporary-effects-add:hover { background: #b5373a; }
+  .condition-marker-list { display: flex; flex-wrap: wrap; gap: .32rem; }
+  .condition-marker-list span { display: inline-flex; align-items: center; gap: .25rem; padding: .28rem .42rem; border: 1px solid rgb(105 148 181 / .55); background: rgb(105 148 181 / .14); color: #cce8ff; font-size: .6rem; font-weight: 700; }
+  .temporary-effects-list { display: grid; gap: .55rem; }
+  .temporary-effect { display: grid; gap: .55rem; padding: .65rem; border: 1px solid rgb(255 255 255 / .12); border-left: 3px solid #8a9bb4; background: #101217; }
+  .temporary-effect--moderado { border-left-color: #c28f50; }
+  .temporary-effect--grave { border-left-color: #e14144; }
+  .temporary-effect--crítico { border-left-color: #f0d185; background: linear-gradient(90deg, rgb(194 143 80 / .15), #101217 64%); }
+  .temporary-effect__heading { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: .5rem; align-items: end; }
+  .temporary-effect__folio { align-self: stretch; display: grid; place-items: center; padding: .18rem .3rem; border: 1px solid rgb(225 65 68 / .45); color: #ff989a; font-size: .48rem; font-weight: 700; letter-spacing: .08em; writing-mode: vertical-rl; }
+  .temporary-effect__name, .temporary-effect__fields label { display: grid; gap: .22rem; min-width: 0; color: #aaa9af; font-size: .56rem; letter-spacing: .04em; text-transform: uppercase; }
+  .temporary-effect__name input, .temporary-effect__fields input, .temporary-effect__fields select, .temporary-effect__fields textarea { width: 100%; border: 1px solid rgb(255 255 255 / .14); background: #191b21; color: #f5f1e9; font-family: "IBM Plex Sans", sans-serif; font-size: .68rem; text-transform: none; }
+  .temporary-effect__name input, .temporary-effect__fields input, .temporary-effect__fields select { min-height: 31px; padding: .28rem .38rem; }
+  .temporary-effect__fields textarea { min-height: 54px; padding: .38rem; resize: vertical; }
+  .temporary-effect__fields small { color: #77777f; font-size: .5rem; letter-spacing: 0; text-transform: none; }
+  .temporary-effect__duration { align-self: center; padding: .3rem .42rem; border: 1px solid rgb(225 65 68 / .38); color: #ffb1b3; font-size: .58rem; font-weight: 700; white-space: nowrap; }
+  .temporary-effect__fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .45rem; }
+  .temporary-effect__fields .wide { grid-column: 1 / -1; }
+  .temporary-effect > footer { display: flex; justify-content: flex-end; gap: .4rem; }
+  .temporary-effect > footer button { display: inline-flex; align-items: center; gap: .3rem; min-height: 30px; padding: .3rem .45rem; border: 1px solid rgb(255 255 255 / .15); background: #191b21; color: #f5f1e9; font-size: .6rem; }
+  .temporary-effect > footer button:hover:not(:disabled) { border-color: #e14144; color: #ffb1b3; }
+  .temporary-effect > footer button:disabled { cursor: not-allowed; opacity: .45; }
+  .temporary-effects-empty { display: flex; align-items: center; gap: .5rem; padding: .65rem; border: 1px dashed rgb(255 255 255 / .18); color: #aaa9af; }
+  .temporary-effects-empty svg { color: #ff989a; }
+  .temporary-effects-empty b, .temporary-effects-empty small { display: block; }
+  .temporary-effects-empty b { color: #f5f1e9; font-size: .68rem; }
+  .temporary-effects-empty small { margin-top: .15rem; font-size: .57rem; }
   .traits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
   .trait-card { overflow: hidden; border: 1px solid oklch(0.72 0.02 79); border-radius: 2px; background: repeating-linear-gradient(0deg, oklch(0.985 0.006 85 / .9) 0, oklch(0.985 0.006 85 / .9) 24px, oklch(0.93 0.016 79 / .38) 25px); box-shadow: 4px 5px 0 oklch(0.25 0.04 253 / .035); }
   .trait-card--negative { border-radius: 2px; }
@@ -1344,4 +1376,17 @@ textarea:focus {
   .homebrew-filter-row button { min-height: 30px; padding-inline: .52rem; font-size: .65rem; }
   .combat-powers__empty { font-size: .65rem; }
   .homebrew-create, .homebrew-add-sheet { font-size: .65rem; }
+  .temporary-effects-panel > header { display: grid; grid-template-columns: 1fr; }
+  .temporary-effects-add { width: 100%; min-height: 36px; }
+  .temporary-effect__fields { grid-template-columns: 1fr; }
+  .temporary-effect__fields .wide { grid-column: auto; }
+  .temporary-effect__name, .temporary-effect__fields label { font-size: .65rem; }
+  .temporary-effect__name input, .temporary-effect__fields input, .temporary-effect__fields select, .temporary-effect__fields textarea { font-size: .7rem; }
+}
+
+@media (max-width: 420px) {
+  .temporary-effect__heading { grid-template-columns: auto minmax(0, 1fr); }
+  .temporary-effect__duration { grid-column: 2; justify-self: start; }
+  .temporary-effect > footer { justify-content: stretch; }
+  .temporary-effect > footer button { flex: 1 1 0; justify-content: center; }
 }

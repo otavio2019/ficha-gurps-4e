@@ -14,6 +14,7 @@ import { calculateAttackNh, calculateNh } from "@shared/gurpsNh";
 import { rollCheck3d6, rollDamage as rollDamageExpression, type CheckRoll, type DamageRoll } from "@shared/gurpsRolls";
 import { clampResource, describeResourceChange } from "@shared/gurpsResources";
 import { INVENTORY_CATEGORIES, INVENTORY_HANDS, normalizeInventoryCategory } from "@shared/inventory";
+import { advanceTemporaryEffect, formatEffectDuration, normalizeRemainingTurns, TEMPORARY_EFFECT_SEVERITIES, type TemporaryEffect, type TemporaryEffectSeverity } from "@shared/temporaryEffects";
 import { HOMEBREW_CATEGORIES, HOMEBREW_FIELDS, canAddHomebrewToSheet, filterHomebrewEntries, normalizeHomebrewEntry, type HomebrewCategory, type HomebrewEntry } from "@shared/homebrew";
 import { getHomebrewRaceEffects, hasHomebrewRaceEffects, type RaceAttributeBonuses } from "@shared/homebrewRace";
 import { selectCloudBackedRecords } from "@shared/cloudSync";
@@ -144,6 +145,7 @@ type Sheet = {
   missions: Mission[];
   homebrew: HomebrewEntry[];
   conditions: string[];
+  temporaryEffects?: TemporaryEffect[];
   log: LogItem[];
 };
 
@@ -272,6 +274,7 @@ const initialSheet: Sheet = {
   missions: [],
   homebrew: [],
   conditions: [],
+  temporaryEffects: [],
   log: [{ id: "log-1", time: "18:40", text: "Ficha iniciada no Códice de Campo.", kind: "note" }],
 };
 
@@ -825,7 +828,32 @@ export default function Home() {
   };
 
   const toggleCondition = (condition: string) => {
-    setSheet((current) => ({ ...current, conditions: current.conditions.includes(condition) ? current.conditions.filter((item) => item !== condition) : [...current.conditions, condition] }));
+    const enabled = !sheet.conditions.includes(condition);
+    setSheet((current) => ({ ...current, conditions: enabled ? [...current.conditions, condition] : current.conditions.filter((item) => item !== condition) }));
+    addLog(`${enabled ? "Aplicou" : "Removeu"} a condição ${condition}.`, "note");
+  };
+
+  const addTemporaryEffect = () => {
+    const effect: TemporaryEffect = { id: makeId(), name: "Efeito temporário", severity: "Leve", remainingTurns: 1, source: "Cena atual", notes: "" };
+    setSheet((current) => ({ ...current, temporaryEffects: [...(current.temporaryEffects || []), effect] }));
+    addLog(`Adicionou o efeito temporário ${effect.name}.`, "note");
+  };
+
+  const updateTemporaryEffect = (id: string, field: keyof TemporaryEffect, value: string | number) => {
+    setSheet((current) => ({ ...current, temporaryEffects: (current.temporaryEffects || []).map((effect) => effect.id === id ? { ...effect, [field]: field === "remainingTurns" ? normalizeRemainingTurns(Number(value)) : value } as TemporaryEffect : effect) }));
+  };
+
+  const advanceEffectTurn = (id: string) => {
+    const effect = (sheet.temporaryEffects || []).find((item) => item.id === id);
+    if (!effect) return;
+    const next = advanceTemporaryEffect(effect);
+    setSheet((current) => ({ ...current, temporaryEffects: (current.temporaryEffects || []).map((item) => item.id === id ? next.effect : item) }));
+    addLog(next.expired ? `O efeito ${effect.name || "temporário"} chegou ao fim.` : `Avançou ${effect.name || "efeito temporário"} para ${formatEffectDuration(next.effect.remainingTurns)}.`, "note");
+  };
+
+  const removeTemporaryEffect = (id: string, name: string) => {
+    setSheet((current) => ({ ...current, temporaryEffects: (current.temporaryEffects || []).filter((effect) => effect.id !== id) }));
+    addLog(`Removeu o efeito temporário ${name || "sem nome"}.`, "note");
   };
 
   const resetSheet = () => {
@@ -1159,7 +1187,9 @@ export default function Home() {
               if (!powers.length) return null;
               return <section className={`combat-powers__group combat-powers__group--${type.toLowerCase()}`} key={type}><header><span>{type}</span><b>{powers.length}</b></header><div className="combat-powers__list">{powers.map((power) => <button type="button" key={power.id} onClick={() => usePower(power)} disabled={sheet.secondary.fpCurrent < power.fpCost}><span><b>{power.name}</b><small>NH {getPowerNh(power)} · {power.fpCost} FP</small></span><i>{power.damage || power.effect || "Ativar"}</i><WandSparkles size={17} /></button>)}</div></section>;
             })}</div> : <button type="button" className="combat-powers__empty" onClick={() => navigateTo("poderes")}><WandSparkles size={17} /> Cadastre um poder para usá-lo no combate.</button>}</div>
-            <div className="conditions-panel"><div><span className="eyebrow">ESTADO DE CENA</span><p>Os efeitos são visíveis enquanto estiverem ativos.</p></div><div>{["Atordoado", "Ferido", "Derrubado", "Agarrado", "Exausto", "Envenenado"].map((condition) => <button key={condition} type="button" className={sheet.conditions.includes(condition) ? "condition is-on" : "condition"} onClick={() => toggleCondition(condition)}>{sheet.conditions.includes(condition) ? <Shield size={14} /> : <Plus size={14} />}{condition}</button>)}</div></div>
+            <div className="conditions-panel"><div><span className="eyebrow">ESTADO DE CENA</span><p>Ative marcadores rápidos e acompanhe os efeitos que ainda estão em jogo.</p></div><div>{["Atordoado", "Ferido", "Derrubado", "Agarrado", "Exausto", "Envenenado"].map((condition) => <button key={condition} type="button" className={sheet.conditions.includes(condition) ? "condition is-on" : "condition"} onClick={() => toggleCondition(condition)}>{sheet.conditions.includes(condition) ? <Shield size={14} /> : <Plus size={14} />}{condition}</button>)}</div></div>
+            <section className="temporary-effects-panel" aria-label="Marcadores de condição e efeitos temporários"><header><div><span className="eyebrow">MARCADORES DE SESSÃO</span><h3>Condições e efeitos temporários</h3><p>Registre duração, severidade e origem para não perder o ritmo da cena.</p></div><button type="button" className="temporary-effects-add" onClick={addTemporaryEffect}><Plus size={15} /> Adicionar efeito</button></header>{sheet.conditions.length > 0 && <div className="condition-marker-list" aria-label="Condições ativas">{sheet.conditions.map((condition) => <span key={condition}><Shield size={13} />{condition}</span>)}</div>}<div className="temporary-effects-list">{(sheet.temporaryEffects || []).length ? (sheet.temporaryEffects || []).map((effect) => <article className={`temporary-effect temporary-effect--${effect.severity.toLowerCase()}`} key={effect.id}><div className="temporary-effect__heading"><span className="temporary-effect__folio">EFEITO</span><label className="temporary-effect__name"><span>Marcador</span><input value={effect.name} aria-label="Nome do efeito temporário" onChange={(event) => updateTemporaryEffect(effect.id, "name", event.target.value)} /></label><span className="temporary-effect__duration">{formatEffectDuration(effect.remainingTurns)}</span></div><div className="temporary-effect__fields"><label><span>Severidade</span><select value={effect.severity} aria-label={`Severidade de ${effect.name || "efeito temporário"}`} onChange={(event) => updateTemporaryEffect(effect.id, "severity", event.target.value as TemporaryEffectSeverity)}>{TEMPORARY_EFFECT_SEVERITIES.map((severity) => <option key={severity}>{severity}</option>)}</select></label><label><span>Duração em turnos</span><input type="number" min="0" value={effect.remainingTurns} aria-label={`Duração de ${effect.name || "efeito temporário"}`} onChange={(event) => updateTemporaryEffect(effect.id, "remainingTurns", number(event.target.value))} /><small>0 = até encerrar</small></label><label><span>Origem</span><input value={effect.source} aria-label={`Origem de ${effect.name || "efeito temporário"}`} onChange={(event) => updateTemporaryEffect(effect.id, "source", event.target.value)} /></label><label className="wide"><span>Observações</span><textarea value={effect.notes} aria-label={`Observações de ${effect.name || "efeito temporário"}`} placeholder="Penalidades, gatilhos ou detalhes de mesa" onChange={(event) => updateTemporaryEffect(effect.id, "notes", event.target.value)} /></label></div><footer><button type="button" onClick={() => advanceEffectTurn(effect.id)} disabled={effect.remainingTurns === 0}><History size={14} /> Avançar turno</button><button type="button" className="row-delete" aria-label={`Remover ${effect.name || "efeito temporário"}`} onClick={() => removeTemporaryEffect(effect.id, effect.name)}><Trash2 size={14} /> Remover</button></footer></article>) : <div className="temporary-effects-empty"><CircleAlert size={18} /><div><b>Nenhum efeito temporário ativo</b><small>Use os marcadores rápidos ou adicione um efeito com duração.</small></div></div>}</div>
+          </section>
           </section>
 
           <section id="poderes" className={`codex-section ${activeSection === "poderes" ? "is-active" : "is-hidden"}`}>
