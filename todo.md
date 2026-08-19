@@ -23,7 +23,7 @@
 - [x] Implementar sincronização instantânea com WebSocket para fichas e links compartilhados.
 - [x] Validar a conexão, as salas e o evento WebSocket em teste automatizado.
 - [x] Remover a dependência de polling da ficha autenticada, mantendo apenas reconexão por evento.
-- [ ] Validar ponta a ponta login, upload de retrato, link público e atualização em outra sessão.
+- [x] Validar ponta a ponta login, upload de retrato, link público e atualização em outra sessão.
 
 ## Acesso e fichas compartilhadas
 
@@ -32,13 +32,13 @@
 - [x] Organizar fichas próprias e links compartilhados no menu principal.
 - [x] Exibir no menu principal um resumo separado das fichas com link público ativo.
 - [x] Validar a navegação de acesso e os estados autenticado e visitante.
-- [ ] Confirmar no navegador o perfil conectado, a saída e a seção de links compartilhados após login.
+- [x] Confirmar no navegador o perfil conectado, a saída e a seção de links compartilhados após login.
 
 ## Correção de retrato
 
-- [ ] Corrigir o upload e a atualização visual do retrato do personagem.
-- [ ] Confirmar que o retrato enviado atualiza a API, a biblioteca e o link compartilhado.
-- [ ] Validar o retrato novo na ficha, na biblioteca e no link compartilhado.
+- [x] Corrigir o upload e a atualização visual do retrato do personagem.
+- [x] Confirmar que o retrato enviado atualiza a API, a biblioteca e o link compartilhado.
+- [x] Validar o retrato novo na ficha, na biblioteca e no link compartilhado.
 
 ## Proteção corporal
 
@@ -68,7 +68,7 @@
 
 - [x] Converter Visão geral, Combate, Características, Perícias, Equipamento, Aliados e Diário em seções exclusivas de um menu lateral interno.
 - [x] Remover a rolagem longa da ficha e manter apenas o painel ativo visível.
-- [ ] Preservar todos os controles, cálculos, exportações e links compartilhados em suas abas correspondentes.
+- [x] Preservar todos os controles, cálculos, exportações e links compartilhados em suas abas correspondentes.
 - [x] Validar exportação JSON e PDF após a reorganização por abas.
 - [x] Corrigir a composição impressa do PDF para remover a página inicial subutilizada e preservar uma primeira página legível.
 - [x] Confirmar programaticamente que a primeira página do PDF contém cabeçalho e conteúdo da Visão geral após a correção de impressão.
@@ -128,7 +128,7 @@
 
 - [x] Adicionar um campo de descrição às perícias da ficha principal e da mini-ficha de aliados.
 - [x] Exibir a descrição de cada perícia na ficha compartilhada.
-- [ ] Validar ponta a ponta as descrições preenchidas em um link público autenticado.
+- [x] Validar ponta a ponta as descrições preenchidas em um link público autenticado.
 
 ## Banco de perícias
 
@@ -254,8 +254,8 @@
 
 ### Validações específicas pendentes de descrição de itens
 
-- [ ] Validar em uma ficha autenticada a edição da descrição na aba Equipamento e na mini-ficha de Aliados, em desktop e celular.
-- [ ] Confirmar persistência ao salvar/reabrir e sincronização compartilhada das descrições.
+- [x] Validar em uma ficha autenticada a edição da descrição na aba Equipamento e na mini-ficha de Aliados, em desktop e celular.
+- [x] Confirmar persistência ao salvar/reabrir e sincronização compartilhada das descrições.
 - [x] Confirmar a presença das descrições nas exportações JSON e PDF e registrar a checagem.
 
 ## Nota de atualização
@@ -270,9 +270,18 @@
 - [x] Propagar o NH automático por perícia vinculada, bônus e fallback manual para Combate e visualização compartilhada.
 - [x] Estruturar dano, alcance, custo de FP, custo em pontos, duração e efeito em campos próprios.
 - [x] Exibir e organizar poderes ofensivos e defensivos no painel de Combate pelo NH final.
-- [ ] Testar cálculos, uso de FP, agrupamento, responsividade e visualização compartilhada dos poderes.
+- [x] Testar cálculos, uso de FP, agrupamento, responsividade e visualização compartilhada dos poderes.
 - [x] Validar localmente os quatro grupos de Poderes, o gasto de FP e a rolagem no Combate sem depender de compartilhamento.
 - [x] Validar persistência local ao recarregar a ficha após editar recursos, itens e descrições.
+
+## Confirmação manual autenticada
+
+- [x] Registrar a confirmação do usuário para login, retrato, links públicos, sincronização e descrições compartilhadas.
+- [x] Registrar evidência detalhada do teste manual de login, perfil, saída e links compartilhados.
+- [x] Registrar evidência detalhada do upload de retrato na ficha, biblioteca e link público.
+- [x] Registrar evidência detalhada de descrições autenticadas, salvar/reabrir e sincronização compartilhada.
+- [x] Registrar evidência detalhada da visualização compartilhada de Poderes.
+- [x] Registrar as confirmações explícitas do usuário: 1 ok, 2 ok, 3 ok e 4 ok.
 - [x] Adicionar testes automatizados específicos para NH, bônus, vínculo e fallback de poderes.
 
 ### Detalhes adicionais de Poderes
