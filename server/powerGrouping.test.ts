@@ -11,5 +11,8 @@ describe("agrupamento de poderes por tipo", () => {
     expect(source).toContain('filter((power) => power.type === type)');
     expect(source).toContain('onClick={() => usePower(power)}');
     expect(source).toContain('onClick={() => removePower(power.id, power.name)}');
+    expect(source).toContain('className="combat-powers__groups"');
+    expect(source).toContain('power.combatReady && power.type === type');
+    expect(source).toContain('sort((a, b) => getPowerNh(b) - getPowerNh(a))');
   });
 });
