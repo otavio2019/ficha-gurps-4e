@@ -69,7 +69,9 @@
 - [x] Converter Visão geral, Combate, Características, Perícias, Equipamento, Aliados e Diário em seções exclusivas de um menu lateral interno.
 - [x] Remover a rolagem longa da ficha e manter apenas o painel ativo visível.
 - [ ] Preservar todos os controles, cálculos, exportações e links compartilhados em suas abas correspondentes.
-- [ ] Validar exportação JSON e PDF após a reorganização por abas.
+- [x] Validar exportação JSON e PDF após a reorganização por abas.
+- [x] Corrigir a composição impressa do PDF para remover a página inicial subutilizada e preservar uma primeira página legível.
+- [x] Confirmar programaticamente que a primeira página do PDF contém cabeçalho e conteúdo da Visão geral após a correção de impressão.
 - [x] Validar o acesso e a operação de links compartilhados após a reorganização por abas.
 - [ ] Registrar a checagem dos cálculos e controles principais em cada aba.
 - [x] Validar a navegação integral em desktop e celular.

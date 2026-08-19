@@ -1319,3 +1319,18 @@ textarea:focus {
   .inventory-item-card__details { grid-template-columns: 1fr; }
   .inventory-item-card__details .wide { grid-column: auto; }
 }
+
+@media print {
+  .banner {
+    display: block !important;
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 0 0 8mm !important;
+    background: none !important;
+    background-image: none !important;
+  }
+  .banner__content { margin-top: 0 !important; }
+  .codex-content { min-height: 0 !important; }
+  .codex-section { break-inside: auto !important; page-break-inside: auto !important; }
+  .section-header, .paper-card, .identity-card, .attribute-panel, .resource-card, .tactical-card { break-inside: avoid; page-break-inside: avoid; }
+}
