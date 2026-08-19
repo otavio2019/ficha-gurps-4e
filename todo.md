@@ -80,7 +80,8 @@
 - [x] Permitir cadastrar poderes com fonte, custo de FP, nível, alcance, dano e efeito.
 - [x] Exibir poderes de combate e permitir ativá-los diretamente no painel de Combate.
 - [x] Registrar uso de poder, rolagem e gasto de FP no histórico da sessão.
-- [ ] Validar a aba de Poderes e sua integração com Combate em desktop e celular.
+- [x] Validar a aba de Poderes e sua integração com Combate em desktop e celular.
+- [x] Confirmar em 375×812 que um poder aparece no Combate, é ativado por lá, reduz FP e registra a rolagem no Diário.
 
 ## Missões e Homebrew
 

@@ -140,3 +140,5 @@
 - A ficha local foi reaberta após a evolução do inventário, preservando a navegação agrupada e os cartões de resumo da Visão geral antes dos testes específicos de categorias.
 - A prévia de desenvolvimento foi reinicializada pelo recarregamento durante a correção de rótulo do inventário; a validação continuará em um cenário móvel isolado para evitar alterar a ficha local de referência.
 - Em 375 × 812, um item novo iniciou em Outros e foi movido para Ferramentas, com mão “Mão dominante” e modificador “+1 dano” preservados. O cartão mediu 309 px e a página permaneceu sem overflow horizontal.
+- Em desktop, criar “Novo poder” produziu o cartão ofensivo e sua ação no Combate. A ativação reduziu FP de 10 para 9, exibiu resultado 3d6 com sucesso por 1 e registrou no Diário o uso e a rolagem. Em 375 × 812, os controles e o grupo Ofensivo de poderes também permaneceram visíveis, sem overflow.
+- A validação móvel completa em 375 × 812 confirmou que “Novo poder” apareceu no grupo Ofensivo de Combate, foi ativado diretamente por esse painel, reduziu FP de 10 para 9, exibiu sucesso por 2 e registrou tanto o gasto quanto a rolagem no Diário, sem overflow horizontal.
