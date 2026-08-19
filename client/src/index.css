@@ -263,8 +263,8 @@
 .skill-catalog-browser__head { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .7rem .9rem; border-bottom: 1px solid rgb(225 65 68 / .22); }
 .skill-catalog-browser__head > div { display: grid; gap: .12rem; }
 .skill-catalog-browser__head b { color: #f5f1e9; font-size: .72rem; }
-.skill-catalog-browser__head label, .ally-skill-catalog > label { display: flex; align-items: center; gap: .42rem; min-width: min(100%, 290px); border-bottom: 1px solid rgb(255 255 255 / .24); color: #ff989a; }
-.skill-catalog-browser__head input, .ally-skill-catalog input { width: 100%; min-width: 0; height: 1.9rem; border: 0; background: transparent; color: #f5f1e9; font-size: .7rem; }
+.skill-catalog-browser__head label, .ally-skill-catalog > label, .ally-trait-catalog > label { display: flex; align-items: center; gap: .42rem; min-width: min(100%, 290px); border-bottom: 1px solid rgb(255 255 255 / .24); color: #ff989a; }
+.skill-catalog-browser__head input, .ally-skill-catalog input, .ally-trait-catalog input { width: 100%; min-width: 0; height: 1.9rem; border: 0; background: transparent; color: #f5f1e9; font-size: .7rem; }
 .skill-catalog-browser__results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); max-height: 250px; overflow-y: auto; }
 .skill-catalog-browser__results > button { display: grid; grid-template-columns: minmax(0, 1fr) auto 18px; align-items: center; gap: .5rem; min-width: 0; padding: .52rem .8rem; border: 0; border-bottom: 1px solid rgb(255 255 255 / .08); background: transparent; color: #f5f1e9; text-align: left; }
 .skill-catalog-browser__results > button:hover { background: rgb(225 65 68 / .13); }
@@ -807,6 +807,16 @@ input:focus, textarea:focus { border-bottom-color: #e14144 !important; }
 .ally-skill-catalog button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ally-skill-catalog button small { color: #aaa9af; font-size: .5rem; white-space: nowrap; }
 .ally-skill-catalog button svg { color: #e14144; }
+.ally-trait-catalog { display: grid; gap: .35rem; margin: .2rem 0 .55rem; padding: .42rem; border: 1px solid rgb(225 65 68 / .24); border-radius: 4px; background: rgb(225 65 68 / .05); }
+.ally-trait-catalog > label { min-width: 0; }
+.ally-trait-catalog > div { display: grid; gap: .2rem; max-height: 124px; overflow-y: auto; }
+.ally-trait-catalog button { display: grid; grid-template-columns: minmax(0, 1fr) 14px; align-items: center; gap: .25rem; padding: .25rem 0; border: 0; border-bottom: 1px solid rgb(255 255 255 / .08); background: transparent; color: #f5f1e9; text-align: left; }
+.ally-trait-catalog button:hover { color: #ff989a; }
+.ally-trait-catalog button span { display: grid; min-width: 0; }
+.ally-trait-catalog button b, .ally-trait-catalog button small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ally-trait-catalog button b { font-size: .6rem; }
+.ally-trait-catalog button small { color: #aaa9af; font-size: .5rem; }
+.ally-trait-catalog button svg { color: #e14144; }
 .ally-inventory-table > div { display: grid; grid-template-columns: minmax(100px, 1fr) 54px 54px 42px 42px; gap: .28rem; align-items: center; padding: .38rem 0; border-bottom: 1px solid rgb(255 255 255 / .08); color: #ff989a; font-size: .52rem; font-weight: 700; }
 .ally-inventory-table > div:not(:first-child) { color: inherit; font-weight: 400; }
 .ally-skill-table input, .ally-inventory-table input { min-width: 0; color: #f5f1e9 !important; font-size: .6rem; }

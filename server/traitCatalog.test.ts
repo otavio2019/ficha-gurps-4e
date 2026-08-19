@@ -30,6 +30,17 @@ describe("catálogo de vantagens e desvantagens", () => {
     expect(appendCatalogTrait(sheet, "advantages", trait)).toMatchObject({ advantages: [trait] });
     expect(sheet.advantages).toHaveLength(0);
   });
+  it("reutiliza o preenchimento automático na mini-ficha de um aliado", () => {
+    const entry = catalog.find(item => item.originalName === "Honesty")!;
+    const trait = createTraitFromCatalog(entry as never, "ally-trait-1");
+    const ally = { id: "ally-1", advantages: [], disadvantages: [] };
+
+    const updatedAlly = appendCatalogTrait(ally, "disadvantages", trait);
+
+    expect(updatedAlly.disadvantages).toEqual([trait]);
+    expect(updatedAlly.disadvantages[0]).toMatchObject({ name: "Honestidade", cost: -10, source: "Basic Set p. 138" });
+    expect(ally.disadvantages).toHaveLength(0);
+  });
   it("consulta somente leitura e expõe o procedimento público", async () => {
     const repository = { list: async () => catalog.map(entry => ({ ...entry, createdAt: new Date(), updatedAt: new Date() })) };
     await expect(listGurpsTraitCatalog("honesty", "disadvantage", repository)).resolves.toMatchObject([{ name: "Honestidade" }]);
