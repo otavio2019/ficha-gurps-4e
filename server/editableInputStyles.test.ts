@@ -17,4 +17,12 @@ describe("estilos de campos editáveis", () => {
     expect(stylesheet).toMatch(/\.ally-attribute-grid label \{[\s\S]*?min-width: 0;[\s\S]*?overflow: hidden;/);
     expect(stylesheet).toMatch(/\.ally-attribute-grid input \{[\s\S]*?width: 100%;[\s\S]*?min-width: 0;[\s\S]*?box-sizing: border-box;[\s\S]*?text-align: center;/);
   });
+
+  it("dá área e contraste próprios aos campos de NH e bônus extra", () => {
+    const stylesheet = readFileSync(resolve(process.cwd(), "client/src/index.css"), "utf8");
+
+    expect(stylesheet).toMatch(/\.nh-input, \.nh-bonus-input \{[\s\S]*?min-width: 72px !important;[\s\S]*?background: #191b21 !important;[\s\S]*?font-size: 1rem !important;/);
+    expect(stylesheet).toContain(".skill-table .nh-input { min-width: 88px !important; }");
+    expect(stylesheet).toContain(".ally-skill-row .nh-input, .ally-skill-row .nh-bonus-input { min-width: 0 !important; }");
+  });
 });

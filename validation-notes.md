@@ -112,3 +112,10 @@
 - Na aba Características, as vantagens Visão Noturna (+10) e Longevidade (+2), bem como a desvantagem Dever com o bosque (−10), foram incluídas com a fonte “Campanha Aurora · Raça Homebrew”, confirmando a integração de traços ao orçamento.
 - Ao remover os efeitos da raça Homebrew, os valores de ST, DX, IQ, HT e o orçamento retornaram ao estado anterior. A raça original também é preservada antes da aplicação para que a remoção restaure o texto anterior, em vez de impor uma raça-padrão.
 - A implementação final passou em tipagem e 34 testes, incluindo cenários de bônus raciais, traços importados, dados legados e preservação da raça original na remoção reversível.
+- A ficha local Aurora Vale foi aberta como cenário de validação visual dos campos de NH após a revisão de largura e contraste.
+- Na aba Perícias, os campos calculados de NH mediram 88×34 px e os campos de bônus extra 76×34 px. Ambos ficaram visíveis, centralizados e legíveis nas perícias Espadas de Lâmina Larga e Furtividade.
+- A mini-ficha do aliado de validação foi aberta na aba Perícias, com a estrutura de colunas de NH e bônus extra preparada para o teste de inclusão manual.
+- Uma perícia manual do aliado iniciou em NH 9 e foi recalculada para NH 11 após o bônus extra de +2, confirmando que o cálculo e o campo de bônus continuam funcionais após a ampliação visual.
+- Na aba Combate do aliado, o ataque de validação exibiu a escolha entre NH manual e a perícia Nova perícia, além dos campos destacados para NH e bônus extra.
+- Ao vincular o ataque à Nova perícia, ele passou a usar NH 9; com bônus extra de +2, exibiu NH final 11. Isso confirma o vínculo com perícia e o bônus extra no Combate do Aliado.
+- A validação automatizada em viewport real de 375×812 confirmou ausência de overflow horizontal. Na ficha principal, NH e bônus mediram 88×34 e 76×34 px; na mini-ficha, os controles permaneceram visíveis em Perícias e Combate. A captura de Combate mostrou NH manual e bônus extra em campos separados, legíveis e com toque amplo.

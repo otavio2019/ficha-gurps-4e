@@ -222,11 +222,11 @@
 - [x] Automatizar o NH das perícias com base no atributo, dificuldade, nível e bônus extra.
 - [x] Automatizar o NH dos ataques usando a perícia vinculada, nível e bônus extra do ataque.
 - [x] Adicionar campos editáveis de bônus extra para perícias e ataques, inclusive na mini-ficha de Aliados.
-- [ ] Aumentar a largura e a legibilidade dos campos de NH em desktop e celular.
+- [x] Aumentar a largura e a legibilidade dos campos de NH em desktop e celular.
 - [ ] Testar os cálculos, os bônus, a responsividade e a publicação.
 - [x] Implementar cálculo de NH baseado em atributo, dificuldade, pontos e bônus extra, com testes unitários.
 - [x] Implementar vínculo de ataques a perícias e cálculo de NH final, com testes unitários.
-- [ ] Levar o NH e o bônus extra para os Aliados e validar desktop/celular.
+- [x] Levar o NH e o bônus extra para os Aliados e validar desktop/celular.
 - [ ] Publicar e confirmar a revisão após a validação específica de NH.
 
 ## Vínculo de perícias aos ataques
@@ -297,3 +297,11 @@
 - [x] Exibir um seletor de raças Homebrew na ficha com prévia dos efeitos a aplicar.
 - [x] Aplicar e remover modificadores raciais sem duplicar vantagens, desvantagens ou ajustes de atributos.
 - [x] Validar em testes e no navegador a seleção de uma raça Homebrew e o reflexo na ficha.
+
+## Prioridade atual: NH e bônus extra
+
+- [x] Revisar visualmente a largura, o contraste e a leitura dos campos de NH na ficha principal e nos Aliados.
+- [x] Validar em desktop e celular os cálculos de NH, bônus extra e vínculos de ataques nas duas fichas.
+- [x] Validar em viewport móvel real a largura, legibilidade e ausência de overflow dos campos de NH e bônus na ficha principal.
+- [x] Validar em viewport móvel real os campos de NH e bônus da mini-ficha de Aliados, em Perícias e Combate.
+- [ ] Publicar a revisão de legibilidade do NH após concluir as validações móveis.
