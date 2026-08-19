@@ -133,3 +133,4 @@
 - Em desktop, a ficha exibiu valores editáveis de PV e PF, os quatro controles de −5, −1, +1 e +5 e os respectivos máximos calculados.
 - O acionamento por DOM do controle de −5 PV atualizou o recurso de 12 para 7. A edição direta de PV para 9 também recalculou o resumo e os cartões da ficha, confirmando a atualização do estado no fluxo de sessão.
 - Em 375 × 812, os oito controles de PV e PF permaneceram acessíveis, cada um com 26 × 26 px, sem overflow horizontal. O teste confirmou redução rápida de PV de 10 para 5, edição direta de PF para 6 e os dois registros correspondentes no Diário.
+- Em 375 × 812, a aba Características exibiu os catálogos de vantagens e desvantagens em dois cartões de 343 px, sem overflow. A busca retornou “Adaptabilidade Cultural” e “Curioso”; as duas seleções criaram corretamente as linhas correspondentes na ficha.

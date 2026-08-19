@@ -166,7 +166,7 @@
 - [x] Cobrir o catálogo com testes e validar sua experiência na interface.
 - [x] Validar no navegador o catálogo de vantagens na aba Características, incluindo busca, carregamento e inclusão automática com custo, notas e fonte.
 - [x] Validar no navegador o catálogo de desvantagens na aba Características, incluindo busca bilíngue, inclusão automática e impacto no total de pontos.
-- [ ] Validar em viewport móvel o catálogo de vantagens e desvantagens na aba Características e registrar a checagem em `validation-notes.md`.
+- [x] Validar em viewport móvel o catálogo de vantagens e desvantagens na aba Características e registrar a checagem em `validation-notes.md`.
 - [x] Integrar o catálogo de vantagens e desvantagens à aba Características da mini-ficha de Aliados, com busca e preenchimento automático.
 
 ## Correção de implantação
