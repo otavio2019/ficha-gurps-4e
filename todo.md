@@ -257,3 +257,17 @@
 - [x] Redigir uma nota de atualização do projeto com as novidades recentes.
 - [x] Acrescentar à nota os recursos de compartilhamento ao vivo e links públicos.
 - [x] Enviar a nota de atualização revisada ao repositório GitHub.
+
+## Automação e organização de Poderes
+
+- [ ] Agrupar a aba de Poderes em seções reais por tipo, com cabeçalhos próprios.
+- [ ] Propagar o NH automático por perícia vinculada, bônus e fallback manual para Combate e visualização compartilhada.
+- [x] Estruturar dano, alcance, custo de FP, custo em pontos, duração e efeito em campos próprios.
+- [ ] Exibir e organizar poderes ofensivos e defensivos no painel de Combate pelo NH final.
+- [ ] Testar cálculos, uso de FP, agrupamento, responsividade e visualização compartilhada dos poderes.
+- [ ] Adicionar testes automatizados específicos para NH, bônus, vínculo e fallback de poderes.
+
+### Detalhes adicionais de Poderes
+
+- [x] Adicionar duração, área de efeito, resistência, pré-requisitos e observações ao modelo de poder.
+- [x] Exibir e editar os detalhes adicionais no painel de Poderes e na visualização compartilhada.

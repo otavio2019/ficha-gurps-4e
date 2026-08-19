@@ -1053,11 +1053,68 @@ textarea:focus {
   resize: vertical;
 }
 
+.power-type-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.power-type-summary button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 2.6rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid rgba(225, 65, 68, 0.34);
+  background: #111318;
+  color: #f4eeee;
+  font-size: 0.72rem;
+}
+
+.power-type-summary button b { color: #e14144; }
+
+.power-automation-board {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0 0 1rem;
+}
+
+.power-automation {
+  border: 1px solid rgba(225, 65, 68, 0.32);
+  background: #111318;
+}
+
+.power-automation summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.7rem 0.85rem;
+  cursor: pointer;
+  color: #f4eeee;
+}
+
+.power-automation summary span { color: #e14144; font-size: 0.68rem; text-transform: uppercase; }
+.power-automation summary em { color: #bdb9ba; font-size: 0.72rem; font-style: normal; }
+.power-automation__fields { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.6rem; padding: 0 0.85rem 0.85rem; }
+.power-automation__fields label { display: grid; gap: 0.25rem; min-width: 0; }
+.power-automation__fields label span { color: #bdb9ba; font-size: 0.67rem; text-transform: uppercase; }
+.power-automation__fields .wide { grid-column: 1 / -1; }
+
+@media (max-width: 760px) {
+  .power-automation summary { grid-template-columns: 1fr; gap: 0.25rem; }
+  .power-automation__fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 .ally-inventory-table .item-description {
   min-width: 12rem;
 }
 
 @media (max-width: 620px) {
+  .power-type-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .power-automation__fields { grid-template-columns: 1fr; }
   .item-description,
   .ally-inventory-table .item-description {
     grid-column: 1 / -1;
