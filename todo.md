@@ -255,7 +255,7 @@
 
 - [ ] Validar em uma ficha autenticada a edição da descrição na aba Equipamento e na mini-ficha de Aliados, em desktop e celular.
 - [ ] Confirmar persistência ao salvar/reabrir e sincronização compartilhada das descrições.
-- [ ] Confirmar a presença das descrições nas exportações JSON e PDF e registrar a checagem.
+- [x] Confirmar a presença das descrições nas exportações JSON e PDF e registrar a checagem.
 
 ## Nota de atualização
 
