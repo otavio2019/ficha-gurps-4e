@@ -87,3 +87,6 @@
 - O catálogo de traços foi validado na aba Características em desktop: os painéis exibiram 32 vantagens e 28 desvantagens, com nome, categoria, natureza, custo e marcador de autocontrole quando aplicável.
 - A inclusão de “Reflexos em Combate” pelo catálogo preencheu automaticamente custo 15, resumo próprio em português e referência `Basic Set p. 43`; o total de vantagens e os pontos disponíveis foram recalculados.
 - A busca bilíngue de desvantagens retornou “Honestidade” ao pesquisar `honesty`. Ao incluir o registro, a ficha recebeu custo -10, descrição e referência `Basic Set p. 138`; o total de desvantagens passou de -21 para -31 e os pontos disponíveis foram atualizados de 34 para 44.
+
+- A prévia desktop após o ajuste de NH carregou a biblioteca autenticada sem erros visuais; a compilação e os testes passaram.
+- A prévia em 375×812 px manteve a biblioteca responsiva, sem overflow horizontal visível. A validação específica dos novos campos dentro da ficha de combate ainda depende de abrir uma ficha autenticada na prévia.
