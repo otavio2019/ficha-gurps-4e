@@ -11,6 +11,7 @@ import { trpc } from "@/lib/trpc";
 import { allyFrequencyMultipliers, allyPowerCosts, calculateAllyCostByRule } from "@shared/allyRules";
 import { calculatePointBudget, SECONDARY_POINT_COSTS } from "@shared/characterPoints";
 import { calculateAttackNh, calculateNh } from "@shared/gurpsNh";
+import { rollCheck3d6, rollDamage as rollDamageExpression, type CheckRoll, type DamageRoll } from "@shared/gurpsRolls";
 import { HOMEBREW_CATEGORIES, HOMEBREW_FIELDS, canAddHomebrewToSheet, filterHomebrewEntries, normalizeHomebrewEntry, type HomebrewCategory, type HomebrewEntry } from "@shared/homebrew";
 import { getHomebrewRaceEffects, hasHomebrewRaceEffects, type RaceAttributeBonuses } from "@shared/homebrewRace";
 import { selectCloudBackedRecords } from "@shared/cloudSync";
@@ -68,6 +69,7 @@ type Armor = { id: string; location: string; dr: number; source: string };
 type Power = { id: string; name: string; source: string; type: "Ofensivo" | "Defensivo" | "Utilidade" | "Controle"; level: number; bonus?: number; skillId?: string; fpCost: number; pointCost: number; range: string; duration?: string; area?: string; resistance?: string; prerequisites?: string; notes?: string; damage: string; effect: string; combatReady: boolean };
 type Mission = { id: string; title: string; difficulty: "Baixa" | "Média" | "Alta" | "Épica" | "Lendária"; status: "Planejada" | "Em andamento" | "Concluída" | "Fracassada"; pointsReward: number; moneyReward: number; currency: string; notes: string; applied: boolean };
 type LogItem = { id: string; time: string; text: string; kind: "roll" | "health" | "note" };
+type SessionRoll = (CheckRoll & { label: string }) | (DamageRoll & { label: string });
 type Ally = { id: string; name: string; relation: string; description: string; points: number; cost: number; hpCurrent: number; hpMax: number; status: string; type?: string; race?: string; appearance?: string; personality?: string; history?: string; motivation?: string; notes?: string; powerPercent?: 25 | 50 | 75 | 100 | 150; frequency?: 6 | 9 | 12 | 15; isDependent?: boolean; attributes?: { st: number; dx: number; iq: number; ht: number }; fpCurrent?: number; fpMax?: number; advantages?: Trait[]; disadvantages?: Trait[]; skills?: Skill[]; attacks?: Attack[]; inventory?: InventoryItem[]; conditions?: string[] };
 
 const ALLY_STATUS_OPTIONS = ["Pronto", "Ferido", "Incapacitado", "Ausente", "Morto", "Desaparecido", "Ex-aliado"] as const;
@@ -363,7 +365,7 @@ export default function Home() {
   const [activeCharacterId, setActiveCharacterId] = useState(() => window.localStorage.getItem(ACTIVE_CHARACTER_KEY) || "");
   const [view, setView] = useState<"library" | "sheet">("library");
   const [activeSection, setActiveSection] = useState("visao-geral");
-  const [lastRoll, setLastRoll] = useState<{ label: string; dice: number[]; total: number; target: number } | null>(null);
+  const [lastRoll, setLastRoll] = useState<SessionRoll | null>(null);
   const [selectedArmorLocation, setSelectedArmorLocation] = useState("Tronco");
   const [selectedAllyId, setSelectedAllyId] = useState<string | null>(null);
   const [activeAllyTab, setActiveAllyTab] = useState<AllyTab>("visao");
@@ -515,11 +517,17 @@ export default function Home() {
   };
 
   const roll3d6 = (label: string, target: number) => {
-    const dice = Array.from({ length: 3 }, () => Math.floor(Math.random() * 6) + 1);
-    const total = dice.reduce((sum, die) => sum + die, 0);
-    const margin = target - total;
-    setLastRoll({ label, dice, total, target });
-    addLog(`${label}: 3d6 → ${total} (${margin >= 0 ? `sucesso por ${margin}` : `falha por ${Math.abs(margin)}`}).`, "roll");
+    const result = rollCheck3d6(target);
+    setLastRoll({ ...result, label });
+    addLog(`${label}: 3d6 → ${result.total} (${result.success ? `sucesso por ${result.margin}` : `falha por ${Math.abs(result.margin)}`}).`, "roll");
+  };
+
+  const rollDamage = (label: string, expression: string) => {
+    const result = rollDamageExpression(expression);
+    if (!result) { addLog(`${label}: não foi possível interpretar o dano “${expression || "—"}”.`, "note"); return; }
+    setLastRoll({ ...result, label });
+    const modifier = result.modifier === 0 ? "" : result.modifier > 0 ? ` + ${result.modifier}` : ` − ${Math.abs(result.modifier)}`;
+    addLog(`${label}: ${result.dice.join(" + ")}${modifier} → ${result.total} de dano.`, "roll");
   };
 
   const updateTrait = (kind: "advantages" | "disadvantages", id: string, field: keyof Trait, value: string | number) => {
@@ -1100,7 +1108,7 @@ export default function Home() {
                     <label><span>Dano</span><input value={attack.damage} onChange={(event) => updateAttack(attack.id, "damage", event.target.value)} /></label>
                     <label><span>Reach</span><input value={attack.reach} onChange={(event) => updateAttack(attack.id, "reach", event.target.value)} /></label>
                     <label><span>Parry</span><input value={attack.parry} onChange={(event) => updateAttack(attack.id, "parry", event.target.value)} /></label>
-                    <button type="button" className="sigil-action" aria-label={`Rolar ${attack.name}`} onClick={() => roll3d6(attack.name, getAttackNh(attack))}><img src={MARK} alt="" /></button><button type="button" className="row-delete" aria-label={`Excluir ${attack.name}`} onClick={() => removeAttack(attack.id, attack.name)}><Trash2 size={14} /></button>
+                    <div className="attack-row__actions"><button type="button" className="sigil-action" aria-label={`Rolar ataque de ${attack.name}`} onClick={() => roll3d6(attack.name, getAttackNh(attack))}><img src={MARK} alt="" /></button><button type="button" className="damage-action" aria-label={`Rolar dano de ${attack.name}`} onClick={() => rollDamage(`Dano: ${attack.name}`, attack.damage)}>Dano</button></div><button type="button" className="row-delete" aria-label={`Excluir ${attack.name}`} onClick={() => removeAttack(attack.id, attack.name)}><Trash2 size={14} /></button>
                   </div>)}
                 </div>
               </div>
@@ -1110,6 +1118,7 @@ export default function Home() {
                 {(() => { const selectedArmor = sheet.armor.find((armor) => armor.location === selectedArmorLocation); return selectedArmor ? <div className="selected-protection"><span><Shield size={14} /> REGIÃO SELECIONADA</span><strong>{selectedArmor.location}</strong><label>DR<input type="number" min="0" value={selectedArmor.dr} onChange={(event) => updateArmor(selectedArmor.id, "dr", number(event.target.value))} /></label><label>Proteção<input value={selectedArmor.source} onChange={(event) => updateArmor(selectedArmor.id, "source", event.target.value)} /></label></div> : null; })()}
               </div>
             </div>
+            {lastRoll && <aside className={`combat-roll-result combat-roll-result--${lastRoll.kind}`} aria-live="polite"><div><span className="eyebrow">RESULTADO DA AÇÃO</span><b>{lastRoll.label}</b></div><strong>{lastRoll.total}</strong><small>{lastRoll.kind === "test" ? `${lastRoll.success ? "Sucesso" : "Falha"} por ${Math.abs(lastRoll.margin)} · alvo ${lastRoll.target}` : `${lastRoll.expression} · ${lastRoll.dice.join(" + ")}${lastRoll.modifier ? ` ${lastRoll.modifier > 0 ? "+" : "−"} ${Math.abs(lastRoll.modifier)}` : ""}`}</small></aside>}
             <div className="combat-powers"><div><span className="eyebrow">PODERES DE COMBATE</span><h3>Habilidades prontas para a cena</h3><p>Ative um poder para gastar FP, registrar o uso e executar uma rolagem 3d6.</p></div>{(sheet.powers || []).filter((power) => power.combatReady).length ? <div className="combat-powers__groups">{(["Ofensivo", "Defensivo", "Controle", "Utilidade"] as const).map((type) => {
               const powers = (sheet.powers || []).filter((power) => power.combatReady && power.type === type).sort((a, b) => getPowerNh(b) - getPowerNh(a));
               if (!powers.length) return null;
@@ -1196,7 +1205,7 @@ export default function Home() {
 
           <section id="diario" className={`codex-section codex-section--last ${activeSection === "diario" ? "is-active" : "is-hidden"}`}>
             <SectionHeader kicker="10 · SESSÃO" title="Diário e dados" description="Todo evento que muda a cena pode ficar registrado aqui." icon={History} />
-            <div className="diary-grid"><div className="roll-station"><div className="roll-station__top"><img className="roll-station__sigil" src={MARK} alt="" /><div><span className="eyebrow eyebrow--light">ROLAGEM PADRÃO</span><h3>3d6 de mesa</h3></div></div><p>Selecione qualquer ataque ou perícia e use o selo de dados. Para um teste livre, role o atributo desejado.</p><div className="quick-rolls"><button type="button" onClick={() => roll3d6("Teste de ST", sheet.attributes.st)}>ST {sheet.attributes.st}</button><button type="button" onClick={() => roll3d6("Teste de DX", sheet.attributes.dx)}>DX {sheet.attributes.dx}</button><button type="button" onClick={() => roll3d6("Teste de IQ", sheet.attributes.iq)}>IQ {sheet.attributes.iq}</button><button type="button" onClick={() => roll3d6("Teste de HT", sheet.attributes.ht)}>HT {sheet.attributes.ht}</button></div>{lastRoll ? <div className="roll-result"><div className="dice-set">{lastRoll.dice.map((die, index) => <span key={`${die}-${index}`} data-value={die}>{die}</span>)}</div><div><span>{lastRoll.label}</span><strong>{lastRoll.total}</strong><small>{lastRoll.total <= lastRoll.target ? `Sucesso por ${lastRoll.target - lastRoll.total}` : `Falha por ${lastRoll.total - lastRoll.target}`}</small></div></div> : <div className="roll-result roll-result--idle"><Dices size={21} /><span>A próxima rolagem aparecerá aqui.</span></div>}</div>
+            <div className="diary-grid"><div className="roll-station"><div className="roll-station__top"><img className="roll-station__sigil" src={MARK} alt="" /><div><span className="eyebrow eyebrow--light">ROLAGEM PADRÃO</span><h3>3d6 de mesa</h3></div></div><p>Selecione qualquer ataque ou perícia e use o selo de dados. Para um teste livre, role o atributo desejado.</p><div className="quick-rolls"><button type="button" onClick={() => roll3d6("Teste de ST", sheet.attributes.st)}>ST {sheet.attributes.st}</button><button type="button" onClick={() => roll3d6("Teste de DX", sheet.attributes.dx)}>DX {sheet.attributes.dx}</button><button type="button" onClick={() => roll3d6("Teste de IQ", sheet.attributes.iq)}>IQ {sheet.attributes.iq}</button><button type="button" onClick={() => roll3d6("Teste de HT", sheet.attributes.ht)}>HT {sheet.attributes.ht}</button></div>{lastRoll ? <div className="roll-result"><div className="dice-set">{lastRoll.dice.map((die, index) => <span key={`${die}-${index}`} data-value={die}>{die}</span>)}</div><div><span>{lastRoll.label}</span><strong>{lastRoll.total}</strong><small>{lastRoll.kind === "test" ? `${lastRoll.success ? "Sucesso" : "Falha"} por ${Math.abs(lastRoll.margin)}` : `${lastRoll.expression} · dano final ${lastRoll.total}`}</small></div></div> : <div className="roll-result roll-result--idle"><Dices size={21} /><span>A próxima rolagem aparecerá aqui.</span></div>}</div>
               <div className="paper-card log-card"><div className="log-card__head"><div><span className="eyebrow">HISTÓRICO</span><h3>Registro da sessão</h3></div><button type="button" onClick={() => addLog("Nota manual adicionada à sessão.", "note")}><Plus size={15} /> Nota</button></div><div className="log-list">{sheet.log.map((entry) => <div className={`log-entry log-entry--${entry.kind}`} key={entry.id}><time>{entry.time}</time><i>{entry.kind === "roll" ? <Dices size={15} /> : entry.kind === "health" ? <HeartPulse size={15} /> : <ScrollText size={15} />}</i><p>{entry.text}</p></div>)}</div></div>
             </div>
             <div className="points-ledger"><div><span className="eyebrow">ORÇAMENTO</span><h3>Pontos de personagem</h3><p>A conta abaixo muda ao editar atributos, valores adicionais, traços, perícias, poderes e aliados.</p></div><div className="ledger-values"><label><span>Iniciais</span><input type="number" value={sheet.points.initial} onChange={(event) => setSheet((current) => ({ ...current, points: { ...current.points, initial: number(event.target.value) } }))} /></label><label><span>Ganhos</span><input type="number" value={sheet.points.earned} onChange={(event) => setSheet((current) => ({ ...current, points: { ...current.points, earned: number(event.target.value) } }))} /></label><div><span>Gastos</span><strong>{calculated.totalSpent}</strong></div><div className={calculated.available < 0 ? "ledger-total is-negative" : "ledger-total"}><span>Disponíveis</span><strong>{calculated.available}</strong></div></div><div className="ledger-breakdown"><span>Atributos <b>{calculated.attributePoints}</b></span><span>Valores adicionais <b>{calculated.secondaryPoints}</b></span><span>Vantagens <b>{calculated.advantagePoints}</b></span><span>Desvantagens <b>{calculated.disadvantagePoints}</b></span><span>Perícias <b>{calculated.skillPoints}</b></span><span>Poderes <b>{calculated.powerPoints}</b></span><span>Aliados <b>{calculated.allyCost}</b></span></div></div>

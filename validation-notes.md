@@ -124,3 +124,9 @@
 - Em Combate, a Espada longa foi vinculada a Espadas de Lâmina Larga e o NH passou de 14 para 15, igual ao NH calculado da perícia vinculada.
 - Com bônus extra de +2, a Espada longa vinculada exibiu NH final 17. Os dois campos de NH e bônus mantiveram 72 px de largura e leitura clara no painel de Combate em desktop.
 - Em 375×812, um ataque da ficha principal foi vinculado à Nova perícia, recebeu bônus +2 e exibiu NH final 11. Os campos mediram 72×34 px e não houve overflow horizontal, concluindo a checagem móvel do ataque vinculado principal.
+- A ficha Aurora Vale foi aberta novamente como cenário de validação dos Poderes em desktop.
+- O painel exibiu o grupo Ofensivo com um poder, NH final 11 e custo de 1 FP. Ao usar o poder, a FP da ficha passou de 11/11 para 10/11, confirmando o gasto e a ação de sessão.
+- Em 375×812, a criação de um poder exibiu o grupo “Poderes do tipo Ofensivo” e todos os controles permaneceram visíveis, sem overflow horizontal. O consumo de FP já foi confirmado no painel desktop; a validação autenticada da visualização pública continua pendente.
+- A ficha atualizada foi aberta para validar os novos controles de rolagem de ataque e dano no painel de Combate.
+- O botão Dano da Espada longa gerou resultado 4 para a expressão 1d+2 corte e exibiu, no painel de resultado, a composição “2 + 2”, o dano final e a origem da ação.
+- Em 375×812, a rolagem de dano deixou o painel “RESULTADO DA AÇÃO” visível com a origem, a expressão e o total, sem overflow horizontal. O motor central também passou em testes de sucesso, falha, margem, interpretação de dano e aplicação de modificador.

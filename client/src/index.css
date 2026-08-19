@@ -918,7 +918,18 @@ input:focus, textarea:focus { border-bottom-color: #e14144 !important; }
 .powers-empty b { display: inline-flex; align-items: center; gap: .28rem; color: #ff989a; font-size: .63rem; }
 .row-delete { display: grid; width: 29px; height: 29px; place-items: center; border: 1px solid rgb(225 65 68 / .52) !important; background: transparent !important; color: #ff989a !important; }
 .row-delete:hover { background: #b5373a !important; color: white !important; }
-.attack-row { grid-template-columns: minmax(130px, 1.4fr) minmax(125px, 1fr) .42fr .42fr 33px 33px; }
+.attack-row { grid-template-columns: minmax(130px, 1.4fr) minmax(125px, 1fr) .42fr .42fr 66px 33px; }
+.attack-row__actions { display: flex; gap: .24rem; align-items: center; }
+.attack-row__actions .sigil-action { flex: 0 0 31px; }
+.damage-action { min-height: 31px; padding: 0 .42rem; border: 1px solid rgba(225, 65, 68, .58); background: rgba(225, 65, 68, .08); color: var(--paper); font-size: .62rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.damage-action:hover { background: var(--red); color: #fff; }
+.combat-roll-result { display: flex; align-items: center; gap: 1rem; margin: 1rem 0; padding: .8rem 1rem; border: 1px solid rgba(225, 65, 68, .45); background: linear-gradient(90deg, rgba(225, 65, 68, .14), rgba(12, 13, 16, .85)); }
+.combat-roll-result > div { display: grid; gap: .14rem; min-width: 0; flex: 1; }
+.combat-roll-result b { color: var(--paper); font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.combat-roll-result > strong { color: #fff; font-family: var(--font-display); font-size: 2rem; line-height: 1; }
+.combat-roll-result > small { color: var(--muted); font-size: .72rem; text-align: right; }
+.combat-roll-result--damage { border-color: rgba(209, 166, 84, .55); background: linear-gradient(90deg, rgba(209, 166, 84, .16), rgba(12, 13, 16, .85)); }
+@media (max-width: 620px) { .attack-row { grid-template-columns: minmax(130px, 1fr) minmax(105px, .8fr) .46fr .46fr 64px 32px; } .combat-roll-result { flex-wrap: wrap; gap: .55rem; } .combat-roll-result > small { width: 100%; text-align: left; } }
 .item-grid { grid-template-columns: minmax(130px, 1.7fr) minmax(100px, 1fr) .5fr .75fr .6fr .6fr 31px; }
 .power-delete { border-color: rgb(225 65 68 / .62) !important; background: transparent !important; color: #ff989a !important; }
 .power-delete:hover { background: #b5373a !important; color: white !important; }

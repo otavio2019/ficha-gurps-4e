@@ -307,3 +307,11 @@
 - [x] Validar em viewport móvel real a largura, legibilidade e ausência de overflow dos campos de NH e bônus na ficha principal.
 - [x] Validar em viewport móvel real os campos de NH e bônus da mini-ficha de Aliados, em Perícias e Combate.
 - [x] Publicar a revisão de legibilidade do NH após concluir as validações móveis.
+
+## Prioridade de sessão: rolagens e combate
+
+- [x] Criar motor central de rolagens 3d6, com sucesso/falha e margem contra um NH-alvo.
+- [x] Adicionar rolagem de dano para ataques, preservando a expressão de dano da ficha.
+- [x] Integrar botões de rolagem rápida a ataques, perícias e poderes.
+- [x] Criar histórico de rolagens com horário, origem, resultado e margem.
+- [x] Validar a central de rolagens e combate em desktop e celular.
