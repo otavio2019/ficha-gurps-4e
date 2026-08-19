@@ -1007,7 +1007,7 @@ input:focus, textarea:focus { border-bottom-color: #e14144 !important; }
 @media (max-width: 760px) { .library-account { position: static; width: min(270px, calc(100% - 2rem)); margin: 1.1rem 0 0; } .library-hero { display: flex; flex-direction: column; } .library-hero__content { margin-top: 1.4rem; } .library-hero__spine { top: 1.3rem; } }
 @media (max-width: 620px) { .library-hero__count { display: none; } }
 
-/* Campos de escrita: fundo preto e tinta branca, alinhados ao tema noturno. */
+/* Campos de escrita: preto grafite dos painéis e tinta branca. */
 input:not([type]),
 input[type="text"],
 input[type="number"],
@@ -1016,7 +1016,7 @@ input[type="search"],
 input[type="tel"],
 input[type="url"],
 textarea {
-  background: #000 !important;
+  background: #111318 !important;
   color: #fff !important;
   caret-color: #fff;
 }
@@ -1041,5 +1041,5 @@ input[type="search"]:focus,
 input[type="tel"]:focus,
 input[type="url"]:focus,
 textarea:focus {
-  background: #111217 !important;
+  background: #15171c !important;
 }

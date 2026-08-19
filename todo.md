@@ -198,3 +198,4 @@
 
 - [x] Ajustar os campos de escrita para exibir em preto o texto digitado, com fundo que preserve o contraste.
 - [x] Alterar os campos de escrita para fundo preto e texto branco, conforme o tema escuro da ficha.
+- [x] Ajustar o fundo dos campos de escrita para o mesmo preto grafite dos painéis da ficha, mantendo texto branco.
