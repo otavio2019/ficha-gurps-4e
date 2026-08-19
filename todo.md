@@ -89,7 +89,7 @@
 - [x] Criar uma aba de Missões com relatório, dificuldade, pontos ganhos, dinheiro e observações.
 - [x] Aplicar pontos ganhos da missão ao orçamento do personagem e registrar a conclusão no diário.
 - [x] Criar uma aba de Homebrew para regras, raças, habilidades e notas personalizadas.
-- [ ] Validar as abas de Missões e Homebrew, incluindo os controles de exclusão, em desktop e celular.
+- [x] Validar as abas de Missões e Homebrew, incluindo os controles de exclusão, em desktop e celular.
 
 ## Correções de remoção e pontos
 
