@@ -175,7 +175,7 @@
 
 - [x] Conferir os registros de implantação e validar localmente o projeto após a falha recorrente.
 - [x] Determinar que não há correção de projeto identificável: a falha ocorre antes do início do construtor remoto.
-- [ ] Repetir a publicação somente após a validação e confirmar a disponibilidade do domínio.
+- [x] Repetir a publicação somente após a validação e confirmar a disponibilidade do domínio.
 - [x] Verificar arquivos grandes e scripts de instalação que possam impedir o construtor remoto antes dos logs.
 - [x] Reproduzir localmente a instalação limpa que o construtor remoto executaria.
 
@@ -185,3 +185,11 @@
 - [x] Adicionar um controle móvel para acessar e trocar todas as abas da ficha.
 - [x] Validar em viewport móvel real que o seletor aparece, abre e troca o painel ativo.
 - [x] Confirmar em documentação a barra lateral preservada em desktop e o seletor nativo abaixo de 880 px.
+
+## Exportação para GitHub
+
+- [x] Definir o repositório GitHub de destino e a forma de envio do código.
+- [ ] Enviar a versão atual do projeto ao repositório GitHub autorizado.
+- [ ] Confirmar o repositório e a revisão enviados.
+- [ ] Criar um novo repositório GitHub para a ficha GURPS 4e.
+- [ ] Criar o repositório público `ficha-gurps-4e` e enviar a versão atual do código.
