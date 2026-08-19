@@ -1006,3 +1006,40 @@ input:focus, textarea:focus { border-bottom-color: #e14144 !important; }
 @media (max-width: 520px) { .shared-sheet { padding: 1rem; } .shared-sheet__hero { grid-template-columns: 1fr; } .shared-sheet__hero > img { width: 112px; height: 135px; } .shared-resources { grid-template-columns: 1fr 1fr; } .shared-attributes { grid-template-columns: repeat(2, 1fr); } .shared-skill-list, .shared-item-grid, .shared-ally-card__details { grid-template-columns: 1fr; } .shared-ally-card > header { display: grid; } .shared-log-list > div { grid-template-columns: 1fr; gap: .15rem; } }
 @media (max-width: 760px) { .library-account { position: static; width: min(270px, calc(100% - 2rem)); margin: 1.1rem 0 0; } .library-hero { display: flex; flex-direction: column; } .library-hero__content { margin-top: 1.4rem; } .library-hero__spine { top: 1.3rem; } }
 @media (max-width: 620px) { .library-hero__count { display: none; } }
+
+/* Campos de escrita: tinta preta sobre papel claro, inclusive no tema noturno. */
+input:not([type]),
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+textarea {
+  background: #f7f4ef !important;
+  color: #000 !important;
+  caret-color: #000;
+}
+
+input:not([type])::placeholder,
+input[type="text"]::placeholder,
+input[type="number"]::placeholder,
+input[type="email"]::placeholder,
+input[type="search"]::placeholder,
+input[type="tel"]::placeholder,
+input[type="url"]::placeholder,
+textarea::placeholder {
+  color: #5b5b5b;
+  opacity: 1;
+}
+
+input:not([type]):focus,
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="search"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+textarea:focus {
+  background: #fff !important;
+}

@@ -1,0 +1,13 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
+
+describe("estilos de campos editáveis", () => {
+  it("mantém texto preto sobre fundo claro nos campos de escrita", () => {
+    const stylesheet = readFileSync(resolve(process.cwd(), "client/src/index.css"), "utf8");
+
+    expect(stylesheet).toContain("Campos de escrita: tinta preta sobre papel claro");
+    expect(stylesheet).toMatch(/input\[type="text"\][\s\S]*?textarea \{[\s\S]*?background: #f7f4ef !important;[\s\S]*?color: #000 !important;/);
+    expect(stylesheet).toContain("caret-color: #000;");
+  });
+});

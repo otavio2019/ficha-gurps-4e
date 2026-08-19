@@ -193,3 +193,7 @@
 - [x] Confirmar o repositório e a revisão enviados.
 - [x] Criar um novo repositório GitHub para a ficha GURPS 4e.
 - [x] Criar o repositório público `ficha-gurps-4e` e enviar a versão atual do código.
+
+## Legibilidade dos campos de escrita
+
+- [x] Ajustar os campos de escrita para exibir em preto o texto digitado, com fundo que preserve o contraste.
