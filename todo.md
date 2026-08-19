@@ -189,7 +189,7 @@
 ## Exportação para GitHub
 
 - [x] Definir o repositório GitHub de destino e a forma de envio do código.
-- [ ] Enviar a versão atual do projeto ao repositório GitHub autorizado.
-- [ ] Confirmar o repositório e a revisão enviados.
-- [ ] Criar um novo repositório GitHub para a ficha GURPS 4e.
-- [ ] Criar o repositório público `ficha-gurps-4e` e enviar a versão atual do código.
+- [x] Enviar a versão atual do projeto ao repositório GitHub autorizado.
+- [x] Confirmar o repositório e a revisão enviados.
+- [x] Criar um novo repositório GitHub para a ficha GURPS 4e.
+- [x] Criar o repositório público `ficha-gurps-4e` e enviar a versão atual do código.
