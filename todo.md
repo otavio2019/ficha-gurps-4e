@@ -281,3 +281,4 @@
 - [ ] Validar navegação, legibilidade e ausência de overflow em celular.
 - [x] Corrigir a compactação excessiva das abas e dos atributos da mini-ficha de Aliados em celular.
 - [x] Garantir espaço inferior seguro para que a barra fixa não cubra os controles da mini-ficha.
+- [x] Corrigir a exibição dos valores de ST, DX, IQ e HT no bloco de atributos da mini-ficha móvel.
