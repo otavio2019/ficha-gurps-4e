@@ -197,3 +197,4 @@
 ## Legibilidade dos campos de escrita
 
 - [x] Ajustar os campos de escrita para exibir em preto o texto digitado, com fundo que preserve o contraste.
+- [x] Alterar os campos de escrita para fundo preto e texto branco, conforme o tema escuro da ficha.
