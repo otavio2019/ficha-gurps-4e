@@ -1334,3 +1334,14 @@ textarea:focus {
   .codex-section { break-inside: auto !important; page-break-inside: auto !important; }
   .section-header, .paper-card, .identity-card, .attribute-panel, .resource-card, .tactical-card { break-inside: avoid; page-break-inside: avoid; }
 }
+
+@media (max-width: 620px) {
+  .resource-line button { width: 30px; height: 30px; font-size: .68rem; }
+  .portrait-upload { font-size: .66rem; }
+  .body-zone { min-height: 30px; padding: .3rem; font-size: .66rem; }
+  .body-zone b, .body-zone i { font-size: .56rem; }
+  .homebrew-category-counts button { min-height: 28px; font-size: .65rem; }
+  .homebrew-filter-row button { min-height: 30px; padding-inline: .52rem; font-size: .65rem; }
+  .combat-powers__empty { font-size: .65rem; }
+  .homebrew-create, .homebrew-add-sheet { font-size: .65rem; }
+}
