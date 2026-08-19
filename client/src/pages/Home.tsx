@@ -10,7 +10,7 @@ import { liveSocket } from "@/lib/live";
 import { trpc } from "@/lib/trpc";
 import { allyFrequencyMultipliers, allyPowerCosts, calculateAllyCostByRule } from "@shared/allyRules";
 import { calculatePointBudget, SECONDARY_POINT_COSTS } from "@shared/characterPoints";
-import { calculateNh } from "@shared/gurpsNh";
+import { calculateAttackNh, calculateNh } from "@shared/gurpsNh";
 import { selectCloudBackedRecords } from "@shared/cloudSync";
 import { appendCatalogSkill, createSkillFromCatalog } from "@shared/skillCatalogSelection";
 import { appendCatalogTrait, createTraitFromCatalog } from "@shared/traitCatalogSelection";
@@ -530,7 +530,7 @@ export default function Home() {
   };
 
   const getAttackNh = (attack: Attack) => { const skill = sheet.skills.find((candidate) => candidate.id === attack.skillId); return skill ? calculateNh(sheet.attributes[skill.attribute.toLowerCase() as "st" | "dx" | "iq" | "ht"] || 10, skill.difficulty, skill.points, skill.relative, attack.bonus || 0) : attack.level + (attack.bonus || 0); };
-  const getPowerNh = (power: Power) => { const skill = sheet.skills.find((candidate) => candidate.id === power.skillId); return skill ? calculateNh(sheet.attributes[skill.attribute.toLowerCase() as "st" | "dx" | "iq" | "ht"] || 10, skill.difficulty, skill.points, skill.relative, power.bonus || 0) : power.level + (power.bonus || 0); };
+  const getPowerNh = (power: Power) => calculateAttackNh(power.level, power.bonus || 0, sheet.skills.find((candidate) => candidate.id === power.skillId), sheet.attributes);
   const getAllyAttackNh = (ally: Ally, attack: Attack) => { const skill = (ally.skills ?? []).find((candidate) => candidate.id === attack.skillId); const attribute = skill?.attribute.toLowerCase() as "st" | "dx" | "iq" | "ht" | undefined; return skill ? calculateNh(Number(ally.attributes?.[attribute || "dx"] ?? 10), skill.difficulty, skill.points, skill.relative, attack.bonus || 0) : attack.level + (attack.bonus || 0); };
   const updateAttack = (id: string, field: keyof Attack, value: string | number) => {
     setSheet((current) => ({ ...current, attacks: current.attacks.map((attack) => attack.id === id ? { ...attack, [field]: value } : attack) }));
@@ -1007,7 +1007,7 @@ export default function Home() {
                 {(() => { const selectedArmor = sheet.armor.find((armor) => armor.location === selectedArmorLocation); return selectedArmor ? <div className="selected-protection"><span><Shield size={14} /> REGIÃO SELECIONADA</span><strong>{selectedArmor.location}</strong><label>DR<input type="number" min="0" value={selectedArmor.dr} onChange={(event) => updateArmor(selectedArmor.id, "dr", number(event.target.value))} /></label><label>Proteção<input value={selectedArmor.source} onChange={(event) => updateArmor(selectedArmor.id, "source", event.target.value)} /></label></div> : null; })()}
               </div>
             </div>
-            <div className="combat-powers"><div><span className="eyebrow">PODERES DE COMBATE</span><h3>Habilidades prontas para a cena</h3><p>Ative um poder para gastar FP, registrar o uso e executar uma rolagem 3d6.</p></div>{(sheet.powers || []).filter((power) => power.combatReady).length ? <div className="combat-powers__list">{(sheet.powers || []).filter((power) => power.combatReady).map((power) => <button type="button" key={power.id} onClick={() => usePower(power)} disabled={sheet.secondary.fpCurrent < power.fpCost}><span><b>{power.name}</b><small>{power.type} · NH {power.level} · {power.fpCost} FP</small></span><i>{power.damage || power.effect || "Ativar"}</i><WandSparkles size={17} /></button>)}</div> : <button type="button" className="combat-powers__empty" onClick={() => navigateTo("poderes")}><WandSparkles size={17} /> Cadastre um poder para usá-lo no combate.</button>}</div>
+            <div className="combat-powers"><div><span className="eyebrow">PODERES DE COMBATE</span><h3>Habilidades prontas para a cena</h3><p>Ative um poder para gastar FP, registrar o uso e executar uma rolagem 3d6.</p></div>{(sheet.powers || []).filter((power) => power.combatReady).length ? <div className="combat-powers__list">{(sheet.powers || []).filter((power) => power.combatReady).map((power) => <button type="button" key={power.id} onClick={() => usePower(power)} disabled={sheet.secondary.fpCurrent < power.fpCost}><span><b>{power.name}</b><small>{power.type} · NH {getPowerNh(power)} · {power.fpCost} FP</small></span><i>{power.damage || power.effect || "Ativar"}</i><WandSparkles size={17} /></button>)}</div> : <button type="button" className="combat-powers__empty" onClick={() => navigateTo("poderes")}><WandSparkles size={17} /> Cadastre um poder para usá-lo no combate.</button>}</div>
             <div className="conditions-panel"><div><span className="eyebrow">ESTADO DE CENA</span><p>Os efeitos são visíveis enquanto estiverem ativos.</p></div><div>{["Atordoado", "Ferido", "Derrubado", "Agarrado", "Exausto", "Envenenado"].map((condition) => <button key={condition} type="button" className={sheet.conditions.includes(condition) ? "condition is-on" : "condition"} onClick={() => toggleCondition(condition)}>{sheet.conditions.includes(condition) ? <Shield size={14} /> : <Plus size={14} />}{condition}</button>)}</div></div>
           </section>
 

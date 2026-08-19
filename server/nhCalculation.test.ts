@@ -18,4 +18,10 @@ describe("calculateNh", () => {
     expect(calculateAttackNh(10, 1, skill, { dx: 12 })).toBe(14);
     expect(calculateAttackNh(10, 1, undefined, { dx: 12 })).toBe(11);
   });
+
+  it("mantém o NH de um poder vinculado consistente entre combate e compartilhamento", () => {
+    const powerSkill = { attribute: "IQ", difficulty: "Difícil", points: 4, relative: "IQ+0" };
+    expect(calculateAttackNh(9, 2, powerSkill, { iq: 12 })).toBe(14);
+    expect(calculateAttackNh(9, 2, undefined, { iq: 12 })).toBe(11);
+  });
 });

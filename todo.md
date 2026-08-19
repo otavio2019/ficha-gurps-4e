@@ -261,11 +261,11 @@
 ## Automação e organização de Poderes
 
 - [x] Agrupar a aba de Poderes em seções reais por tipo, com cabeçalhos próprios.
-- [ ] Propagar o NH automático por perícia vinculada, bônus e fallback manual para Combate e visualização compartilhada.
+- [x] Propagar o NH automático por perícia vinculada, bônus e fallback manual para Combate e visualização compartilhada.
 - [x] Estruturar dano, alcance, custo de FP, custo em pontos, duração e efeito em campos próprios.
 - [ ] Exibir e organizar poderes ofensivos e defensivos no painel de Combate pelo NH final.
 - [ ] Testar cálculos, uso de FP, agrupamento, responsividade e visualização compartilhada dos poderes.
-- [ ] Adicionar testes automatizados específicos para NH, bônus, vínculo e fallback de poderes.
+- [x] Adicionar testes automatizados específicos para NH, bônus, vínculo e fallback de poderes.
 
 ### Detalhes adicionais de Poderes
 
