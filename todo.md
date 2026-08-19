@@ -279,3 +279,5 @@
 - [x] Ampliar áreas de toque e controles de alta frequência em telas móveis.
 - [x] Ajustar atributos, recursos e abas internas de Aliados para evitar compactação excessiva.
 - [ ] Validar navegação, legibilidade e ausência de overflow em celular.
+- [x] Corrigir a compactação excessiva das abas e dos atributos da mini-ficha de Aliados em celular.
+- [x] Garantir espaço inferior seguro para que a barra fixa não cubra os controles da mini-ficha.
