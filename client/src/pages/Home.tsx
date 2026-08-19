@@ -287,6 +287,13 @@ const navItems = [
   { id: "diario", label: "Diário", icon: ScrollText },
 ];
 
+const navGroups = [
+  { label: "Personagem", ids: ["visao-geral", "caracteristicas", "pericias"] },
+  { label: "Combate", ids: ["combate", "poderes", "inventario"] },
+  { label: "Campanha", ids: ["aliados", "missoes", "diario"] },
+  { label: "Personalização", ids: ["homebrew"] },
+];
+
 function MetricCard({ label, value, detail, tone = "navy" }: { label: string; value: string | number; detail: string; tone?: "navy" | "red" | "moss" }) {
   return (
     <div className={`metric-card metric-card--${tone}`}>
@@ -488,6 +495,11 @@ export default function Home() {
     const available = sheet.points.initial + sheet.points.earned - totalSpent;
     return { hpMax, fpMax, will, perception, speed, basicLift, carriedWeight, encumbrance, encName: encNames[encumbrance], dodge, move, attributePoints, secondaryPoints, advantagePoints, disadvantagePoints, skillPoints, powerPoints, allyCost, totalSpent, available };
   }, [sheet]);
+  const overviewHighlights = {
+    advantages: [...sheet.advantages].sort((a, b) => b.cost - a.cost).filter((trait, index, entries) => entries.findIndex((entry) => entry.name.trim().toLocaleLowerCase() === trait.name.trim().toLocaleLowerCase()) === index).slice(0, 3),
+    skills: [...sheet.skills].sort((a, b) => calculateNh(sheet.attributes[b.attribute.toLowerCase() as "st" | "dx" | "iq" | "ht"] || 10, b.difficulty, b.points, b.relative, b.bonus || 0) - calculateNh(sheet.attributes[a.attribute.toLowerCase() as "st" | "dx" | "iq" | "ht"] || 10, a.difficulty, a.points, a.relative, a.bonus || 0)).slice(0, 3),
+    equipment: (sheet.inventory || []).filter((item) => item.equipped).slice(0, 3),
+  };
 
   const addLog = (text: string, kind: LogItem["kind"] = "note") => {
     setSheet((current) => ({ ...current, log: [{ id: makeId(), time: now(), text, kind }, ...current.log].slice(0, 20) }));
@@ -1007,11 +1019,18 @@ export default function Home() {
         </div>
         <button type="button" className="library-entry" onClick={() => setView("library")}><img src={MARK} alt="" /> <span>Arquivo de personagens</span><b>{characters.length}</b></button>
         <nav className="codex-nav" aria-label="Seções da ficha">
-          {navItems.map(({ id, label, icon: Icon }, index) => (
-            <button key={id} type="button" className={activeSection === id ? "is-active" : ""} onClick={() => navigateTo(id)}>
-              <span className="codex-nav__index"><img src={MARK} alt="" />{String(index + 1).padStart(2, "0")}</span><Icon size={17} /><span>{label}</span>
-            </button>
-          ))}
+          {navGroups.map((group) => <section className="codex-nav__group" key={group.label} aria-label={`Grupo ${group.label}`}>
+            <span className="codex-nav__group-label">{group.label}</span>
+            {group.ids.map((id) => {
+              const item = navItems.find((entry) => entry.id === id);
+              if (!item) return null;
+              const Icon = item.icon;
+              const index = navItems.findIndex((entry) => entry.id === id);
+              return <button key={item.id} type="button" className={activeSection === item.id ? "is-active" : ""} onClick={() => navigateTo(item.id)}>
+                <span className="codex-nav__index"><img src={MARK} alt="" />{String(index + 1).padStart(2, "0")}</span><Icon size={17} /><span>{item.label}</span>
+              </button>;
+            })}
+          </section>)}
         </nav>
         <div className="sidebar-footer"><span>{isAuthenticated ? "Sincronização ao vivo" : "Salvamento local"}</span><div>{isAuthenticated ? <Cloud size={15} /> : <Save size={15} />}{isAuthenticated ? " Nuvem conectada" : " Atualizado agora"}</div></div>
       </aside>
@@ -1086,6 +1105,14 @@ export default function Home() {
               <MetricCard label="Move" value={calculated.move} detail={`Carga ${calculated.encName.toLowerCase()}`} />
               <MetricCard label="Dodge" value={calculated.dodge} detail="Defesa ativa" />
             </div>
+
+            <section className="tactical-summary" aria-label="Resumo tático do personagem">
+              <div className="tactical-summary__intro"><span className="eyebrow">PRONTO PARA A MESA</span><h3>Leitura rápida</h3><p>Os dados mais consultados reunidos antes da ação.</p></div>
+              <button type="button" className="tactical-card tactical-card--points" onClick={() => navigateTo("diario")}><span>Pontos disponíveis</span><strong className={calculated.available < 0 ? "is-negative" : ""}>{calculated.available}</strong><small>{calculated.available < 0 ? "Ajuste o orçamento" : "Orçamento livre"}</small></button>
+              <button type="button" className="tactical-card" onClick={() => navigateTo("caracteristicas")}><span>Vantagens principais</span><div>{overviewHighlights.advantages.length ? overviewHighlights.advantages.map((trait) => <p key={trait.id}><b>{trait.name}</b><em>+{trait.cost}</em></p>) : <small>Nenhuma vantagem registrada</small>}</div><small>Ver características</small></button>
+              <button type="button" className="tactical-card" onClick={() => navigateTo("pericias")}><span>Perícias de destaque</span><div>{overviewHighlights.skills.length ? overviewHighlights.skills.map((skill) => <p key={skill.id}><b>{skill.name}</b><em>NH {calculateNh(sheet.attributes[skill.attribute.toLowerCase() as "st" | "dx" | "iq" | "ht"] || 10, skill.difficulty, skill.points, skill.relative, skill.bonus || 0)}</em></p>) : <small>Nenhuma perícia registrada</small>}</div><small>Abrir perícias</small></button>
+              <button type="button" className="tactical-card" onClick={() => navigateTo("inventario")}><span>Equipamento preparado</span><div>{overviewHighlights.equipment.length ? overviewHighlights.equipment.map((item) => <p key={item.id}><b>{item.name}</b><em>×{item.quantity}</em></p>) : <small>Nenhum item equipado</small>}</div><small>Abrir equipamento</small></button>
+            </section>
 
             <div className="resource-grid">
               <div className="paper-card resource-card">

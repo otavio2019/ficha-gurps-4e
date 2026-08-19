@@ -321,3 +321,9 @@
 - [x] Adicionar controles de −5, −1, +1 e +5 para PV e PF, respeitando os limites calculados.
 - [x] Permitir editar diretamente o valor atual de PV e PF durante a sessão.
 - [x] Registrar alterações de recursos no histórico e validar em desktop e celular.
+
+## Organização temática da ficha
+
+- [x] Reorganizar a barra lateral em grupos de Personagem, Combate, Campanha e Personalização.
+- [x] Ampliar a Visão geral com resumo tático de recursos, atributos, traços, perícias e equipamento preparado.
+- [x] Validar a organização da navegação e o resumo tático em desktop e celular.

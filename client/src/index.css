@@ -99,8 +99,10 @@
   .sidebar-character__badges span { padding: .28rem .45rem; border: 1px solid oklch(0.75 0.04 80 / .25); border-radius: 99px; color: oklch(0.89 0.014 80); font-size: .64rem; }
   .eyebrow { display: block; color: oklch(0.48 0.075 253); font-size: .62rem; font-weight: 700; letter-spacing: .135em; line-height: 1.2; }
   .eyebrow--light { color: oklch(0.75 0.04 80); }
-  .codex-nav { display: grid; gap: .17rem; padding: .25rem .85rem; }
-  .codex-nav button { width: 100%; display: grid; grid-template-columns: 34px 20px 1fr; align-items: center; gap: .46rem; padding: .73rem .5rem .73rem .35rem; border: 0; border-left: 2px solid transparent; background: transparent; color: oklch(0.77 0.02 80); text-align: left; font-size: .79rem; transition: background-color .18s var(--ease-out), color .18s var(--ease-out), transform .18s var(--ease-out); }
+  .codex-nav { display: flex; flex: 1; min-height: 0; flex-direction: column; gap: .62rem; overflow-y: auto; padding: .55rem .85rem .75rem; scrollbar-width: thin; }
+  .codex-nav__group { display: grid; gap: .08rem; }
+  .codex-nav__group-label { padding: 0 .35rem .26rem; color: oklch(0.68 0.05 80); font-size: .54rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+  .codex-nav button { width: 100%; display: grid; grid-template-columns: 34px 20px 1fr; align-items: center; gap: .46rem; padding: .53rem .5rem .53rem .35rem; border: 0; border-left: 2px solid transparent; background: transparent; color: oklch(0.77 0.02 80); text-align: left; font-size: .76rem; transition: background-color .18s var(--ease-out), color .18s var(--ease-out), transform .18s var(--ease-out); }
   .codex-nav button:hover { color: white; background: oklch(0.85 0.02 80 / .08); }
   .codex-nav button:active { transform: scale(.98); }
   .codex-nav button.is-active { border-left-color: oklch(0.68 0.14 27); background: linear-gradient(90deg, oklch(0.68 0.14 27 / .19), transparent); color: white; }
@@ -108,6 +110,19 @@
   .codex-nav__index img { width: 13px; height: 13px; object-fit: contain; opacity: .75; }
   .sidebar-footer { margin-top: auto; padding: 1.3rem 1.35rem; border-top: 1px solid oklch(0.68 0.035 80 / .18); }
   .sidebar-footer div { display: flex; align-items: center; gap: .38rem; margin-top: .38rem; color: oklch(0.82 0.024 80); font-size: .69rem; }
+  .tactical-summary { display: grid; grid-template-columns: minmax(145px, .82fr) repeat(4, minmax(0, 1fr)); gap: .65rem; margin: 1.05rem 0; padding: .7rem; border: 1px solid oklch(0.7 0.03 80 / .16); background: linear-gradient(110deg, oklch(0.22 0.05 244 / .65), oklch(0.17 0.035 253 / .68)); }
+  .tactical-summary__intro { display: flex; flex-direction: column; justify-content: center; padding: .6rem; }
+  .tactical-summary__intro h3 { margin: .18rem 0; color: oklch(0.96 0.012 80); font-family: "DM Serif Display", serif; font-size: 1.3rem; font-weight: 400; }
+  .tactical-summary__intro p { margin: 0; color: oklch(0.76 0.02 80); font-size: .67rem; line-height: 1.4; }
+  .tactical-card { min-width: 0; min-height: 108px; display: flex; flex-direction: column; align-items: stretch; gap: .38rem; padding: .68rem .72rem; border: 1px solid oklch(0.72 0.035 80 / .18); border-top: 2px solid oklch(0.68 0.14 27 / .75); background: oklch(0.14 0.035 253 / .7); color: oklch(0.9 0.014 80); text-align: left; transition: transform .16s var(--ease-out), background-color .16s var(--ease-out); }
+  .tactical-card:hover { background: oklch(0.19 0.048 253 / .9); transform: translateY(-2px); }
+  .tactical-card > span { color: oklch(0.72 0.04 80); font-size: .56rem; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+  .tactical-card > strong { color: oklch(0.98 0.01 80); font-family: "DM Serif Display", serif; font-size: 2rem; font-weight: 400; line-height: 1; }
+  .tactical-card > div { display: grid; gap: .23rem; }
+  .tactical-card p { min-width: 0; display: flex; justify-content: space-between; gap: .35rem; margin: 0; color: oklch(0.93 0.012 80); font-size: .68rem; }
+  .tactical-card p b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+  .tactical-card p em { flex: 0 0 auto; color: oklch(0.75 0.13 27); font-size: .61rem; font-style: normal; font-weight: 700; }
+  .tactical-card > small { margin-top: auto; color: oklch(0.65 0.03 80); font-size: .58rem; }
   .codex-main { margin-left: 292px; min-width: 0; padding-bottom: 6.5rem; }
   .mobile-brand { display: none; }
   .mobile-section-nav { display: none; }
@@ -502,6 +517,8 @@
 
 @media (max-width: 1160px) {
   .metrics-grid { grid-template-columns: repeat(4, 1fr); }
+  .tactical-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tactical-summary__intro { grid-column: 1 / -1; }
   .resource-grid, .combat-overview, .inventory-layout { grid-template-columns: 1fr; }
   .load-card { min-height: 180px; }
   .protection-map { min-height: 330px; }
@@ -524,6 +541,7 @@
   .mobile-section-nav__item { color: #f5f1e9; font-size: .76rem; }
   .mobile-section-nav__item[data-highlighted] { background: rgb(225 65 68 / .2); color: #fff; }
   .overview-grid, .diary-grid { grid-template-columns: 1fr; }
+  .tactical-summary { margin-top: .8rem; }
   .attribute-panel { min-height: 255px; }
   .identity-card { grid-template-columns: 118px 1fr; }
   .identity-form { grid-template-columns: repeat(2, 1fr); }
@@ -549,6 +567,9 @@
   .attribute-grid { grid-template-columns: repeat(2, 1fr); }
   .derived-list { margin-top: .75rem; }
   .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  .tactical-summary { grid-template-columns: 1fr; padding: .58rem; }
+  .tactical-summary__intro { grid-column: auto; padding: .48rem; }
+  .tactical-card { min-height: 92px; }
   .resource-card { grid-template-columns: 1fr; }
   .modifier-fields { grid-template-columns: repeat(2, 1fr); }
   .defense-banner { grid-template-columns: auto 1fr; }
