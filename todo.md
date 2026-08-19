@@ -272,3 +272,10 @@
 - [x] Adicionar duração, área de efeito, resistência, pré-requisitos e observações ao modelo de poder.
 - [x] Exibir e editar os detalhes adicionais no painel de Poderes e na visualização compartilhada.
 - [x] Enviar ao GitHub a atualização recente da área de Poderes.
+
+## Experiência móvel
+
+- [x] Reorganizar o painel de Aliados para leitura e edição mais confortáveis em celular.
+- [x] Ampliar áreas de toque e controles de alta frequência em telas móveis.
+- [x] Ajustar atributos, recursos e abas internas de Aliados para evitar compactação excessiva.
+- [ ] Validar navegação, legibilidade e ausência de overflow em celular.
