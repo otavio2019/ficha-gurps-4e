@@ -238,3 +238,16 @@
 ## Sincronização GitHub do NH automático
 
 - [x] Enviar ao repositório público as alterações de NH automático, vínculo de ataques e suporte à mini-ficha de Aliados.
+
+## Descrição de itens de equipamento
+
+- [x] Adicionar descrição editável aos itens da ficha principal.
+- [x] Adicionar descrição editável aos itens da mini-ficha de Aliados.
+- [x] Exibir a descrição dos itens na visualização compartilhada.
+- [x] Testar descrição, persistência, exportação e responsividade dos itens.
+
+### Validações específicas pendentes de descrição de itens
+
+- [ ] Validar em uma ficha autenticada a edição da descrição na aba Equipamento e na mini-ficha de Aliados, em desktop e celular.
+- [ ] Confirmar persistência ao salvar/reabrir e sincronização compartilhada das descrições.
+- [ ] Confirmar a presença das descrições nas exportações JSON e PDF e registrar a checagem.

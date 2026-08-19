@@ -93,3 +93,6 @@
 
 - A cobertura automatizada do NH passou com 23 testes: progressão por atributo, dificuldade e pontos; bônus extra; vínculo de ataque a perícia; e fallback manual sem vínculo.
 - A checagem de tipos e a compilação de produção passaram após adicionar seleção de perícia e NH automático aos ataques principais e aos ataques da mini-ficha de Aliados.
+
+- Após incluir descrições nos itens, a biblioteca foi verificada em viewport desktop de 1280×720 e em viewport móvel de 375×812; a renderização permaneceu estável e sem overflow visível na tela inicial.
+- A validação visual específica dentro da aba de Equipamento e da mini-ficha de Aliados ainda depende de abrir uma ficha autenticada e editar um item real.

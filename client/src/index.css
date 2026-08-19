@@ -1046,3 +1046,22 @@ input[type="url"]:focus,
 textarea:focus {
   background: #15171c !important;
 }
+
+.item-description {
+  grid-column: 1 / -1;
+  min-height: 2.75rem;
+  resize: vertical;
+}
+
+.ally-inventory-table .item-description {
+  min-width: 12rem;
+}
+
+@media (max-width: 620px) {
+  .item-description,
+  .ally-inventory-table .item-description {
+    grid-column: 1 / -1;
+    min-width: 0;
+    min-height: 3.5rem;
+  }
+}
