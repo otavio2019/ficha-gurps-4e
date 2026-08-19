@@ -271,6 +271,8 @@
 - [x] Estruturar dano, alcance, custo de FP, custo em pontos, duração e efeito em campos próprios.
 - [x] Exibir e organizar poderes ofensivos e defensivos no painel de Combate pelo NH final.
 - [ ] Testar cálculos, uso de FP, agrupamento, responsividade e visualização compartilhada dos poderes.
+- [x] Validar localmente os quatro grupos de Poderes, o gasto de FP e a rolagem no Combate sem depender de compartilhamento.
+- [x] Validar persistência local ao recarregar a ficha após editar recursos, itens e descrições.
 - [x] Adicionar testes automatizados específicos para NH, bônus, vínculo e fallback de poderes.
 
 ### Detalhes adicionais de Poderes
