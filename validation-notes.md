@@ -137,3 +137,6 @@
 - Em desktop, a barra lateral passou a exibir os quatro grupos temáticos solicitados: Personagem, Combate, Campanha e Personalização. As dez abas permaneceram acessíveis e numeradas dentro dos novos grupos.
 - A Visão geral em desktop exibiu o resumo tático com pontos disponíveis, vantagens principais, perícias de maior NH e equipamento preparado, mantendo acessos diretos para as abas correspondentes.
 - Em 375 × 812, os quatro cartões do resumo tático mantiveram 322 px de largura e ao menos 92 px de altura, sem overflow. O acesso “Perícias de destaque” abriu corretamente a aba Perícias; o seletor móvel de abas já existente preservou a navegação compacta.
+- A ficha local foi reaberta após a evolução do inventário, preservando a navegação agrupada e os cartões de resumo da Visão geral antes dos testes específicos de categorias.
+- A prévia de desenvolvimento foi reinicializada pelo recarregamento durante a correção de rótulo do inventário; a validação continuará em um cenário móvel isolado para evitar alterar a ficha local de referência.
+- Em 375 × 812, um item novo iniciou em Outros e foi movido para Ferramentas, com mão “Mão dominante” e modificador “+1 dano” preservados. O cartão mediu 309 px e a página permaneceu sem overflow horizontal.

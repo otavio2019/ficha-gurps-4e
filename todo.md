@@ -327,3 +327,9 @@
 - [x] Reorganizar a barra lateral em grupos de Personagem, Combate, Campanha e Personalização.
 - [x] Ampliar a Visão geral com resumo tático de recursos, atributos, traços, perícias e equipamento preparado.
 - [x] Validar a organização da navegação e o resumo tático em desktop e celular.
+
+## Inventário tático
+
+- [x] Organizar os itens por Armas, Armaduras, Consumíveis, Ferramentas, Itens-chave e Outros.
+- [x] Adicionar mão utilizada e modificadores de bônus ou penalidade aos itens de inventário.
+- [x] Validar o inventário categorizado em desktop e celular.
