@@ -51,7 +51,7 @@
 - [x] Adicionar aliados à estrutura da ficha e ao salvamento compartilhado.
 - [x] Criar uma seção de aliados com nome, relação, pontos, PV, descrição e estado.
 - [x] Permitir adicionar, editar, remover e ajustar os PV de aliados durante a sessão.
-- [ ] Validar o painel de aliados em desktop e celular.
+- [x] Validar o painel de aliados em desktop e celular.
 
 ## Mini-ficha de aliado
 
@@ -60,7 +60,7 @@
 - [x] Garantir que todos os campos e controles do aliado apareçam somente na aba interna correspondente.
 - [x] Calcular custo de Ally por porcentagem de pontos e frequência de aparecimento.
 - [x] Permitir editar os dados da mini-ficha e manter a integração com a sessão principal.
-- [ ] Validar a navegação e a mini-ficha de aliado em desktop e celular.
+- [x] Validar a navegação e a mini-ficha de aliado em desktop e celular.
 - [x] Corrigir a grade da mini-ficha de aliado para evitar overflow e melhorar a distribuição de atributos e recursos.
 - [x] Adicionar exclusão individual para vantagens, desvantagens, perícias e ataques da mini-ficha de aliado.
 
