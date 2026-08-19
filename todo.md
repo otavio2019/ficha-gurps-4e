@@ -234,3 +234,7 @@
 - [x] Adicionar seleção de perícia vinculada em cada ataque.
 - [x] Calcular o NH do ataque a partir da perícia escolhida e do bônus extra.
 - [ ] Testar ataques vinculados em desktop e celular.
+
+## Sincronização GitHub do NH automático
+
+- [x] Enviar ao repositório público as alterações de NH automático, vínculo de ataques e suporte à mini-ficha de Aliados.

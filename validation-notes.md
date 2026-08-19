@@ -90,3 +90,6 @@
 
 - A prévia desktop após o ajuste de NH carregou a biblioteca autenticada sem erros visuais; a compilação e os testes passaram.
 - A prévia em 375×812 px manteve a biblioteca responsiva, sem overflow horizontal visível. A validação específica dos novos campos dentro da ficha de combate ainda depende de abrir uma ficha autenticada na prévia.
+
+- A cobertura automatizada do NH passou com 23 testes: progressão por atributo, dificuldade e pontos; bônus extra; vínculo de ataque a perícia; e fallback manual sem vínculo.
+- A checagem de tipos e a compilação de produção passaram após adicionar seleção de perícia e NH automático aos ataques principais e aos ataques da mini-ficha de Aliados.
