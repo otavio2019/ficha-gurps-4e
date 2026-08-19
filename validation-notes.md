@@ -119,3 +119,8 @@
 - Na aba Combate do aliado, o ataque de validação exibiu a escolha entre NH manual e a perícia Nova perícia, além dos campos destacados para NH e bônus extra.
 - Ao vincular o ataque à Nova perícia, ele passou a usar NH 9; com bônus extra de +2, exibiu NH final 11. Isso confirma o vínculo com perícia e o bônus extra no Combate do Aliado.
 - A validação automatizada em viewport real de 375×812 confirmou ausência de overflow horizontal. Na ficha principal, NH e bônus mediram 88×34 e 76×34 px; na mini-ficha, os controles permaneceram visíveis em Perícias e Combate. A captura de Combate mostrou NH manual e bônus extra em campos separados, legíveis e com toque amplo.
+- No cenário móvel, o ataque do Aliado foi vinculado à Nova perícia e recebeu bônus de +2, alcançando NH final 11. O relatório confirmou o vínculo, os dois valores e a ausência de overflow horizontal.
+- A ficha principal Aurora Vale foi aberta como cenário de validação específica dos ataques vinculados em desktop.
+- Em Combate, a Espada longa foi vinculada a Espadas de Lâmina Larga e o NH passou de 14 para 15, igual ao NH calculado da perícia vinculada.
+- Com bônus extra de +2, a Espada longa vinculada exibiu NH final 17. Os dois campos de NH e bônus mantiveram 72 px de largura e leitura clara no painel de Combate em desktop.
+- Em 375×812, um ataque da ficha principal foi vinculado à Nova perícia, recebeu bônus +2 e exibiu NH final 11. Os campos mediram 72×34 px e não houve overflow horizontal, concluindo a checagem móvel do ataque vinculado principal.

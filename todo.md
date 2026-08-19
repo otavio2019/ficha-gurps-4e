@@ -223,17 +223,19 @@
 - [x] Automatizar o NH dos ataques usando a perícia vinculada, nível e bônus extra do ataque.
 - [x] Adicionar campos editáveis de bônus extra para perícias e ataques, inclusive na mini-ficha de Aliados.
 - [x] Aumentar a largura e a legibilidade dos campos de NH em desktop e celular.
-- [ ] Testar os cálculos, os bônus, a responsividade e a publicação.
+- [x] Testar os cálculos, os bônus, a responsividade e a publicação.
 - [x] Implementar cálculo de NH baseado em atributo, dificuldade, pontos e bônus extra, com testes unitários.
 - [x] Implementar vínculo de ataques a perícias e cálculo de NH final, com testes unitários.
 - [x] Levar o NH e o bônus extra para os Aliados e validar desktop/celular.
-- [ ] Publicar e confirmar a revisão após a validação específica de NH.
+- [x] Publicar e confirmar a revisão após a validação específica de NH.
 
 ## Vínculo de perícias aos ataques
 
 - [x] Adicionar seleção de perícia vinculada em cada ataque.
 - [x] Calcular o NH do ataque a partir da perícia escolhida e do bônus extra.
-- [ ] Testar ataques vinculados em desktop e celular.
+- [x] Testar ataques vinculados em desktop e celular.
+- [x] Validar no navegador os ataques vinculados da ficha principal em desktop, incluindo NH recalculado e bônus extra.
+- [x] Validar em viewport móvel real os ataques vinculados da ficha principal, sem overflow e com campos de NH legíveis.
 
 ## Sincronização GitHub do NH automático
 
@@ -304,4 +306,4 @@
 - [x] Validar em desktop e celular os cálculos de NH, bônus extra e vínculos de ataques nas duas fichas.
 - [x] Validar em viewport móvel real a largura, legibilidade e ausência de overflow dos campos de NH e bônus na ficha principal.
 - [x] Validar em viewport móvel real os campos de NH e bônus da mini-ficha de Aliados, em Perícias e Combate.
-- [ ] Publicar a revisão de legibilidade do NH após concluir as validações móveis.
+- [x] Publicar a revisão de legibilidade do NH após concluir as validações móveis.
