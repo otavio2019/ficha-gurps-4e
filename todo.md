@@ -251,3 +251,9 @@
 - [ ] Validar em uma ficha autenticada a edição da descrição na aba Equipamento e na mini-ficha de Aliados, em desktop e celular.
 - [ ] Confirmar persistência ao salvar/reabrir e sincronização compartilhada das descrições.
 - [ ] Confirmar a presença das descrições nas exportações JSON e PDF e registrar a checagem.
+
+## Nota de atualização
+
+- [x] Redigir uma nota de atualização do projeto com as novidades recentes.
+- [x] Acrescentar à nota os recursos de compartilhamento ao vivo e links públicos.
+- [x] Enviar a nota de atualização revisada ao repositório GitHub.
