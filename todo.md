@@ -44,7 +44,7 @@
 
 - [x] Corrigir o acionamento do seletor de imagem do retrato.
 - [x] Criar um mapa de corpo humano com regiões de proteção clicáveis e DR por local.
-- [ ] Validar o retrato e as regiões de proteção na ficha de combate.
+- [x] Validar o retrato e as regiões de proteção na ficha de combate.
 
 ## Aliados GURPS
 
