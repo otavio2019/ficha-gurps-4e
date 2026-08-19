@@ -260,7 +260,7 @@
 
 ## Automação e organização de Poderes
 
-- [ ] Agrupar a aba de Poderes em seções reais por tipo, com cabeçalhos próprios.
+- [x] Agrupar a aba de Poderes em seções reais por tipo, com cabeçalhos próprios.
 - [ ] Propagar o NH automático por perícia vinculada, bônus e fallback manual para Combate e visualização compartilhada.
 - [x] Estruturar dano, alcance, custo de FP, custo em pontos, duração e efeito em campos próprios.
 - [ ] Exibir e organizar poderes ofensivos e defensivos no painel de Combate pelo NH final.

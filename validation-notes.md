@@ -97,3 +97,4 @@
 - Após incluir descrições nos itens, a biblioteca foi verificada em viewport desktop de 1280×720 e em viewport móvel de 375×812; a renderização permaneceu estável e sem overflow visível na tela inicial.
 - A validação visual específica dentro da aba de Equipamento e da mini-ficha de Aliados ainda depende de abrir uma ficha autenticada e editar um item real.
 - O catálogo de traços foi validado na mini-ficha de Aliados: as buscas distintas de vantagens e desvantagens renderizaram resultados, e a seleção de “Adaptabilidade Cultural” preencheu automaticamente o nome, custo de 10 pontos, descrição em português e referência do registro no aliado local.
+- O agrupamento de poderes foi validado no navegador com um poder ofensivo temporário. A aba renderizou o cabeçalho “PODERES OFENSIVO”, a contagem de uma habilidade e o cartão editável correspondente, preservando automação de NH, ação de uso e exclusão individual.
