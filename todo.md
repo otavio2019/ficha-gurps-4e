@@ -382,3 +382,11 @@
 - [x] Corrigir o enquadramento das molduras de retrato e a disposição visual indicada na captura do usuário.
 - [x] Incluir mochila como item inicial do inventário e padronizar todos os pesos em uma unidade universal configurável.
 - [x] Cobrir regras, compatibilidade, compartilhamento e responsividade das melhorias com testes e validação local.
+
+## Subatributos raciais e ajuste final da interface
+
+- [x] Permitir configurar modificadores de Vontade, Percepção, Velocidade, Movimento e Esquiva em raças Homebrew.
+- [x] Aplicar e remover os subatributos raciais de forma reversível, sem alterar fichas legadas.
+- [x] Corrigir o enquadramento da Visão geral indicado na captura do usuário.
+- [x] Padronizar a numeração de navegação e dos painéis da ficha.
+- [x] Validar em desktop e celular a aplicação, reversão, enquadramento e numeração antes de publicar.

@@ -30,6 +30,9 @@ export const HOMEBREW_FIELDS: Record<HomebrewCategory, HomebrewField[]> = {
   Raça: [
     { key: "stBonus", label: "ST (ganho/perda)", kind: "number" }, { key: "dxBonus", label: "DX (ganho/perda)", kind: "number" },
     { key: "iqBonus", label: "IQ (ganho/perda)", kind: "number" }, { key: "htBonus", label: "HT (ganho/perda)", kind: "number" },
+    { key: "willBonus", label: "Vontade (ganho/perda)", kind: "number" }, { key: "perBonus", label: "Percepção (ganho/perda)", kind: "number" },
+    { key: "speedBonus", label: "Velocidade (ganho/perda)", kind: "number" }, { key: "moveBonus", label: "Movimento (ganho/perda)", kind: "number" },
+    { key: "dodgeBonus", label: "Esquiva (ganho/perda)", kind: "number" },
     { key: "advantages", label: "Vantagens (Nome | custo; …)", kind: "text", hint: "Separe cada vantagem por ponto e vírgula." },
     { key: "disadvantages", label: "Desvantagens (Nome | custo; …)", kind: "text", hint: "Separe cada desvantagem por ponto e vírgula." },
     { key: "traits", label: "Características raciais", kind: "text", hint: "Traços descritivos, adaptações e notas" },

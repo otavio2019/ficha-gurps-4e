@@ -18,7 +18,7 @@ import { applyDamageBonus, calculateStrengthDamage } from "@shared/gurpsStrength
 import { calculateBasicLiftKg, INVENTORY_CATEGORIES, INVENTORY_HANDS, normalizeInventoryCategory, UNIVERSAL_WEIGHT_UNIT } from "@shared/inventory";
 import { advanceTemporaryEffect, formatEffectDuration, normalizeRemainingTurns, TEMPORARY_EFFECT_SEVERITIES, type TemporaryEffect, type TemporaryEffectSeverity } from "@shared/temporaryEffects";
 import { HOMEBREW_CATEGORIES, HOMEBREW_FIELDS, canAddHomebrewToSheet, filterHomebrewEntries, normalizeHomebrewEntry, type HomebrewCategory, type HomebrewEntry } from "@shared/homebrew";
-import { getHomebrewRaceEffects, hasHomebrewRaceEffects, type RaceAttributeBonuses } from "@shared/homebrewRace";
+import { getHomebrewRaceEffects, hasHomebrewRaceEffects, type RaceAttributeBonuses, type RaceSecondaryBonuses } from "@shared/homebrewRace";
 import { selectCloudBackedRecords } from "@shared/cloudSync";
 import { appendCatalogSkill, createSkillFromCatalog } from "@shared/skillCatalogSelection";
 import { appendCatalogTrait, createTraitFromCatalog } from "@shared/traitCatalogSelection";
@@ -128,13 +128,15 @@ function HomebrewRacePicker({ entries, activeId, onApply, onClear }: { entries: 
   const activeRace = entries.find((entry) => entry.id === activeId);
   const effects = activeRace ? getHomebrewRaceEffects(activeRace) : null;
   const bonuses = effects ? (["st", "dx", "iq", "ht"] as const).filter((attribute) => effects.attributes[attribute] !== 0) : [];
-  return <section className="homebrew-race-picker"><div><span className="eyebrow">RAÇA HOMEBREW</span><h3>Origem e herança</h3><p>Escolha uma raça da sua biblioteca para aplicar atributos, vantagens e desvantagens raciais.</p></div><label><span>Raça da biblioteca</span><select value={activeId || ""} onChange={(event) => { const entry = entries.find((item) => item.id === event.target.value); if (entry) onApply(entry); else onClear(); }}><option value="">Sem raça Homebrew aplicada</option>{entries.map((entry) => <option key={entry.id} value={entry.id}>{entry.title || "Raça sem nome"} · {entry.source}</option>)}</select></label>{activeRace && effects && <div className="homebrew-race-picker__effects"><div><b>{activeRace.title}</b><small>{activeRace.source}</small></div><div className="homebrew-race-picker__bonus-list">{bonuses.length ? bonuses.map((attribute) => <span key={attribute}>{attribute.toUpperCase()} {effects.attributes[attribute] > 0 ? "+" : ""}{effects.attributes[attribute]}</span>) : <span>Sem bônus de atributo</span>}<span>{effects.advantages.length} vantagem(ns)</span><span>{effects.disadvantages.length} desvantagem(ns)</span></div>{effects.traits && <p>{effects.traits}</p>}<button type="button" onClick={onClear}>Remover efeitos raciais</button></div>}</section>;
+  const secondaryBonuses = effects ? (["willBonus", "perBonus", "speedBonus", "moveBonus", "dodgeBonus"] as const).filter((attribute) => effects.secondary[attribute] !== 0) : [];
+  const secondaryLabels = { willBonus: "Vontade", perBonus: "Percepção", speedBonus: "Velocidade", moveBonus: "Movimento", dodgeBonus: "Esquiva" };
+  return <section className="homebrew-race-picker"><div><span className="eyebrow">RAÇA HOMEBREW</span><h3>Origem e herança</h3><p>Escolha uma raça da sua biblioteca para aplicar atributos, subatributos, vantagens e desvantagens raciais.</p></div><label><span>Raça da biblioteca</span><select value={activeId || ""} onChange={(event) => { const entry = entries.find((item) => item.id === event.target.value); if (entry) onApply(entry); else onClear(); }}><option value="">Sem raça Homebrew aplicada</option>{entries.map((entry) => <option key={entry.id} value={entry.id}>{entry.title || "Raça sem nome"} · {entry.source}</option>)}</select></label>{activeRace && effects && <div className="homebrew-race-picker__effects"><div><b>{activeRace.title}</b><small>{activeRace.source}</small></div><div className="homebrew-race-picker__bonus-list">{bonuses.length ? bonuses.map((attribute) => <span key={attribute}>{attribute.toUpperCase()} {effects.attributes[attribute] > 0 ? "+" : ""}{effects.attributes[attribute]}</span>) : <span>Sem bônus de atributo</span>}{secondaryBonuses.map((attribute) => <span key={attribute}>{secondaryLabels[attribute]} {effects.secondary[attribute] > 0 ? "+" : ""}{effects.secondary[attribute]}</span>)}<span>{effects.advantages.length} vantagem(ns)</span><span>{effects.disadvantages.length} desvantagem(ns)</span></div>{effects.traits && <p>{effects.traits}</p>}<button type="button" onClick={onClear}>Remover efeitos raciais</button></div>}</section>;
 }
 
 type Sheet = {
   identity: { name: string; player: string; campaign: string; world: string; concept: string; race: string; tl: string };
   attributes: { st: number; dx: number; iq: number; ht: number };
-  raceApplication?: { homebrewId: string; name: string; previousRace: string; attributes: RaceAttributeBonuses; advantageIds: string[]; disadvantageIds: string[]; traits: string };
+  raceApplication?: { homebrewId: string; name: string; previousRace: string; attributes: RaceAttributeBonuses; secondary: RaceSecondaryBonuses; advantageIds: string[]; disadvantageIds: string[]; traits: string };
   secondary: { hpCurrent: number; hpBonus: number; fpCurrent: number; fpBonus: number; willBonus: number; perBonus: number; speedBonus: number; moveBase: number; moveBonus: number; dodgeBonus: number; thrustBonus?: number; swingBonus?: number };
   points: { initial: number; earned: number };
   advantages: Trait[];
@@ -288,15 +290,15 @@ const initialSheet: Sheet = {
 
 const navItems = [
   { id: "visao-geral", label: "Visão geral", icon: BookOpen },
-  { id: "combate", label: "Combate", icon: Swords },
-  { id: "poderes", label: "Poderes", icon: WandSparkles },
   { id: "caracteristicas", label: "Características", icon: Sparkles },
   { id: "pericias", label: "Perícias", icon: Target },
+  { id: "combate", label: "Combate", icon: Swords },
+  { id: "poderes", label: "Poderes", icon: WandSparkles },
   { id: "inventario", label: "Equipamento", icon: Backpack },
   { id: "aliados", label: "Aliados", icon: UsersRound },
   { id: "missoes", label: "Missões", icon: ScrollText },
-  { id: "homebrew", label: "Homebrew", icon: Sparkles },
   { id: "diario", label: "Diário", icon: ScrollText },
+  { id: "homebrew", label: "Homebrew", icon: Sparkles },
 ];
 
 const navGroups = [
@@ -758,6 +760,14 @@ export default function Home() {
         st: Math.max(1, current.attributes.st - application.attributes.st), dx: Math.max(1, current.attributes.dx - application.attributes.dx),
         iq: Math.max(1, current.attributes.iq - application.attributes.iq), ht: Math.max(1, current.attributes.ht - application.attributes.ht),
       },
+      secondary: {
+        ...current.secondary,
+        willBonus: current.secondary.willBonus - application.secondary.willBonus,
+        perBonus: current.secondary.perBonus - application.secondary.perBonus,
+        speedBonus: current.secondary.speedBonus - application.secondary.speedBonus,
+        moveBonus: current.secondary.moveBonus - application.secondary.moveBonus,
+        dodgeBonus: current.secondary.dodgeBonus - application.secondary.dodgeBonus,
+      },
       advantages: current.advantages.filter((trait) => !application.advantageIds.includes(trait.id)),
       disadvantages: current.disadvantages.filter((trait) => !application.disadvantageIds.includes(trait.id)),
       raceApplication: undefined,
@@ -778,9 +788,17 @@ export default function Home() {
           st: Math.max(1, withoutPreviousRace.attributes.st + effects.attributes.st), dx: Math.max(1, withoutPreviousRace.attributes.dx + effects.attributes.dx),
           iq: Math.max(1, withoutPreviousRace.attributes.iq + effects.attributes.iq), ht: Math.max(1, withoutPreviousRace.attributes.ht + effects.attributes.ht),
         },
+        secondary: {
+          ...withoutPreviousRace.secondary,
+          willBonus: withoutPreviousRace.secondary.willBonus + effects.secondary.willBonus,
+          perBonus: withoutPreviousRace.secondary.perBonus + effects.secondary.perBonus,
+          speedBonus: withoutPreviousRace.secondary.speedBonus + effects.secondary.speedBonus,
+          moveBonus: withoutPreviousRace.secondary.moveBonus + effects.secondary.moveBonus,
+          dodgeBonus: withoutPreviousRace.secondary.dodgeBonus + effects.secondary.dodgeBonus,
+        },
         advantages: [...withoutPreviousRace.advantages, ...advantageTraits],
         disadvantages: [...withoutPreviousRace.disadvantages, ...disadvantageTraits],
-        raceApplication: { homebrewId: entry.id, name: entry.title || "Raça Homebrew", previousRace: current.identity.race, attributes: effects.attributes, advantageIds: advantageTraits.map((trait) => trait.id), disadvantageIds: disadvantageTraits.map((trait) => trait.id), traits: effects.traits },
+        raceApplication: { homebrewId: entry.id, name: entry.title || "Raça Homebrew", previousRace: current.identity.race, attributes: effects.attributes, secondary: effects.secondary, advantageIds: advantageTraits.map((trait) => trait.id), disadvantageIds: disadvantageTraits.map((trait) => trait.id), traits: effects.traits },
       };
     });
     addLog(`Aplicou a raça Homebrew ${entry.title || "sem nome"} à ficha.`, "note");
@@ -1272,7 +1290,7 @@ export default function Home() {
           </section>
 
           <section id="combate" className={`codex-section ${activeSection === "combate" ? "is-active" : "is-hidden"}`}>
-            <SectionHeader kicker="02 · AÇÃO" title="Combate e proteção" description="Ataques, defesas ativas e a cobertura que acompanha a expedição." icon={Swords} action={<Button type="button" variant="outline" className="add-button" onClick={() => setSheet((current) => ({ ...current, attacks: [...current.attacks, { id: makeId(), name: "Novo ataque", level: sheet.attributes.dx, damage: "—", reach: "—", parry: "—" }] }))}><Plus size={15} /> Ataque</Button>} />
+            <SectionHeader kicker="04 · AÇÃO" title="Combate e proteção" description="Ataques, defesas ativas e a cobertura que acompanha a expedição." icon={Swords} action={<Button type="button" variant="outline" className="add-button" onClick={() => setSheet((current) => ({ ...current, attacks: [...current.attacks, { id: makeId(), name: "Novo ataque", level: sheet.attributes.dx, damage: "—", reach: "—", parry: "—" }] }))}><Plus size={15} /> Ataque</Button>} />
             <div className="combat-overview">
               <div className="combat-defenses">
                 <div className="defense-banner"><Shield size={24} /><div><span>Defesas ativas</span><strong>Esquiva {calculated.dodge}</strong></div><small>Velocidade ⌊{format(calculated.speed, 2)}⌋ + 3 {calculated.encumbrance ? `− carga ${calculated.encumbrance}` : ""}</small></div>
@@ -1305,7 +1323,7 @@ export default function Home() {
           </section>
 
           <section id="poderes" className={`codex-section ${activeSection === "poderes" ? "is-active" : "is-hidden"}`}>
-            <SectionHeader kicker="03 · PODER" title="Poderes" description="Habilidades sobrenaturais, psíquicas ou especiais conectadas aos recursos de combate." icon={WandSparkles} action={<Button type="button" variant="outline" className="add-button" onClick={addPower}><WandSparkles size={15} /> Adicionar poder</Button>} />
+            <SectionHeader kicker="05 · PODER" title="Poderes" description="Habilidades sobrenaturais, psíquicas ou especiais conectadas aos recursos de combate." icon={WandSparkles} action={<Button type="button" variant="outline" className="add-button" onClick={addPower}><WandSparkles size={15} /> Adicionar poder</Button>} />
             <div className="powers-summary"><div><span className="eyebrow">FOCO DE PODER</span><strong>{(sheet.powers || []).length}</strong><small>habilidade{(sheet.powers || []).length === 1 ? "" : "s"} registrada{(sheet.powers || []).length === 1 ? "" : "s"}</small></div><div><span>Custo em pontos</span><b>{calculated.powerPoints} pts</b></div><div><span>Poderes de combate</span><b>{(sheet.powers || []).filter((power) => power.combatReady).length}</b></div><div><span>Recursos</span><b>PF + {customEnergies.length}</b></div></div>
             <div className="power-type-summary" aria-label="Poderes separados por tipo">{(["Ofensivo", "Defensivo", "Controle", "Utilidade"] as const).map((type) => <button type="button" key={type} onClick={() => setSheet((current) => ({ ...current, powers: [...(current.powers || [])].sort((a, b) => Number(b.type === type) - Number(a.type === type)) }))}><span>{type}</span><b>{(sheet.powers || []).filter((power) => power.type === type).length}</b></button>)}</div>
             {(sheet.powers || []).length > 0 && <div className="power-automation-board">{(sheet.powers || []).map((power) => <details className={`power-automation power-automation--${power.type.toLowerCase()}`} key={`automation-${power.id}`}><summary><span>{power.type}</span><b>{power.name}</b><em>NH {getPowerNh(power)} · {power.damage || "sem dano"} · {power.fpCost} FP</em></summary><div className="power-automation__fields"><label><span>Perícia vinculada</span><select value={power.skillId || ""} onChange={(event) => updatePower(power.id, "skillId", event.target.value)}><option value="">NH-base manual</option>{sheet.skills.map((skill) => <option key={skill.id} value={skill.id}>{skill.name}</option>)}</select></label><label><span>NH-base</span><input type="number" value={power.level} onChange={(event) => updatePower(power.id, "level", number(event.target.value))} /></label><label><span>NH final</span><input className="nh-input" type="number" value={getPowerNh(power)} readOnly /></label><label><span>Bônus extra</span><input className="nh-bonus-input" type="number" value={power.bonus || 0} onChange={(event) => updatePower(power.id, "bonus", number(event.target.value))} /></label><label><span>Duração</span><input value={power.duration || ""} onChange={(event) => updatePower(power.id, "duration", event.target.value)} /></label><label><span>Área de efeito</span><input value={power.area || ""} onChange={(event) => updatePower(power.id, "area", event.target.value)} /></label><label><span>Resistência</span><input value={power.resistance || ""} onChange={(event) => updatePower(power.id, "resistance", event.target.value)} /></label><label><span>Pré-requisitos</span><input value={power.prerequisites || ""} onChange={(event) => updatePower(power.id, "prerequisites", event.target.value)} /></label><label className="wide"><span>Observações</span><textarea value={power.notes || ""} onChange={(event) => updatePower(power.id, "notes", event.target.value)} /></label></div></details>)}</div>}
@@ -1317,7 +1335,7 @@ export default function Home() {
           </section>
 
           <section id="caracteristicas" className={`codex-section ${activeSection === "caracteristicas" ? "is-active" : "is-hidden"}`}>
-            <SectionHeader kicker="04 · CONSTRUÇÃO" title="Características" description="Vantagens, desvantagens e custos mantêm o orçamento da ficha legível." icon={Sparkles} />
+            <SectionHeader kicker="02 · CONSTRUÇÃO" title="Características" description="Vantagens, desvantagens e custos mantêm o orçamento da ficha legível." icon={Sparkles} />
             <div className="traits-grid">
               {(["advantages", "disadvantages"] as const).map((kind) => { const isAdvantage = kind === "advantages"; const catalog = isAdvantage ? advantageCatalogQuery : disadvantageCatalogQuery; const search = isAdvantage ? advantageCatalogSearch : disadvantageCatalogSearch; const setSearch = isAdvantage ? setAdvantageCatalogSearch : setDisadvantageCatalogSearch; return <div className={`trait-card ${isAdvantage ? "trait-card--positive" : "trait-card--negative"}`} key={kind}>
                 <div className="trait-card__head"><div><span className="eyebrow">{kind === "advantages" ? "A FAVOR" : "LIMITES"}</span><h3>{kind === "advantages" ? "Vantagens" : "Desvantagens & quirks"}</h3></div><button type="button" onClick={() => addTrait(kind)}><Plus size={16} /></button></div>
@@ -1329,7 +1347,7 @@ export default function Home() {
           </section>
 
           <section id="pericias" className={`codex-section ${activeSection === "pericias" ? "is-active" : "is-hidden"}`}>
-            <SectionHeader kicker="05 · COMPETÊNCIA" title="Perícias" description="Nível efetivo, dificuldade, pontos e uma descrição rápida para uso em mesa." icon={Target} action={<Button type="button" variant="outline" className="add-button" onClick={() => setSheet((current) => ({ ...current, skills: [...current.skills, { id: makeId(), name: "Nova perícia", attribute: "DX", difficulty: "Média", relative: "DX+0", level: sheet.attributes.dx, points: 1, description: "" }] }))}><Plus size={15} /> Perícia manual</Button>} />
+            <SectionHeader kicker="03 · COMPETÊNCIA" title="Perícias" description="Nível efetivo, dificuldade, pontos e uma descrição rápida para uso em mesa." icon={Target} action={<Button type="button" variant="outline" className="add-button" onClick={() => setSheet((current) => ({ ...current, skills: [...current.skills, { id: makeId(), name: "Nova perícia", attribute: "DX", difficulty: "Média", relative: "DX+0", level: sheet.attributes.dx, points: 1, description: "" }] }))}><Plus size={15} /> Perícia manual</Button>} />
             <div className="skill-catalog-browser"><div className="skill-catalog-browser__head"><div><span className="eyebrow"><Search size={12} /> BANCO DE PERÍCIAS</span><b>{skillCatalogQuery.data?.length ? `${skillCatalogQuery.data.length}${skillCatalogQuery.data.length === 80 ? "+" : ""} registros disponíveis` : "Carregando catálogo"}</b></div><label><Search size={15} /><input value={skillCatalogSearch} onChange={(event) => setSkillCatalogSearch(event.target.value)} placeholder="Buscar por nome, atributo ou dificuldade" aria-label="Buscar no banco de perícias" /></label></div><div className="skill-catalog-browser__results">{skillCatalogQuery.isLoading ? <small>Consultando o banco de perícias...</small> : skillCatalogQuery.data?.length ? skillCatalogQuery.data.map((entry) => <button type="button" key={entry.id} onClick={() => addSkillFromCatalog(entry)}><span><b>{entry.name}</b><small>{entry.category}{entry.requiresSpecialization ? " · especialidade" : ""}{entry.usesTechLevel ? " · TL" : ""}</small></span><em>{entry.attribute} · {entry.difficulty}</em><Plus size={15} /></button>) : <small>Nenhuma perícia encontrada. Tente outro termo.</small>}</div></div>
             <div className="paper-card table-card"><div className="skill-table skill-table--head"><span>Perícia</span><span>Atributo</span><span>Dificuldade</span><span>Relativo</span><span>NH + bônus</span><span>Pontos</span><span /><span /></div>{sheet.skills.map((skill) => <div className="skill-entry" key={skill.id}><div className="skill-table"><input value={skill.name} onChange={(event) => updateSkill(skill.id, "name", event.target.value)} /><input value={skill.attribute} onChange={(event) => updateSkill(skill.id, "attribute", event.target.value)} /><input value={skill.difficulty} onChange={(event) => updateSkill(skill.id, "difficulty", event.target.value)} /><input value={skill.relative} onChange={(event) => updateSkill(skill.id, "relative", event.target.value)} /><input className="nh-input" type="number" value={calculateNh(sheet.attributes[skill.attribute.toLowerCase() as "st" | "dx" | "iq" | "ht"] || 10, skill.difficulty, skill.points, skill.relative, skill.bonus || 0)} readOnly aria-label={`NH calculado de ${skill.name}`} /><input className="nh-bonus-input" type="number" value={skill.bonus || 0} aria-label={`Bônus extra de NH para ${skill.name}`} onChange={(event) => updateSkill(skill.id, "bonus", number(event.target.value))} /><input type="number" value={skill.points} onChange={(event) => updateSkill(skill.id, "points", number(event.target.value))} /><button type="button" className="sigil-action" aria-label={`Rolar ${skill.name}`} onClick={() => roll3d6(skill.name, calculateNh(sheet.attributes[skill.attribute.toLowerCase() as "st" | "dx" | "iq" | "ht"] || 10, skill.difficulty, skill.points, skill.relative, skill.bonus || 0))}><img src={MARK} alt="" /></button><button type="button" className="row-delete" aria-label={`Excluir ${skill.name}`} onClick={() => removeSkill(skill.id, skill.name)}><Trash2 size={14} /></button></div><label className="skill-description"><span>Descrição</span><textarea value={skill.description || ""} placeholder="Explique quando ou como esta perícia é usada." onChange={(event) => updateSkill(skill.id, "description", event.target.value)} /></label></div>)}<div className="skill-table__footer"><span>Investimento em perícias</span><strong>{calculated.skillPoints} pts</strong><small>Escolha um nível, registre seu uso e role 3d6 diretamente da ficha.</small></div></div>
           </section>
@@ -1400,12 +1418,12 @@ export default function Home() {
           </section>
 
           <section id="homebrew" className={`codex-section ${activeSection === "homebrew" ? "is-active" : "is-hidden"}`}>
-            <SectionHeader kicker="09 · HOMEbrew" title="Biblioteca Homebrew" description="Crie, encontre, detalhe e aplique conteúdos personalizados da campanha durante a sessão." icon={Sparkles} />
+            <SectionHeader kicker="10 · HOMEBREW" title="Biblioteca Homebrew" description="Crie, encontre, detalhe e aplique conteúdos personalizados da campanha durante a sessão." icon={Sparkles} />
             <HomebrewLibrary entries={sheet.homebrew || []} onCreate={addHomebrew} onUpdate={updateHomebrew} onRemove={removeHomebrew} onAddToSheet={addHomebrewToSheet} />
           </section>
 
           <section id="diario" className={`codex-section codex-section--last ${activeSection === "diario" ? "is-active" : "is-hidden"}`}>
-            <SectionHeader kicker="10 · SESSÃO" title="Diário e dados" description="Todo evento que muda a cena pode ficar registrado aqui." icon={History} />
+            <SectionHeader kicker="09 · SESSÃO" title="Diário e dados" description="Todo evento que muda a cena pode ficar registrado aqui." icon={History} />
             <div className="diary-grid"><div className="roll-station"><div className="roll-station__top"><img className="roll-station__sigil" src={MARK} alt="" /><div><span className="eyebrow eyebrow--light">ROLAGEM PADRÃO</span><h3>3d6 de mesa</h3></div></div><p>Selecione qualquer ataque ou perícia e use o selo de dados. Para um teste livre, role o atributo desejado.</p><div className="quick-rolls"><button type="button" onClick={() => roll3d6("Teste de ST", sheet.attributes.st)}>ST {sheet.attributes.st}</button><button type="button" onClick={() => roll3d6("Teste de DX", sheet.attributes.dx)}>DX {sheet.attributes.dx}</button><button type="button" onClick={() => roll3d6("Teste de IQ", sheet.attributes.iq)}>IQ {sheet.attributes.iq}</button><button type="button" onClick={() => roll3d6("Teste de HT", sheet.attributes.ht)}>HT {sheet.attributes.ht}</button></div>{lastRoll ? <div className="roll-result"><div className="dice-set">{lastRoll.dice.map((die, index) => <span key={`${die}-${index}`} data-value={die}>{die}</span>)}</div><div><span>{lastRoll.label}</span><strong>{lastRoll.total}</strong><small>{lastRoll.kind === "test" ? `${lastRoll.success ? "Sucesso" : "Falha"} por ${Math.abs(lastRoll.margin)}` : `${lastRoll.expression} · dano final ${lastRoll.total}`}</small></div></div> : <div className="roll-result roll-result--idle"><Dices size={21} /><span>A próxima rolagem aparecerá aqui.</span></div>}</div>
               <div className="paper-card log-card"><div className="log-card__head"><div><span className="eyebrow">HISTÓRICO</span><h3>Registro da sessão</h3></div><button type="button" onClick={() => addLog("Nota manual adicionada à sessão.", "note")}><Plus size={15} /> Nota</button></div><div className="log-list">{sheet.log.map((entry) => <div className={`log-entry log-entry--${entry.kind}`} key={entry.id}><time>{entry.time}</time><i>{entry.kind === "roll" ? <Dices size={15} /> : entry.kind === "health" ? <HeartPulse size={15} /> : <ScrollText size={15} />}</i><p>{entry.text}</p></div>)}</div></div>
             </div>

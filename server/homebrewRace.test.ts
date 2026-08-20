@@ -9,6 +9,7 @@ describe("raças Homebrew", () => {
       id: "elfo", category: "Raça", title: "Elfo das Cinzas", source: "Aurora", content: "",
       details: {
         stBonus: -1, dxBonus: 1, iqBonus: 1, htBonus: 0,
+        willBonus: 1, perBonus: 2, speedBonus: 0.25, moveBonus: 1, dodgeBonus: 1,
         advantages: "Visão Noturna | 10 | Enxerga no escuro; Longevidade | 2",
         disadvantages: "Dever com o bosque | 10 | Proteção ritual",
         traits: "Audição aguçada e resistência a sono mágico.",
@@ -16,6 +17,7 @@ describe("raças Homebrew", () => {
     });
 
     expect(effects.attributes).toEqual({ st: -1, dx: 1, iq: 1, ht: 0 });
+    expect(effects.secondary).toEqual({ willBonus: 1, perBonus: 2, speedBonus: 0.25, moveBonus: 1, dodgeBonus: 1 });
     expect(effects.advantages).toEqual([
       { name: "Visão Noturna", cost: 10, notes: "Enxerga no escuro" },
       { name: "Longevidade", cost: 2, notes: "" },
@@ -27,6 +29,7 @@ describe("raças Homebrew", () => {
   it("aceita o campo legado de modificadores para raças já salvas", () => {
     const effects = getHomebrewRaceEffects({ id: "legado", category: "Raça", title: "Gigante", source: "Mesa", content: "", details: { modifiers: "ST +4, DX -1, HT +2" } });
     expect(effects.attributes).toEqual({ st: 4, dx: -1, iq: 0, ht: 2 });
+    expect(effects.secondary).toEqual({ willBonus: 0, perBonus: 0, speedBonus: 0, moveBonus: 0, dodgeBonus: 0 });
   });
 
   it("mantém a raça anterior registrada para remoção reversível na ficha", () => {
@@ -35,5 +38,6 @@ describe("raças Homebrew", () => {
     expect(source).toContain("race: application.previousRace || \"Humano\"");
     expect(source).toContain("advantageIds: advantageTraits.map");
     expect(source).toContain("disadvantageIds: disadvantageTraits.map");
+    expect(source).toContain("secondary: effects.secondary");
   });
 });
