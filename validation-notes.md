@@ -165,3 +165,8 @@
 - Com ST ajustada para 20, a aba Combate exibiu Golpe 2d−1 e Balanço 3d+2. A rolagem de Balanço usou a expressão automática 3d+2 contusão, atualizou o painel de resultado e criou o respectivo registro no Diário.
 - A validação integrada foi repetida em 375 × 812. Energias, Poderes, Missões e Combate permaneceram acionáveis sem overflow horizontal; todos os cenários mediram `scrollWidth` igual à largura do viewport.
 - A checagem de tipos e a suíte automatizada passaram com 21 arquivos e 50 testes, incluindo as regras de energia, a categoria Homebrew e os valores de referência de Golpe e Balanço.
+- Cada aliado agora possui um retrato próprio, com envio de PNG, JPEG ou WEBP, prévia durante o envio, substituição, remoção individual e persistência na ficha compartilhada. O upload reutiliza as regras de autorização, compressão e limite de 4 MB do retrato principal.
+- A lista de aliados, o painel de retrato e a ficha pública passaram a exibir a imagem registrada. Ao remover o retrato, o aliado volta ao retrato padrão e qualquer poder que referencie apenas a ficha continua intacto.
+- A inspeção visual em 1280 × 720 confirmou uma moldura de 112 × 140 px, foto carregada na lista e painel de ações visível, sem overflow horizontal. A moldura principal do personagem também passou a seguir uma proporção estável 2:3 e foco vertical alto.
+- Em 375 × 812, a moldura do aliado ficou em 88 × 127 px, com rosto e tronco visíveis, controles de retrato acessíveis e mini-ficha preservada. O documento manteve `scrollWidth` igual ao viewport.
+- Tipagem e suíte automatizada passaram com 21 arquivos e 51 testes; a cobertura de parsing de retratos passou a incluir WEBP, formato aceito pelo upload dos aliados.

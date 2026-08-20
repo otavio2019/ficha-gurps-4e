@@ -1425,3 +1425,38 @@ textarea:focus {
   .strength-damage-panel { grid-template-columns: 1fr; }
   .strength-damage-panel__actions button { min-height: 72px; }
 }
+
+/* Retratos — molduras estáveis, com foco alto para preservar rosto e silhueta. */
+.portrait-frame { aspect-ratio: 2 / 3; min-height: 0; }
+.portrait-frame img, .character-card__portrait img, .library-share-board__list img, .shared-sheet__hero > img { object-fit: cover; object-position: center 18%; }
+.ally-portrait-management { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: .9rem; align-items: stretch; margin-bottom: .75rem; padding: .72rem; border: 1px solid rgb(225 65 68 / .38); border-left: 3px solid #e14144; background: linear-gradient(105deg, rgb(181 55 58 / .16), #101217 58%); }
+.ally-portrait-management__frame { position: relative; min-height: 140px; overflow: hidden; border: 1px solid rgb(255 152 154 / .65); background: #090a0d; box-shadow: inset 0 0 0 3px rgb(225 65 68 / .12); }
+.ally-portrait-management__frame::after { content: "ALIADO"; position: absolute; right: .36rem; bottom: .3rem; color: rgb(255 255 255 / .88); font-size: .48rem; font-weight: 700; letter-spacing: .12em; text-shadow: 0 1px 4px #000; }
+.ally-portrait-management__frame img { width: 100%; height: 100%; object-fit: cover; object-position: center 18%; filter: saturate(.9) contrast(.98); }
+.ally-portrait-management__content { display: grid; align-content: center; min-width: 0; }
+.ally-portrait-management__content h3 { margin: .13rem 0 .22rem; color: #f5f1e9; font-family: "DM Serif Display", serif; font-size: 1.35rem; font-weight: 400; }
+.ally-portrait-management__content p { max-width: 560px; margin: 0; color: #aaa9af; font-size: .63rem; line-height: 1.42; }
+.ally-portrait-management__content > div { display: flex; flex-wrap: wrap; gap: .42rem; margin-top: .55rem; }
+.portrait-upload--ally, .ally-portrait-remove { min-height: 31px; padding: .35rem .52rem; border: 1px solid rgb(225 65 68 / .7); background: #8d292d; color: #fff4f4; font-size: .61rem; }
+.portrait-upload--ally:hover { background: #b5373a; }
+.ally-portrait-remove { display: inline-flex; align-items: center; gap: .28rem; border-color: rgb(255 255 255 / .2); background: transparent; color: #d9d4cf; }
+.ally-portrait-remove:hover { border-color: #ff989a; color: #ffb5b6; }
+.ally-roster__list button { grid-template-columns: 34px minmax(0, 1fr); }
+.ally-roster__portrait { position: relative; width: 28px; height: 34px; overflow: hidden; border: 1px solid rgb(225 65 68 / .4); background: #090a0d; }
+.ally-roster__list .ally-roster__portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center 18%; }
+.ally-roster__list i { grid-column: 2; }
+.shared-ally-card__identity { display: flex; min-width: 0; align-items: center; gap: .55rem; }
+.shared-ally-card__identity > img { width: 42px; height: 52px; flex: 0 0 auto; border: 1px solid rgb(225 65 68 / .55); background: #090a0d; object-fit: cover; object-position: center 18%; }
+.shared-ally-card__identity > div { min-width: 0; }
+
+@media (max-width: 620px) {
+  .portrait-frame { width: min(152px, 44vw); justify-self: center; }
+  .ally-portrait-management { grid-template-columns: 88px minmax(0, 1fr); gap: .7rem; padding: .65rem; }
+  .ally-portrait-management__frame { min-height: 118px; }
+  .ally-portrait-management__content h3 { font-size: 1.14rem; }
+  .ally-portrait-management__content p { font-size: .58rem; }
+  .portrait-upload--ally, .ally-portrait-remove { min-height: 34px; font-size: .61rem; }
+  .ally-roster__list button { grid-template-columns: 38px minmax(0, 1fr); min-height: 49px; }
+  .ally-roster__portrait { width: 31px; height: 39px; }
+  .shared-ally-card__identity > img { width: 38px; height: 47px; }
+}

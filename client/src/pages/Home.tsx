@@ -75,7 +75,7 @@ type Power = { id: string; name: string; source: string; type: "Ofensivo" | "Def
 type Mission = { id: string; title: string; difficulty: string; customDifficulty?: string; status: "Planejada" | "Em andamento" | "Concluída" | "Fracassada"; pointsReward: number; moneyReward: number; currency: string; notes: string; applied: boolean };
 type LogItem = { id: string; time: string; text: string; kind: "roll" | "health" | "note" };
 type SessionRoll = (CheckRoll & { label: string }) | (DamageRoll & { label: string });
-type Ally = { id: string; name: string; relation: string; description: string; points: number; cost: number; hpCurrent: number; hpMax: number; status: string; type?: string; race?: string; appearance?: string; personality?: string; history?: string; motivation?: string; notes?: string; powerPercent?: 25 | 50 | 75 | 100 | 150; frequency?: 6 | 9 | 12 | 15; isDependent?: boolean; attributes?: { st: number; dx: number; iq: number; ht: number }; fpCurrent?: number; fpMax?: number; advantages?: Trait[]; disadvantages?: Trait[]; skills?: Skill[]; attacks?: Attack[]; inventory?: InventoryItem[]; conditions?: string[] };
+type Ally = { id: string; name: string; relation: string; description: string; points: number; cost: number; hpCurrent: number; hpMax: number; status: string; portraitUrl?: string | null; type?: string; race?: string; appearance?: string; personality?: string; history?: string; motivation?: string; notes?: string; powerPercent?: 25 | 50 | 75 | 100 | 150; frequency?: 6 | 9 | 12 | 15; isDependent?: boolean; attributes?: { st: number; dx: number; iq: number; ht: number }; fpCurrent?: number; fpMax?: number; advantages?: Trait[]; disadvantages?: Trait[]; skills?: Skill[]; attacks?: Attack[]; inventory?: InventoryItem[]; conditions?: string[] };
 
 const ALLY_STATUS_OPTIONS = ["Pronto", "Ferido", "Incapacitado", "Ausente", "Morto", "Desaparecido", "Ex-aliado"] as const;
 
@@ -191,6 +191,7 @@ type AllyTab = (typeof allyTabs)[number]["id"];
 
 const normalizeAlly = (ally: Ally) => ({
   ...ally,
+  portraitUrl: ally.portraitUrl || undefined,
   type: ally.type || "Individual", race: ally.race || "Humano", appearance: ally.appearance || "", personality: ally.personality || "", history: ally.history || "", motivation: ally.motivation || "", notes: ally.notes || "",
   powerPercent: (ally.powerPercent || 25) as 25 | 50 | 75 | 100 | 150, frequency: (ally.frequency || 12) as 6 | 9 | 12 | 15, isDependent: ally.isDependent || false,
   attributes: ally.attributes || { st: 10, dx: 10, iq: 10, ht: 10 }, fpCurrent: ally.fpCurrent ?? 10, fpMax: ally.fpMax ?? 10,
@@ -391,6 +392,7 @@ export default function Home() {
   const [cloudCharacterIds, setCloudCharacterIds] = useState<string[]>([]);
   const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "error">("idle");
   const [portraitPreview, setPortraitPreview] = useState<string | null>(null);
+  const [allyPortraitPreviews, setAllyPortraitPreviews] = useState<Record<string, string>>({});
   const [skillCatalogSearch, setSkillCatalogSearch] = useState("");
   const [allySkillCatalogSearch, setAllySkillCatalogSearch] = useState("");
   const [advantageCatalogSearch, setAdvantageCatalogSearch] = useState("");
@@ -404,6 +406,7 @@ export default function Home() {
   const removeCharacter = trpc.characters.remove.useMutation();
   const createShare = trpc.characters.share.useMutation();
   const uploadPortrait = trpc.characters.uploadPortrait.useMutation();
+  const uploadAllyPortrait = trpc.characters.uploadAllyPortrait.useMutation();
   const sharesQuery = trpc.shares.list.useQuery(undefined, { enabled: isAuthenticated });
   const skillCatalogQuery = trpc.skills.listCatalog.useQuery({ query: skillCatalogSearch });
   const allySkillCatalogQuery = trpc.skills.listCatalog.useQuery({ query: allySkillCatalogSearch });
@@ -429,7 +432,7 @@ export default function Home() {
     window.localStorage.setItem(ACTIVE_CHARACTER_KEY, activeCharacter.id);
   }, [characters, activeCharacter.id]);
 
-  useEffect(() => { setPortraitPreview(null); }, [activeCharacter.id]);
+  useEffect(() => { setPortraitPreview(null); setAllyPortraitPreviews({}); }, [activeCharacter.id]);
 
   useEffect(() => {
     if (!isAuthenticated || remoteLoaded || !charactersQuery.data) return;
@@ -1063,6 +1066,38 @@ export default function Home() {
     event.target.value = "";
   };
 
+  const handleAllyPortraitUpload = (ally: Ally, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !activeCharacter) return;
+    if (!isAuthenticated) { startLogin(); return; }
+    if (!file.type.startsWith("image/")) { window.alert("Escolha um arquivo de imagem."); return; }
+    if (file.size > 12_000_000) { window.alert("Escolha uma imagem de até 12 MB."); return; }
+    void (async () => {
+      try {
+        const cloudCharacter = await ensureCloudCharacter(activeCharacter);
+        if (!cloudCharacter) return;
+        const dataUrl = await preparePortraitUpload(file);
+        setAllyPortraitPreviews((current) => ({ ...current, [ally.id]: dataUrl }));
+        await saveCharacter.mutateAsync({ id: cloudCharacter.id, name: cloudCharacter.sheet.identity.name || "Sem nome", portraitUrl: cloudCharacter.portraitUrl ?? null, sheet: cloudCharacter.sheet as unknown as Record<string, unknown> });
+        const uploaded = await uploadAllyPortrait.mutateAsync({ characterId: cloudCharacter.id, allyId: ally.id, dataUrl });
+        updateAllyData(ally.id, { portraitUrl: uploaded.portraitUrl });
+        setAllyPortraitPreviews((current) => { const next = { ...current }; delete next[ally.id]; return next; });
+        addLog(`Atualizou o retrato de ${ally.name || "um aliado"}.`, "note");
+      } catch (error) {
+        setAllyPortraitPreviews((current) => { const next = { ...current }; delete next[ally.id]; return next; });
+        const message = error instanceof Error ? error.message : "Não foi possível enviar o retrato do aliado.";
+        window.alert(`${message} Tente novamente.`);
+      }
+    })();
+    event.target.value = "";
+  };
+
+  const removeAllyPortrait = (ally: Ally) => {
+    updateAllyData(ally.id, { portraitUrl: undefined });
+    setAllyPortraitPreviews((current) => { const next = { ...current }; delete next[ally.id]; return next; });
+    addLog(`Removeu o retrato de ${ally.name || "um aliado"}.`, "note");
+  };
+
   const shareActiveCharacter = async () => {
     if (!isAuthenticated) { startLogin(); return; }
     try {
@@ -1289,8 +1324,9 @@ export default function Home() {
 
           <section id="aliados" className={`codex-section ${activeSection === "aliados" ? "is-active" : "is-hidden"}`}>
             <SectionHeader kicker="07 · VÍNCULOS" title="Aliados" description="Acompanhe companheiros, familiares e seguidores que participam da campanha." icon={UsersRound} action={<Button type="button" variant="outline" className="add-button" onClick={addAlly}><UsersRound size={15} /> Adicionar aliado</Button>} />
+            {activeAlly && <section className="ally-portrait-management" aria-label={`Retrato de ${activeAlly.name}`}><div className="ally-portrait-management__frame"><img src={allyPortraitPreviews[activeAlly.id] || activeAlly.portraitUrl || PORTRAIT} alt={`Retrato de ${activeAlly.name || "aliado"}`} /></div><div className="ally-portrait-management__content"><span className="eyebrow">RETRATO DO ALIADO</span><h3>{activeAlly.name || "Aliado sem nome"}</h3><p>Use uma imagem vertical para destacar este companheiro na mini-ficha e no registro de campanha.</p><div>{isAuthenticated ? <label className={`portrait-upload portrait-upload--ally ${uploadAllyPortrait.isPending ? "is-loading" : ""}`}><ImageUp size={14} /> {uploadAllyPortrait.isPending ? "Enviando..." : activeAlly.portraitUrl ? "Trocar retrato" : "Enviar retrato"}<input className="portrait-file-input" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => handleAllyPortraitUpload(activeAlly, event)} disabled={uploadAllyPortrait.isPending} /></label> : <button type="button" className="portrait-upload portrait-upload--ally" onClick={startLogin}><LogIn size={14} /> Entrar para enviar</button>}{activeAlly.portraitUrl && <button type="button" className="ally-portrait-remove" onClick={() => removeAllyPortrait(activeAlly)}><Trash2 size={14} /> Remover retrato</button>}</div></div></section>}
             <div className="ally-studio">
-              <aside className="ally-studio__roster"><div className="ally-roster__head"><span className="eyebrow">REDE DE APOIO</span><strong>{(sheet.allies || []).length}</strong><small>aliado{(sheet.allies || []).length === 1 ? "" : "s"} em campo</small></div><div className="ally-roster__list">{(sheet.allies || []).map((ally) => { const full = normalizeAlly(ally); return <button key={ally.id} type="button" className={activeAlly?.id === ally.id ? "is-active" : ""} onClick={() => { setSelectedAllyId(ally.id); setActiveAllyTab("visao"); }}><img src={MARK} alt="" /><span><b>{full.name}</b><small>{full.relation} · {full.status}</small></span><i>PV {full.hpCurrent}/{full.hpMax}</i></button>; })}</div><div className="ally-roster__summary"><span>Custo calculado</span><b>{calculated.allyCost} pts</b><small>Valor total: {(sheet.allies || []).reduce((sum, ally) => sum + ally.points, 0)} pts</small></div></aside>
+              <aside className="ally-studio__roster"><div className="ally-roster__head"><span className="eyebrow">REDE DE APOIO</span><strong>{(sheet.allies || []).length}</strong><small>aliado{(sheet.allies || []).length === 1 ? "" : "s"} em campo</small></div><div className="ally-roster__list">{(sheet.allies || []).map((ally) => { const full = normalizeAlly(ally); return <button key={ally.id} type="button" className={activeAlly?.id === ally.id ? "is-active" : ""} onClick={() => { setSelectedAllyId(ally.id); setActiveAllyTab("visao"); }}><span className="ally-roster__portrait"><img src={allyPortraitPreviews[ally.id] || full.portraitUrl || PORTRAIT} alt="" /></span><span><b>{full.name}</b><small>{full.relation} · {full.status}</small></span><i>PV {full.hpCurrent}/{full.hpMax}</i></button>; })}</div><div className="ally-roster__summary"><span>Custo calculado</span><b>{calculated.allyCost} pts</b><small>Valor total: {(sheet.allies || []).reduce((sum, ally) => sum + ally.points, 0)} pts</small></div></aside>
               {activeAlly ? <div className="ally-studio__detail"><header className="ally-sheet__header"><div><span className="eyebrow">MINI-FICHA DE ALIADO</span><h3>{activeAlly.name}</h3><p>{activeAlly.relation} · {activeAlly.type} · {activeAlly.race}</p></div><div className="ally-sheet__status"><span>Estado</span><AllyStatusSelect value={activeAlly.status} onValueChange={(status) => updateAlly(activeAlly.id, "status", status)} /><button type="button" aria-label={`Remover ${activeAlly.name}`} onClick={() => removeAlly(activeAlly.id, activeAlly.name)}><Trash2 size={15} /></button></div></header><div className="ally-sheet__body"><nav className="ally-tabs" aria-label="Abas da ficha do aliado">{allyTabs.map(({ id, label, icon: Icon }, index) => <button key={id} type="button" className={activeAllyTab === id ? "is-active" : ""} onClick={() => setActiveAllyTab(id)}><span>0{index + 1}</span><Icon size={15} />{label}</button>)}</nav><div className="ally-tab-panel">
                 {activeAllyTab === "visao" && <div className="ally-tab-grid ally-tab-grid--overview"><section className="ally-panel"><span className="eyebrow">IDENTIFICAÇÃO</span><div className="ally-field-grid"><label className="wide"><span>Nome</span><input value={activeAlly.name} onChange={(event) => updateAlly(activeAlly.id, "name", event.target.value)} /></label><label><span>Relação</span><input value={activeAlly.relation} onChange={(event) => updateAlly(activeAlly.id, "relation", event.target.value)} /></label><label><span>Tipo</span><input value={activeAlly.type} onChange={(event) => updateAlly(activeAlly.id, "type", event.target.value)} /></label><label><span>Raça / espécie</span><input value={activeAlly.race} onChange={(event) => updateAlly(activeAlly.id, "race", event.target.value)} /></label><label><span>Aparência</span><input value={activeAlly.appearance} onChange={(event) => updateAlly(activeAlly.id, "appearance", event.target.value)} /></label><label className="wide"><span>Descrição</span><textarea value={activeAlly.description} onChange={(event) => updateAlly(activeAlly.id, "description", event.target.value)} /></label><label><span>Personalidade</span><textarea value={activeAlly.personality} onChange={(event) => updateAlly(activeAlly.id, "personality", event.target.value)} /></label><label><span>Motivação</span><textarea value={activeAlly.motivation} onChange={(event) => updateAlly(activeAlly.id, "motivation", event.target.value)} /></label><label className="wide"><span>Histórico</span><textarea value={activeAlly.history} onChange={(event) => updateAlly(activeAlly.id, "history", event.target.value)} /></label></div></section><section className="ally-panel ally-rules"><span className="eyebrow">VANTAGEM ALLY</span><div className="ally-rules__cost"><span>Custo atual</span><strong>{calculateAllyCost(activeAlly)} <small>pts</small></strong><small>{activeAlly.powerPercent}% do personagem · aparece em {activeAlly.frequency} ou menos</small></div><label><span>Poder do Ally</span><select value={activeAlly.powerPercent} onChange={(event) => updateAllyData(activeAlly.id, { powerPercent: number(event.target.value) as 25 | 50 | 75 | 100 | 150 })}>{[25, 50, 75, 100, 150].map((power) => <option key={power} value={power}>{power}% · {allyPowerCosts[power as 25 | 50 | 75 | 100 | 150]} pts-base</option>)}</select></label><label><span>Frequência de aparecimento</span><select value={activeAlly.frequency} onChange={(event) => updateAllyData(activeAlly.id, { frequency: number(event.target.value) as 6 | 9 | 12 | 15 })}>{[6, 9, 12, 15].map((frequency) => <option key={frequency} value={frequency}>{frequency} ou menos · ×{allyFrequencyMultipliers[frequency as 6 | 9 | 12 | 15]}</option>)}</select></label><label className="ally-checkbox"><input type="checkbox" checked={activeAlly.isDependent} onChange={(event) => updateAlly(activeAlly.id, "isDependent", event.target.checked)} /><span>Também é um Dependent</span></label><label><span>Pontos atuais</span><input type="number" min="0" value={activeAlly.points} onChange={(event) => updateAlly(activeAlly.id, "points", number(event.target.value))} /></label><label><span>Observações</span><textarea value={activeAlly.notes} onChange={(event) => updateAlly(activeAlly.id, "notes", event.target.value)} /></label></section></div>}
                 {activeAllyTab === "atributos" && <div className="ally-tab-grid ally-tab-grid--attributes"><section className="ally-panel"><span className="eyebrow">ATRIBUTOS PRIMÁRIOS</span><div className="ally-attribute-grid">{(["st", "dx", "iq", "ht"] as const).map((attribute) => <label key={attribute}><span>{attribute.toUpperCase()}</span><input type="number" min="1" value={activeAlly.attributes[attribute]} onChange={(event) => updateAllyAttribute(activeAlly.id, attribute, number(event.target.value))} /></label>)}</div></section><section className="ally-panel"><span className="eyebrow">RECURSOS E DERIVADOS</span><div className="ally-field-grid"><label><span>PV atual</span><input type="number" min="0" value={activeAlly.hpCurrent} onChange={(event) => updateAlly(activeAlly.id, "hpCurrent", Math.max(0, Math.min(activeAlly.hpMax, number(event.target.value))))} /></label><label><span>PV máximo</span><input type="number" min="1" value={activeAlly.hpMax} onChange={(event) => updateAlly(activeAlly.id, "hpMax", Math.max(1, number(event.target.value)))} /></label><label><span>PF atual</span><input type="number" min="0" value={activeAlly.fpCurrent} onChange={(event) => updateAlly(activeAlly.id, "fpCurrent", Math.max(0, Math.min(activeAlly.fpMax, number(event.target.value))))} /></label><label><span>PF máximo</span><input type="number" min="1" value={activeAlly.fpMax} onChange={(event) => updateAlly(activeAlly.id, "fpMax", Math.max(1, number(event.target.value)))} /></label></div><div className="ally-derived"><span>Will <b>{activeAlly.attributes.iq}</b></span><span>Per <b>{activeAlly.attributes.iq}</b></span><span>Vel. <b>{((activeAlly.attributes.dx + activeAlly.attributes.ht) / 4).toFixed(2)}</b></span><span>Move <b>{Math.floor((activeAlly.attributes.dx + activeAlly.attributes.ht) / 4)}</b></span><span>Dodge <b>{Math.floor((activeAlly.attributes.dx + activeAlly.attributes.ht) / 4) + 3}</b></span></div></section></div>}

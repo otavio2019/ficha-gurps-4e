@@ -363,3 +363,11 @@
 - [x] Permitir cadastrar dificuldades personalizadas nas missões, além das dificuldades padrão.
 - [x] Calcular e exibir automaticamente os danos de Golpe e Balanço a partir da ST no Combate.
 - [x] Cobrir regras, persistência e responsividade das novas funcionalidades com testes e validação local.
+
+## Retratos de aliados e enquadramento responsivo
+
+- [x] Permitir enviar, substituir e remover o retrato individual de cada aliado.
+- [x] Persistir o retrato do aliado na ficha e incluí-lo nas visualizações aplicáveis.
+- [x] Ajustar as molduras e o enquadramento dos retratos do personagem e dos aliados em desktop.
+- [x] Ajustar a proporção, a posição e a legibilidade dos retratos e molduras em celular.
+- [x] Validar upload, persistência, enquadramento e ausência de overflow em desktop e 375×812.

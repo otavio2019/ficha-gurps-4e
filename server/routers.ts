@@ -65,6 +65,21 @@ export const createAppRouter = (catalogReader = listGurpsSkillCatalog, traitCata
       emitCharacterUpdated({ characterId: input.characterId, shareToken: share?.token, updatedAt: Date.now() });
       return { portraitUrl: saved?.portraitUrl ?? url };
     }),
+    uploadAllyPortrait: protectedProcedure.input(z.object({ characterId: z.string().min(4).max(64), allyId: z.string().min(4).max(96), dataUrl: z.string().min(32).max(7_000_000) })).mutation(async ({ ctx, input }) => {
+      const character = await getGurpsCharacter(input.characterId);
+      if (!character || character.ownerId !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN", message: "Você não pode alterar o retrato desta ficha." });
+      const portrait = parsePortraitDataUrl(input.dataUrl);
+      if (!portrait || portrait.buffer.byteLength > 4_000_000) throw new TRPCError({ code: "BAD_REQUEST", message: "Envie uma imagem PNG, JPEG ou WEBP de até 4 MB." });
+      const sourceSheet = character.sheet as Record<string, unknown>;
+      const allies = Array.isArray(sourceSheet.allies) ? sourceSheet.allies as Array<Record<string, unknown>> : [];
+      if (!allies.some((ally) => ally.id === input.allyId)) throw new TRPCError({ code: "NOT_FOUND", message: "Aliado não encontrado nesta ficha." });
+      const { url } = await storagePut(`gurps/${ctx.user.id}/${input.characterId}/allies/${input.allyId}/portrait.${portrait.extension}`, portrait.buffer, portrait.contentType);
+      const sheet = { ...sourceSheet, allies: allies.map((ally) => ally.id === input.allyId ? { ...ally, portraitUrl: url } : ally) };
+      await saveGurpsCharacter({ id: character.id, ownerId: ctx.user.id, name: character.name, sheet, portraitUrl: character.portraitUrl });
+      const share = await getCharacterShare(input.characterId, ctx.user.id);
+      emitCharacterUpdated({ characterId: input.characterId, shareToken: share?.token, updatedAt: Date.now() });
+      return { portraitUrl: url };
+    }),
   }),
   shares: router({
     list: protectedProcedure.query(({ ctx }) => listCharacterShares(ctx.user.id)),
