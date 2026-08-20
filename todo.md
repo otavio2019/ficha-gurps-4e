@@ -390,3 +390,32 @@
 - [x] Corrigir o enquadramento da Visão geral indicado na captura do usuário.
 - [x] Padronizar a numeração de navegação e dos painéis da ficha.
 - [x] Validar em desktop e celular a aplicação, reversão, enquadramento e numeração antes de publicar.
+
+## Habilidade reutilizável do Códice de Campo
+
+- [x] Criar uma habilidade reutilizável para evoluir, validar, publicar e sincronizar fichas digitais de RPG.
+- [x] Validar a estrutura da habilidade e entregar um resumo operacional do processo.
+
+## Apresentação da nova versão Homebrew
+
+- [x] Substituir a apresentação pelo documento consolidado solicitado pelo usuário.
+
+## Apresentação consolidada da atualização
+
+- [x] Substituir a apresentação retrospectiva pelo documento consolidado, conforme o formato solicitado.
+
+## Documento consolidado da atualização
+
+- [x] Produzir um documento resumindo todas as entregas desde a última nota de atualização.
+- [x] Cobrir Homebrew, energias, combate, aliados, inventário, raças, interface, validações e a ocorrência de implantação.
+- [x] Revisar e entregar o documento em formato legível ao usuário.
+
+## Sincronização completa no GitHub
+
+- [x] Enviar todos os documentos, registros e alterações pendentes ao repositório GitHub.
+
+## Investigação de implantação — agosto de 2026
+
+- [x] Diagnosticar a falha de implantação ocorrida após a criação da imagem de produção.
+- [x] Validar a compilação local e corrigir o projeto se houver causa identificável.
+- [x] Registrar a causa da falha e o resultado da correção ou nova publicação.

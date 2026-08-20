@@ -1,0 +1,135 @@
+{
+  "project_info": {
+    "title": "Códice de Campo",
+    "created": 1787238574.177,
+    "last_updated": 1787238764.311,
+    "total_slides": 12
+  },
+  "slides": [
+    {
+      "id": "capa",
+      "state": "edited",
+      "pageNum": 1
+    },
+    {
+      "id": "evolucao",
+      "state": "edited",
+      "pageNum": 2
+    },
+    {
+      "id": "biblioteca",
+      "state": "edited",
+      "pageNum": 3
+    },
+    {
+      "id": "editor",
+      "state": "edit_pending",
+      "pageNum": 4
+    },
+    {
+      "id": "integracao",
+      "state": "edit_pending",
+      "pageNum": 5
+    },
+    {
+      "id": "racas",
+      "state": "edit_pending",
+      "pageNum": 6
+    },
+    {
+      "id": "energias",
+      "state": "edit_pending",
+      "pageNum": 7
+    },
+    {
+      "id": "combate",
+      "state": "edit_pending",
+      "pageNum": 8
+    },
+    {
+      "id": "aliados",
+      "state": "edit_pending",
+      "pageNum": 9
+    },
+    {
+      "id": "campanha",
+      "state": "edit_pending",
+      "pageNum": 10
+    },
+    {
+      "id": "compartilhamento",
+      "state": "edit_pending",
+      "pageNum": 11
+    },
+    {
+      "id": "validacao",
+      "state": "edit_pending",
+      "pageNum": 12
+    }
+  ],
+  "outline": [
+    {
+      "id": "capa",
+      "title": "Códice de Campo",
+      "summary": "Capa com título e subtítulo da atualização consolidada da ficha digital GURPS 4e.",
+      "image_plan": "/home/ubuntu/nh-validation/ally-portrait-desktop.png - Cover slide showing adventure journal aesthetic fitting the title Códice de Campo"
+    },
+    {
+      "id": "evolucao",
+      "title": "De ficha editável a sistema de campanha",
+      "summary": "Visão geral da evolução da ficha para um sistema integrado de sessão."
+    },
+    {
+      "id": "biblioteca",
+      "title": "Homebrew virou uma biblioteca viva",
+      "summary": "Busca, filtros e 14 categorias de conteúdo personalizado."
+    },
+    {
+      "id": "editor",
+      "title": "Criação guiada por categoria",
+      "summary": "Editor dinâmico que adapta seus campos ao conteúdo criado."
+    },
+    {
+      "id": "integracao",
+      "title": "Conteúdo Homebrew entra na ficha",
+      "summary": "Aplicação direta de conteúdos compatíveis nas áreas da ficha."
+    },
+    {
+      "id": "racas",
+      "title": "Raças aplicam efeitos reversíveis",
+      "summary": "Atributos, subatributos e traços raciais com remoção segura."
+    },
+    {
+      "id": "energias",
+      "title": "Energias expandem além de PV e PF",
+      "summary": "Recursos Homebrew com bônus, máximo final e integração com poderes."
+    },
+    {
+      "id": "combate",
+      "title": "Combate ganhou ritmo de sessão",
+      "summary": "Efeitos temporários, rolagens 3d6 e danos automáticos por ST.",
+      "image_plan": "/home/ubuntu/nh-validation/ally-portrait-mobile.png - Slide discussing combat and dice rolling, perfectly illustrated by polyhedral dice set"
+    },
+    {
+      "id": "aliados",
+      "title": "Aliados deixaram de ser coadjuvantes",
+      "summary": "Mini-fichas editáveis, recursos próprios e retratos individuais."
+    },
+    {
+      "id": "campanha",
+      "title": "Inventário, missões e campanha conectados",
+      "summary": "Peso universal, mochila rápida, dificuldades personalizadas e Diário."
+    },
+    {
+      "id": "compartilhamento",
+      "title": "Compartilhar agora mostra o essencial",
+      "summary": "Link público com energias, Homebrew, aliados e dados de sessão."
+    },
+    {
+      "id": "validacao",
+      "title": "Pronto para criar e jogar",
+      "summary": "Síntese das validações, responsividade e qualidade da entrega.",
+      "image_plan": "/home/ubuntu/nh-validation/life-quality-mobile.png - Slide showcasing technical readiness, character sheet template, and UI verification"
+    }
+  ]
+}
