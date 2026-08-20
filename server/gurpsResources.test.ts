@@ -11,5 +11,6 @@ describe("recursos rápidos de sessão", () => {
   it("descreve recuperação e perda para o histórico", () => {
     expect(describeResourceChange("PV", 12, 7)).toBe("Perdeu 5 PV (12 → 7).");
     expect(describeResourceChange("PF", 7, 11)).toBe("Recuperou 4 PF (7 → 11).");
+    expect(describeResourceChange("Mana", 6, 4)).toBe("Perdeu 2 Mana (6 → 4).");
   });
 });

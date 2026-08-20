@@ -1,5 +1,5 @@
 export const HOMEBREW_CATEGORIES = [
-  "Regra", "Raça", "Vantagem", "Desvantagem", "Perícia", "Poder", "Magia", "Técnica", "Equipamentos", "Arma", "Armadura", "NPC", "Nota",
+  "Regra", "Raça", "Vantagem", "Desvantagem", "Perícia", "Poder", "Magia", "Energia", "Técnica", "Equipamentos", "Arma", "Armadura", "NPC", "Nota",
 ] as const;
 
 export type HomebrewCategory = (typeof HOMEBREW_CATEGORIES)[number];
@@ -36,6 +36,7 @@ export const HOMEBREW_FIELDS: Record<HomebrewCategory, HomebrewField[]> = {
   ],
   Poder: [{ key: "pointCost", label: "Custo em pontos", kind: "number" }, { key: "fpCost", label: "Custo em FP", kind: "number" }, { key: "range", label: "Alcance", kind: "text" }, { key: "duration", label: "Duração", kind: "text" }, { key: "damage", label: "Dano", kind: "text" }, { key: "effect", label: "Efeitos", kind: "text" }],
   Magia: [{ key: "pointCost", label: "Custo em pontos", kind: "number" }, { key: "fpCost", label: "Custo em FP", kind: "number" }, { key: "range", label: "Alcance", kind: "text" }, { key: "duration", label: "Duração", kind: "text" }, { key: "damage", label: "Dano", kind: "text" }, { key: "effect", label: "Efeitos", kind: "text" }],
+  Energia: [{ key: "maximum", label: "Máximo", kind: "number" }, { key: "current", label: "Valor inicial", kind: "number" }, { key: "icon", label: "Afinidade / ícone", kind: "text" }, { key: "recovery", label: "Recuperação", kind: "text" }],
   Técnica: [{ key: "skill", label: "Perícia-base", kind: "text" }, { key: "default", label: "Padrão", kind: "text" }, { key: "points", label: "Pontos", kind: "number" }, { key: "nh", label: "NH", kind: "number" }],
   Equipamentos: [{ key: "quantity", label: "Quantidade", kind: "number" }, { key: "weight", label: "Peso", kind: "number" }, { key: "cost", label: "Custo", kind: "number" }],
   NPC: [{ key: "role", label: "Papel na campanha", kind: "text" }, { key: "faction", label: "Facção", kind: "text" }, { key: "threat", label: "Ameaça", kind: "text" }],
@@ -78,5 +79,5 @@ export function filterHomebrewEntries(entries: HomebrewEntry[], search: string, 
 }
 
 export function canAddHomebrewToSheet(category: HomebrewCategory): boolean {
-  return ["Arma", "Armadura", "Equipamentos", "Vantagem", "Desvantagem", "Perícia", "Poder", "Magia", "Técnica"].includes(category);
+  return ["Arma", "Armadura", "Equipamentos", "Vantagem", "Desvantagem", "Perícia", "Poder", "Magia", "Energia", "Técnica"].includes(category);
 }

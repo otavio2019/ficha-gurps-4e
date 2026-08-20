@@ -24,6 +24,7 @@ describe("biblioteca Homebrew", () => {
     expect(canAddHomebrewToSheet("Arma")).toBe(true);
     expect(canAddHomebrewToSheet("Vantagem")).toBe(true);
     expect(canAddHomebrewToSheet("Poder")).toBe(true);
+    expect(canAddHomebrewToSheet("Energia")).toBe(true);
     expect(canAddHomebrewToSheet("Regra")).toBe(false);
     expect(canAddHomebrewToSheet("Raça")).toBe(false);
   });

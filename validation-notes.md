@@ -159,3 +159,9 @@
 - Ainda no cenário desktop, um efeito Moderado “Bruma arcana” com duração de três turnos foi criado, a ficha foi recarregada e reaberta, e o painel preservou nome, duração e severidade. Não houve overflow horizontal.
 - A mesma validação foi repetida em 375 × 812: condição, severidade, avanço, expiração, remoção e persistência local funcionaram; o documento permaneceu com `scrollWidth` igual à largura do viewport.
 - A checagem de tipos e a suíte automatizada passaram com 19 arquivos e 46 testes, incluindo três testes unitários do modelo de efeitos temporários.
+- A biblioteca Homebrew agora inclui a categoria **Energia**. Seu editor dinâmico registra máximo, valor inicial, afinidade/ícone e recuperação, e o botão “Adicionar à ficha” cria uma reserva de recurso persistente para o personagem.
+- Em 1280 × 720, a energia Homebrew “Mana” foi criada com 10/12, reduzida para 5/12 pelos controles rápidos e registrou “Perdeu 5 Mana” no Diário. Um poder configurado para gastar 3 Mana reduziu o recurso para 2/12, exibiu o custo correto e registrou a ação. A recarga preservou Mana em 2/12.
+- A mesma missão de validação passou a aceitar a opção Personalizada e a dificuldade de mesa “Mortal”; esse rótulo foi preservado no cartão de recompensas.
+- Com ST ajustada para 20, a aba Combate exibiu Golpe 2d−1 e Balanço 3d+2. A rolagem de Balanço usou a expressão automática 3d+2 contusão, atualizou o painel de resultado e criou o respectivo registro no Diário.
+- A validação integrada foi repetida em 375 × 812. Energias, Poderes, Missões e Combate permaneceram acionáveis sem overflow horizontal; todos os cenários mediram `scrollWidth` igual à largura do viewport.
+- A checagem de tipos e a suíte automatizada passaram com 21 arquivos e 50 testes, incluindo as regras de energia, a categoria Homebrew e os valores de referência de Golpe e Balanço.

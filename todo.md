@@ -355,3 +355,11 @@
 - [x] Criar marcadores persistentes de condição com severidade e duração no Combate.
 - [x] Permitir adicionar, avançar, encerrar e remover efeitos temporários durante a sessão.
 - [x] Registrar alterações de marcadores no Diário e validar desktop, celular e persistência local.
+
+## Recursos Homebrew, dificuldades e dano por ST
+
+- [x] Permitir criar recursos de energia Homebrew com máximo, valor atual, ícone e descrição, utilizáveis como PF.
+- [x] Exibir e controlar as energias aplicadas à ficha durante a sessão, incluindo registro no Diário.
+- [x] Permitir cadastrar dificuldades personalizadas nas missões, além das dificuldades padrão.
+- [x] Calcular e exibir automaticamente os danos de Golpe e Balanço a partir da ST no Combate.
+- [x] Cobrir regras, persistência e responsividade das novas funcionalidades com testes e validação local.

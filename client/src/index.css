@@ -1390,3 +1390,38 @@ textarea:focus {
   .temporary-effect > footer { justify-content: stretch; }
   .temporary-effect > footer button { flex: 1 1 0; justify-content: center; }
 }
+
+.custom-energy-session { display: grid; gap: .52rem; margin-top: .78rem; padding-top: .72rem; border-top: 1px solid rgb(255 255 255 / .1); }
+.custom-energy-session__head { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+.custom-energy-session__head button { display: inline-flex; align-items: center; gap: .25rem; padding: .25rem .36rem; border: 1px solid rgb(117 96 197 / .7); background: rgb(91 65 160 / .2); color: #ddd5ff; font-size: .56rem; }
+.custom-energy-session__list { display: grid; gap: .38rem; }
+.custom-energy-card { display: grid; gap: .34rem; }
+.custom-energy-card details { padding: 0 .45rem .45rem; border: 1px solid rgb(137 110 232 / .26); border-top: 0; background: rgb(91 65 160 / .08); }
+.custom-energy-card summary { padding: .4rem 0; color: #d8d0ff; cursor: pointer; font-size: .6rem; }
+.custom-energy-card__fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .38rem; }
+.custom-energy-card__fields label { display: grid; gap: .2rem; color: #aaa9af; font-size: .54rem; text-transform: uppercase; }
+.custom-energy-card__fields label.wide { grid-column: 1 / -1; }
+.custom-energy-card__fields input, .custom-energy-card__fields select { min-width: 0; min-height: 29px; border: 1px solid rgb(255 255 255 / .14); background: #191b21; color: #f5f1e9; font-size: .64rem; }
+.custom-energy-card details > .row-delete { margin-top: .42rem; padding: .28rem .42rem; font-size: .58rem; }
+.resource-line--energy { border-color: rgb(117 96 197 / .32); background: linear-gradient(90deg, rgb(91 65 160 / .16), transparent 70%); }
+.resource-bar--arcane { border-color: rgb(137 110 232 / .4); background: repeating-linear-gradient(90deg, rgb(137 110 232 / .12) 0 12px, rgb(137 110 232 / .25) 12px 13px); }
+.resource-bar--arcane i { background: #896ee8 !important; }
+.custom-energy-session__empty { display: block; padding: .5rem; border: 1px dashed rgb(137 110 232 / .45); color: #c8c0ec; font-size: .61rem; line-height: 1.4; }
+.strength-damage-panel { display: grid; grid-template-columns: minmax(180px, .75fr) 1.25fr; gap: .8rem; align-items: center; margin: 1rem 0; padding: .8rem; border: 1px solid rgb(209 166 84 / .38); border-top: 2px solid #d1a654; background: linear-gradient(115deg, rgb(209 166 84 / .14), #101217 60%); }
+.strength-damage-panel h3 { margin: .16rem 0; color: #f5f1e9; font-family: "DM Serif Display", serif; font-size: 1.16rem; font-weight: 400; }
+.strength-damage-panel p { margin: 0; color: #aaa9af; font-size: .62rem; line-height: 1.4; }
+.strength-damage-panel__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem; }
+.strength-damage-panel__actions button { display: grid; gap: .12rem; min-height: 68px; padding: .52rem .6rem; border: 1px solid rgb(209 166 84 / .44); background: rgb(12 13 16 / .72); text-align: left; }
+.strength-damage-panel__actions button:hover { border-color: #f4c766; background: rgb(209 166 84 / .17); }
+.strength-damage-panel__actions span { color: #d1a654; font-size: .55rem; font-weight: 700; letter-spacing: .08em; }
+.strength-damage-panel__actions b { color: #f5f1e9; font-family: "DM Serif Display", serif; font-size: 1.28rem; font-weight: 400; }
+.strength-damage-panel__actions small { color: #aaa9af; font-size: .56rem; }
+
+@media (max-width: 620px) {
+  .custom-energy-session__head { align-items: start; flex-direction: column; }
+  .custom-energy-session__head button { min-height: 30px; font-size: .65rem; }
+  .custom-energy-card__fields { grid-template-columns: 1fr 1fr; }
+  .custom-energy-card__fields label.wide { grid-column: 1 / -1; }
+  .strength-damage-panel { grid-template-columns: 1fr; }
+  .strength-damage-panel__actions button { min-height: 72px; }
+}
