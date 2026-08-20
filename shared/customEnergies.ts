@@ -8,6 +8,7 @@ export type CustomEnergy = {
   name: string;
   current: number;
   maximum: number;
+  bonus: number;
   icon: CustomEnergyIcon;
   description: string;
   source: string;
@@ -16,17 +17,23 @@ export type CustomEnergy = {
 
 export function normalizeCustomEnergy(energy: Partial<CustomEnergy> & Pick<CustomEnergy, "id">): CustomEnergy {
   const maximum = Math.max(1, Math.round(Number(energy.maximum) || 1));
+  const bonus = Math.round(Number(energy.bonus) || 0);
   const requestedIcon = String(energy.icon || "Arcana") as CustomEnergyIcon;
   return {
     id: energy.id,
     name: String(energy.name || "Nova energia"),
-    current: clampResource(Number(energy.current ?? maximum), maximum),
+    current: clampResource(Number(energy.current ?? maximum + bonus), Math.max(1, maximum + bonus)),
     maximum,
+    bonus,
     icon: CUSTOM_ENERGY_ICONS.includes(requestedIcon) ? requestedIcon : "Arcana",
     description: String(energy.description || ""),
     source: String(energy.source || "Campanha"),
     homebrewId: energy.homebrewId,
   };
+}
+
+export function calculateCustomEnergyMaximum(energy: Pick<CustomEnergy, "maximum" | "bonus">): number {
+  return Math.max(1, Math.round(Number(energy.maximum) || 1) + Math.round(Number(energy.bonus) || 0));
 }
 
 export function formatEnergyCost(name: string, cost: number): string {

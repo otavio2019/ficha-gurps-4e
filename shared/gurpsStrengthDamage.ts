@@ -37,6 +37,16 @@ function increaseByTwoAdds(expression: string, groups: number) {
   return `${nextDice}d${nextModifier === 0 ? "" : `+${nextModifier}`}`;
 }
 
+/** Aplica um bônus de dano a uma expressão de dados preservando sua forma válida para rolagens. */
+export function applyDamageBonus(expression: string, bonus = 0): string {
+  const match = String(expression || "").match(/^(\d+)d(?:([+-])(\d+))?$/);
+  if (!match) return String(expression || "—");
+  const dice = Number(match[1]);
+  const baseModifier = match[2] === "-" ? -Number(match[3]) : Number(match[3] || 0);
+  const modifier = baseModifier + Math.round(Number(bonus) || 0);
+  return `${dice}d${modifier === 0 ? "" : modifier > 0 ? `+${modifier}` : modifier}`;
+}
+
 /** Retorna a tabela padrão de dano de ST de GURPS 4e, com extensão regular acima de ST 100. */
 export function calculateStrengthDamage(st: number): StrengthDamage {
   const normalizedSt = Math.max(1, Math.round(Number(st) || 1));

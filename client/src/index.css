@@ -592,8 +592,8 @@
   .codex-content::before { left: 28px; }
   .codex-section { padding-top: 3.3rem; }
   .section-header h2 { font-size: 1.72rem; }
-  .identity-card { grid-template-columns: 90px 1fr; gap: .7rem; padding: .7rem; }
-  .portrait-frame { min-height: 232px; }
+  .identity-card { grid-template-columns: 1fr; gap: .85rem; padding: .85rem; }
+  .portrait-frame { width: min(166px, 52vw); min-height: 0; margin: 0 auto; }
   .identity-form { gap: .55rem; }
   .field--wide { grid-column: span 2; }
   .attribute-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1448,6 +1448,27 @@ textarea:focus {
 .shared-ally-card__identity { display: flex; min-width: 0; align-items: center; gap: .55rem; }
 .shared-ally-card__identity > img { width: 42px; height: 52px; flex: 0 0 auto; border: 1px solid rgb(225 65 68 / .55); background: #090a0d; object-fit: cover; object-position: center 18%; }
 .shared-ally-card__identity > div { min-width: 0; }
+.shared-energy-list { display: flex; flex-wrap: wrap; gap: .32rem; margin-top: .55rem; }
+.shared-energy-list span { display: inline-flex; align-items: center; gap: .28rem; padding: .35rem .42rem; border: 1px solid rgb(105 148 181 / .46); background: rgb(105 148 181 / .11); color: #dbeeff; font-size: .6rem; }
+.shared-energy-list svg { color: #9dc8ef; }
+.shared-energy-list b { color: #f5f1e9; font-weight: 700; }
+.shared-energy-list em { color: #ffcf98; font-style: normal; }
+.shared-energy-list small { color: #b8d9f3; font-size: .52rem; }
+.equipment-header-actions { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: .42rem; }
+.strength-damage-panel__bonuses { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
+.strength-damage-panel__bonuses label { display: grid; gap: .2rem; color: #d9d4cf; font-size: .58rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.strength-damage-panel__bonuses input { min-height: 33px; border: 1px solid rgb(225 65 68 / .45); background: #101217; color: #f5f1e9; font-size: .75rem; }
+
+/* O resumo permanece acessível, mas passa a ocupar espaço próprio na página em vez de cobrir os painéis. */
+.vitals-ribbon { position: sticky; right: auto; bottom: .75rem; width: fit-content; max-width: calc(100% - 2rem); margin: 0 1rem 1rem auto; }
+.portrait-frame img { object-fit: contain; object-position: center; background: #0d0f13; }
+
+@media (max-width: 620px) {
+  .vitals-ribbon { right: auto; bottom: .5rem; left: auto; width: calc(100% - 1rem); margin: 0 .5rem .75rem; }
+  .equipment-header-actions { justify-content: flex-start; }
+  .strength-damage-panel__bonuses { grid-template-columns: 1fr; }
+  .shared-energy-list span { font-size: .58rem; }
+}
 
 @media (max-width: 620px) {
   .portrait-frame { width: min(152px, 44vw); justify-self: center; }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateStrengthDamage } from "@shared/gurpsStrengthDamage";
+import { applyDamageBonus, calculateStrengthDamage } from "@shared/gurpsStrengthDamage";
 
 describe("dano automático por ST", () => {
   it("retorna Golpe e Balanço de referências usuais da tabela", () => {
@@ -12,5 +12,10 @@ describe("dano automático por ST", () => {
   it("normaliza ST inválida e estende o padrão acima de ST 100", () => {
     expect(calculateStrengthDamage(0)).toMatchObject({ st: 1, thrust: "1d-6", swing: "1d-5" });
     expect(calculateStrengthDamage(105)).toMatchObject({ thrust: "11d+2", swing: "13d+2" });
+  });
+
+  it("aplica bônus e penalidades às expressões automáticas de dano", () => {
+    expect(applyDamageBonus("1d-1", 2)).toBe("1d+1");
+    expect(applyDamageBonus("3d+2", -4)).toBe("3d-2");
   });
 });

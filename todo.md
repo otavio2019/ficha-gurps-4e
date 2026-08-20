@@ -371,3 +371,14 @@
 - [x] Ajustar as molduras e o enquadramento dos retratos do personagem e dos aliados em desktop.
 - [x] Ajustar a proporção, a posição e a legibilidade dos retratos e molduras em celular.
 - [x] Validar upload, persistência, enquadramento e ausência de overflow em desktop e 375×812.
+
+## Aliados, energias e inventário universal
+
+- [x] Completar textos e rótulos remanescentes da interface em português brasileiro.
+- [x] Permitir editar os atributos secundários dos aliados, incluindo Vontade, Percepção, Velocidade, Movimento e Esquiva.
+- [x] Exibir energias personalizadas e seus valores atuais e máximos no compartilhamento público.
+- [x] Permitir bônus adicionais nas energias personalizadas, refletindo no máximo calculado e no recurso atual.
+- [x] Permitir bônus de dano adicionais para Golpe e Balanço, preservando o cálculo automático pela ST.
+- [x] Corrigir o enquadramento das molduras de retrato e a disposição visual indicada na captura do usuário.
+- [x] Incluir mochila como item inicial do inventário e padronizar todos os pesos em uma unidade universal configurável.
+- [x] Cobrir regras, compatibilidade, compartilhamento e responsividade das melhorias com testes e validação local.
